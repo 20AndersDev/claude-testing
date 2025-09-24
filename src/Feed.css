@@ -1,0 +1,13 @@
+.feed {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 76px 20px 20px;
+  background-color: #f0f2f5;
+  min-height: 100vh;
+}
+
+.posts-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}

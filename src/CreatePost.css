@@ -1,0 +1,99 @@
+.create-post {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 15px;
+  padding: 15px;
+}
+
+.create-post-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  background: #e4e6ea;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.post-form {
+  flex: 1;
+}
+
+.post-textarea {
+  width: 100%;
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: inherit;
+  font-size: 16px;
+  background: #f0f2f5;
+  border-radius: 20px;
+  padding: 10px 15px;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.post-textarea:focus,
+.post-textarea.expanded {
+  background: white;
+  border: 1px solid #1877f2;
+  border-radius: 8px;
+}
+
+.post-textarea::placeholder {
+  color: #65676b;
+}
+
+.post-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.cancel-btn {
+  background: #e4e6ea;
+  color: #65676b;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background-color 0.3s;
+}
+
+.cancel-btn:hover {
+  background: #d8dadf;
+}
+
+.post-btn {
+  background: #1877f2;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background-color 0.3s;
+}
+
+.post-btn:hover:not(:disabled) {
+  background: #166fe5;
+}
+
+.post-btn:disabled {
+  background: #e4e6ea;
+  color: #bcc0c4;
+  cursor: not-allowed;
+}
