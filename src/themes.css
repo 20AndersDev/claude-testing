@@ -1,0 +1,224 @@
+/* CSS Custom Properties for Theme System */
+
+:root {
+  /* Light Mode Colors */
+  --primary: #667eea;
+  --primary-light: #8b9bff;
+  --primary-dark: #4c63d2;
+  --secondary: #764ba2;
+  --background: #ffffff;
+  --background-secondary: #f8f9ff;
+  --background-tertiary: #f0f2f5;
+  --surface: #ffffff;
+  --surface-secondary: #f8f9fa;
+  --surface-hover: rgba(102, 126, 234, 0.05);
+  --text: #333333;
+  --text-secondary: #65676b;
+  --text-muted: #666666;
+  --border: rgba(0, 0, 0, 0.06);
+  --border-light: rgba(0, 0, 0, 0.05);
+  --shadow: rgba(0, 0, 0, 0.08);
+  --shadow-light: rgba(0, 0, 0, 0.04);
+  --shadow-medium: rgba(0, 0, 0, 0.12);
+  --accent: #42b883;
+  --accent-secondary: #ff6b6b;
+  --warning: #ffd93d;
+  --success: #6bcf7f;
+  --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --gradient-background: linear-gradient(135deg, #f8f9ff 0%, #f0f2f5 100%);
+}
+
+/* Dark Mode Colors */
+.dark-mode {
+  --primary: #7c8cff;
+  --primary-light: #a5b3ff;
+  --primary-dark: #5c6ceb;
+  --secondary: #9575cd;
+  --background: #0f1419;
+  --background-secondary: #1a1f2e;
+  --background-tertiary: #243b53;
+  --surface: #1e2832;
+  --surface-secondary: #2a3441;
+  --surface-hover: rgba(124, 140, 255, 0.1);
+  --text: #e8eaed;
+  --text-secondary: #bdc1c6;
+  --text-muted: #9aa0a6;
+  --border: rgba(255, 255, 255, 0.12);
+  --border-light: rgba(255, 255, 255, 0.08);
+  --shadow: rgba(0, 0, 0, 0.3);
+  --shadow-light: rgba(0, 0, 0, 0.2);
+  --shadow-medium: rgba(0, 0, 0, 0.4);
+  --accent: #4db6ac;
+  --accent-secondary: #ff7043;
+  --warning: #ffb74d;
+  --success: #81c784;
+  --gradient-primary: linear-gradient(135deg, #7c8cff 0%, #9575cd 100%);
+  --gradient-background: linear-gradient(135deg, #1a1f2e 0%, #243b53 100%);
+}
+
+/* Global Styles */
+body {
+  background-color: var(--background);
+  color: var(--text);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Selection Styling */
+::selection {
+  background: var(--primary);
+  color: white;
+}
+
+/* Focus Outline */
+*:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Transition Classes */
+.theme-transition {
+  transition: all 0.3s ease;
+}
+
+/* Animation for theme toggle */
+.theme-toggle {
+  transition: all 0.3s ease;
+}
+
+.theme-toggle:hover {
+  transform: rotate(180deg);
+}
+
+/* Dark mode specific adjustments */
+.dark-mode .navbar {
+  background: rgba(30, 40, 50, 0.95);
+  border-bottom-color: var(--border);
+}
+
+.dark-mode .trip-hero {
+  background: var(--gradient-primary);
+}
+
+.dark-mode .trip-hero::before {
+  opacity: 0.2;
+}
+
+.dark-mode .back-btn {
+  background: var(--surface);
+  color: var(--primary);
+  border-color: var(--border);
+}
+
+.dark-mode .back-btn:hover {
+  background: var(--primary);
+  color: var(--background);
+}
+
+/* Enhanced focus states for dark mode */
+.dark-mode *:focus {
+  outline-color: var(--primary-light);
+}
+
+/* Dark mode navbar transparency adjustment */
+.dark-mode .navbar {
+  background: rgba(30, 40, 50, 0.95);
+  border-bottom-color: var(--border);
+}
+
+/* Dark mode sidebar adjustments */
+.dark-mode .sidebar {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+/* Dark mode post styling */
+.dark-mode .post {
+  background: var(--surface);
+  border-color: var(--border-light);
+}
+
+.dark-mode .create-post {
+  background: var(--surface);
+  border-color: var(--border-light);
+}
+
+/* Dark mode trip header adjustments */
+.dark-mode .trip-header {
+  background: var(--gradient-primary);
+}
+
+.dark-mode .trip-header::before {
+  opacity: 0.2;
+}
+
+/* Dark mode back button */
+.dark-mode .back-btn {
+  background: var(--surface);
+  color: var(--primary);
+  border-color: var(--border);
+}
+
+.dark-mode .back-btn:hover {
+  background: var(--primary);
+  color: var(--surface);
+}
+
+/* Dark mode activity styling */
+.dark-mode .activity-preview {
+  background: var(--surface-secondary);
+  border-left-color: var(--primary);
+}
+
+/* Dark mode form inputs */
+.dark-mode .post-textarea,
+.dark-mode .search-input,
+.dark-mode .trip-input,
+.dark-mode .date-input,
+.dark-mode .activity-input,
+.dark-mode .time-input {
+  background: var(--surface-secondary);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.dark-mode .post-textarea:focus,
+.dark-mode .search-input:focus,
+.dark-mode .trip-input:focus,
+.dark-mode .date-input:focus,
+.dark-mode .activity-input:focus,
+.dark-mode .time-input:focus {
+  background: var(--surface);
+  border-color: var(--primary);
+}
+
+/* Dark mode dropdown */
+.dark-mode .dropdown {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+/* Smooth transition for theme changes */
+* {
+  transition: background-color 0.3s ease,
+              color 0.3s ease,
+              border-color 0.3s ease,
+              box-shadow 0.3s ease !important;
+}
