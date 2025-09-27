@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import PostModal from './PostModal';
 import './Post.css';
 
 function Post({ post, onLike, onComment }) {
   const navigate = useNavigate();
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState('');
+  const [showModal, setShowModal] = useState(false);
 
   const handleLike = () => {
     onLike(post.id);
@@ -57,10 +59,51 @@ function Post({ post, onLike, onComment }) {
     return icons[type] || '📍';
   };
 
-  const handleTripClick = () => {
-    if (post.tripTitle) {
-      navigate(`/trip/${post.id}`);
+  const getTransportIcon = (type) => {
+    const icons = {
+      plane: '✈️',
+      train: '🚊',
+      car: '🚗',
+      bus: '🚌',
+      boat: '🛥️',
+      bike: '🚴',
+      walking: '🚶',
+      taxi: '🚕',
+      metro: '🚇'
+    };
+    return icons[type] || '🚗';
+  };
+
+  const calculateTotalCost = () => {
+    let total = 0;
+    if (post.activities) {
+      post.activities.forEach(activity => {
+        if (activity.cost) total += parseFloat(activity.cost);
+      });
     }
+    if (post.transport) {
+      post.transport.forEach(t => {
+        if (t.cost) total += parseFloat(t.cost);
+      });
+    }
+    if (post.accommodations) {
+      post.accommodations.forEach(acc => {
+        if (acc.cost) total += parseFloat(acc.cost);
+      });
+    }
+    return total;
+  };
+
+  const handleTripClick = () => {
+    setShowModal(true);
+  };
+
+  const handlePostClick = () => {
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
   };
 
   const renderStars = (rating) => {
@@ -102,7 +145,7 @@ function Post({ post, onLike, onComment }) {
             </div>
           </div>
 
-          <div className="post-content">
+          <div className="post-content" onClick={handleTripClick} style={{cursor: 'pointer'}}>
             <p>{post.content}</p>
           </div>
 
@@ -115,9 +158,11 @@ function Post({ post, onLike, onComment }) {
                     <span className="activity-icon">{getActivityIcon(activity.type)}</span>
                     <div className="activity-info">
                       <span className="activity-name">{activity.name}</span>
-                      {activity.rating > 0 && renderStars(activity.rating)}
+                      <div className="activity-details">
+                        {activity.rating > 0 && renderStars(activity.rating)}
+                        {activity.cost && <span className="activity-cost">${activity.cost}</span>}
+                      </div>
                     </div>
-                    {activity.time && <span className="activity-time">{activity.time}</span>}
                   </div>
                 ))}
                 {post.activities.length > 3 && (
@@ -126,14 +171,38 @@ function Post({ post, onLike, onComment }) {
                   </div>
                 )}
               </div>
-              <button className="view-timeline-btn" onClick={handleTripClick}>
-                View Full Timeline →
-              </button>
+              {post.transport && post.transport.length > 0 && (
+                <div className="transport-preview">
+                  <h4>🚗 Transportation</h4>
+                  <div className="transport-list">
+                    {post.transport.slice(0, 2).map((transport, index) => (
+                      <div key={index} className="transport-item-preview">
+                        <span className="transport-icon">{getTransportIcon(transport.type)}</span>
+                        <span className="transport-route">{transport.from} → {transport.to}</span>
+                        {transport.cost && <span className="transport-cost">${transport.cost}</span>}
+                      </div>
+                    ))}
+                    {post.transport.length > 2 && (
+                      <div className="more-transport">
+                        +{post.transport.length - 2} more transports
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {calculateTotalCost() > 0 && (
+                <div className="trip-cost-summary">
+                  <span className="cost-label">💰 Total Trip Cost:</span>
+                  <span className="total-cost">${calculateTotalCost().toFixed(2)}</span>
+                </div>
+              )}
+
             </div>
           )}
         </div>
       ) : (
-        <div className="post-content">
+        <div className="post-content" onClick={handlePostClick} style={{cursor: 'pointer'}}>
           <p>{post.content}</p>
         </div>
       )}
@@ -165,12 +234,6 @@ function Post({ post, onLike, onComment }) {
         >
           <span className="action-icon">💬</span>
           <span className="action-count">{post.comments.length}</span>
-        </button>
-        <button className="action-btn share-btn">
-          <span className="action-icon">📤</span>
-        </button>
-        <button className="action-btn save-btn">
-          <span className="action-icon">🔖</span>
         </button>
       </div>
 
@@ -207,6 +270,15 @@ function Post({ post, onLike, onComment }) {
             </form>
           </div>
         </div>
+      )}
+
+      {showModal && (
+        <PostModal
+          post={post}
+          onClose={handleCloseModal}
+          onLike={onLike}
+          onComment={onComment}
+        />
       )}
     </div>
   );

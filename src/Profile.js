@@ -1,9 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from './Navbar';
+import Post from './Post';
 import './Profile.css';
 
 function Profile() {
   const [isEditing, setIsEditing] = useState(false);
+  const [activeTab, setActiveTab] = useState('posts');
+  const [posts, setPosts] = useState([]);
+  const [likedPosts, setLikedPosts] = useState([]);
   const [profile, setProfile] = useState({
     name: 'Current User',
     email: 'user@example.com',
@@ -13,6 +17,30 @@ function Profile() {
   });
 
   const [editedProfile, setEditedProfile] = useState(profile);
+
+  // Load posts and liked posts from localStorage
+  useEffect(() => {
+    const storedPosts = localStorage.getItem('tripPosts');
+    if (storedPosts) {
+      const allPosts = JSON.parse(storedPosts);
+
+      // Filter user's own posts (posts by "Current User" or "You")
+      const userPosts = allPosts.filter(post =>
+        post.author === 'Current User' || post.author === 'You'
+      );
+      setPosts(userPosts);
+
+      // Get liked posts from localStorage
+      const storedLikedPosts = localStorage.getItem('likedPosts');
+      if (storedLikedPosts) {
+        const likedPostIds = JSON.parse(storedLikedPosts);
+        const likedPostsData = allPosts.filter(post =>
+          likedPostIds.includes(post.id)
+        );
+        setLikedPosts(likedPostsData);
+      }
+    }
+  }, []);
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -35,6 +63,37 @@ function Profile() {
       ...prev,
       [name]: value
     }));
+  };
+
+  const handleLike = (postId) => {
+    // Handle like functionality - update localStorage
+    const storedLikedPosts = localStorage.getItem('likedPosts');
+    let likedPostIds = storedLikedPosts ? JSON.parse(storedLikedPosts) : [];
+
+    if (likedPostIds.includes(postId)) {
+      // Unlike
+      likedPostIds = likedPostIds.filter(id => id !== postId);
+    } else {
+      // Like
+      likedPostIds.push(postId);
+    }
+
+    localStorage.setItem('likedPosts', JSON.stringify(likedPostIds));
+
+    // Update liked posts display
+    const storedPosts = localStorage.getItem('tripPosts');
+    if (storedPosts) {
+      const allPosts = JSON.parse(storedPosts);
+      const likedPostsData = allPosts.filter(post =>
+        likedPostIds.includes(post.id)
+      );
+      setLikedPosts(likedPostsData);
+    }
+  };
+
+  const handleComment = (postId, comment) => {
+    // Handle comment functionality
+    console.log('Comment on post', postId, ':', comment);
   };
 
   return (
@@ -101,17 +160,80 @@ function Profile() {
 
           <div className="profile-stats">
             <div className="stat">
-              <span className="stat-number">42</span>
+              <span className="stat-number">{posts.length}</span>
               <span className="stat-label">Posts</span>
             </div>
             <div className="stat">
-              <span className="stat-number">128</span>
-              <span className="stat-label">Friends</span>
+              <span className="stat-number">{likedPosts.length}</span>
+              <span className="stat-label">Liked</span>
             </div>
             <div className="stat">
-              <span className="stat-number">256</span>
-              <span className="stat-label">Likes</span>
+              <span className="stat-number">{posts.reduce((total, post) => total + (post.likes || 0), 0)}</span>
+              <span className="stat-label">Total Likes</span>
             </div>
+          </div>
+
+          <div className="profile-tabs">
+            <button
+              className={`tab-btn ${activeTab === 'posts' ? 'active' : ''}`}
+              onClick={() => setActiveTab('posts')}
+            >
+              📝 My Posts ({posts.length})
+            </button>
+            <button
+              className={`tab-btn ${activeTab === 'liked' ? 'active' : ''}`}
+              onClick={() => setActiveTab('liked')}
+            >
+              ❤️ Liked Posts ({likedPosts.length})
+            </button>
+          </div>
+
+          <div className="profile-content">
+            {activeTab === 'posts' && (
+              <div className="posts-section">
+                {posts.length > 0 ? (
+                  <div className="posts-grid">
+                    {posts.map(post => (
+                      <Post
+                        key={post.id}
+                        post={post}
+                        onLike={handleLike}
+                        onComment={handleComment}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="empty-state">
+                    <div className="empty-icon">🗺️</div>
+                    <h3>No trips shared yet</h3>
+                    <p>Start sharing your travel adventures to see them here!</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === 'liked' && (
+              <div className="liked-section">
+                {likedPosts.length > 0 ? (
+                  <div className="posts-grid">
+                    {likedPosts.map(post => (
+                      <Post
+                        key={post.id}
+                        post={post}
+                        onLike={handleLike}
+                        onComment={handleComment}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="empty-state">
+                    <div className="empty-icon">❤️</div>
+                    <h3>No liked posts yet</h3>
+                    <p>Like some posts to see them here!</p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>

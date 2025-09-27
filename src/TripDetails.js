@@ -56,6 +56,44 @@ function TripDetails() {
     return icons[type] || '📍';
   };
 
+  const getTransportIcon = (type) => {
+    const icons = {
+      plane: '✈️',
+      train: '🚊',
+      car: '🚗',
+      bus: '🚌',
+      boat: '🛥️',
+      bike: '🚴',
+      walking: '🚶',
+      taxi: '🚕',
+      metro: '🚇'
+    };
+    return icons[type] || '🚗';
+  };
+
+  const calculateCosts = () => {
+    let activityCost = 0;
+    let transportCost = 0;
+
+    if (trip.activities) {
+      trip.activities.forEach(activity => {
+        if (activity.cost) activityCost += parseFloat(activity.cost);
+      });
+    }
+
+    if (trip.transport) {
+      trip.transport.forEach(t => {
+        if (t.cost) transportCost += parseFloat(t.cost);
+      });
+    }
+
+    return {
+      activities: activityCost,
+      transport: transportCost,
+      total: activityCost + transportCost
+    };
+  };
+
   const getDurationText = (startDate, endDate) => {
     if (!startDate || !endDate) return '';
     const start = new Date(startDate);
@@ -183,6 +221,9 @@ function TripDetails() {
                       </div>
                       <div className="activity-type">
                         {getActivityIcon(activity.type)} {activity.type.charAt(0).toUpperCase() + activity.type.slice(1)}
+                        {activity.cost && (
+                          <span className="activity-cost-badge">${activity.cost}</span>
+                        )}
                       </div>
                       {activity.description && (
                         <p className="activity-description">{activity.description}</p>
@@ -190,6 +231,59 @@ function TripDetails() {
                     </div>
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {trip.transport && trip.transport.length > 0 && (
+            <div className="transport-section">
+              <h2>🚗 Transportation</h2>
+              <div className="transport-timeline">
+                {trip.transport.map((transport, index) => (
+                  <div key={index} className="transport-item">
+                    <div className="transport-icon-container">
+                      <span className="transport-icon-large">
+                        {getTransportIcon(transport.type)}
+                      </span>
+                    </div>
+                    <div className="transport-content">
+                      <div className="transport-header">
+                        <h3 className="transport-route">{transport.from} → {transport.to}</h3>
+                        {transport.time && (
+                          <span className="transport-time">
+                            {formatTime(transport.time)}
+                          </span>
+                        )}
+                      </div>
+                      <div className="transport-type">
+                        {getTransportIcon(transport.type)} {transport.type.charAt(0).toUpperCase() + transport.type.slice(1)}
+                        {transport.cost && (
+                          <span className="transport-cost-badge">${transport.cost}</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {calculateCosts().total > 0 && (
+            <div className="cost-breakdown-section">
+              <h2>💰 Cost Breakdown</h2>
+              <div className="cost-breakdown">
+                <div className="cost-item">
+                  <span className="cost-category">🍽️ Activities & Places</span>
+                  <span className="cost-amount">${calculateCosts().activities.toFixed(2)}</span>
+                </div>
+                <div className="cost-item">
+                  <span className="cost-category">🚗 Transportation</span>
+                  <span className="cost-amount">${calculateCosts().transport.toFixed(2)}</span>
+                </div>
+                <div className="cost-total">
+                  <span className="cost-category">💎 Total Trip Cost</span>
+                  <span className="cost-amount">${calculateCosts().total.toFixed(2)}</span>
+                </div>
               </div>
             </div>
           )}

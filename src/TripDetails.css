@@ -411,3 +411,225 @@
     max-width: none;
   }
 }
+
+/* Cost Badge for Activities */
+.activity-cost-badge {
+  background: #e8f5e8;
+  color: #2e7d32;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-left: 8px;
+  border: 1px solid #4caf50;
+}
+
+/* Transport Section */
+.transport-section {
+  padding: 30px;
+  background: #f8f9ff;
+  border-top: 1px solid #e9ecef;
+}
+
+.transport-section h2 {
+  color: #333;
+  margin-bottom: 25px;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.transport-timeline {
+  position: relative;
+}
+
+.transport-timeline::before {
+  content: '';
+  position: absolute;
+  left: 25px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #2196f3;
+}
+
+.transport-item {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 25px;
+  position: relative;
+}
+
+.transport-icon-container {
+  width: 50px;
+  height: 50px;
+  background: #2196f3;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+  border: 3px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.transport-icon-large {
+  font-size: 24px;
+  color: white;
+}
+
+.transport-content {
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  flex: 1;
+  border-left: 3px solid #2196f3;
+}
+
+.transport-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.transport-route {
+  color: #333;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.transport-time {
+  background: #2196f3;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 15px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.transport-type {
+  color: #666;
+  font-size: 14px;
+  font-weight: 500;
+  text-transform: capitalize;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.transport-cost-badge {
+  background: #e3f2fd;
+  color: #1976d2;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid #2196f3;
+}
+
+/* Cost Breakdown Section */
+.cost-breakdown-section {
+  padding: 30px;
+  background: #fff8e1;
+  border-top: 1px solid #e9ecef;
+}
+
+.cost-breakdown-section h2 {
+  color: #333;
+  margin-bottom: 25px;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.cost-breakdown {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.cost-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 25px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.cost-item:last-child {
+  border-bottom: none;
+}
+
+.cost-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 25px;
+  background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+  color: white;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.cost-category {
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+}
+
+.cost-total .cost-category {
+  color: white;
+}
+
+.cost-amount {
+  font-weight: 700;
+  font-size: 16px;
+  color: #e65100;
+}
+
+.cost-total .cost-amount {
+  color: white;
+  font-size: 18px;
+}
+
+/* Mobile Responsive for Transport and Cost */
+@media (max-width: 768px) {
+  .transport-section,
+  .cost-breakdown-section {
+    padding: 20px;
+  }
+
+  .transport-timeline::before {
+    left: 15px;
+  }
+
+  .transport-icon-container {
+    width: 30px;
+    height: 30px;
+  }
+
+  .transport-icon-large {
+    font-size: 16px;
+  }
+
+  .transport-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .transport-route {
+    font-size: 1rem;
+  }
+
+  .cost-item,
+  .cost-total {
+    padding: 15px 20px;
+  }
+}

@@ -80,6 +80,8 @@ function Feed() {
   const [filteredPosts, setFilteredPosts] = useState(posts);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
+  const [showCreatePost, setShowCreatePost] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     let filtered = posts;
@@ -132,6 +134,14 @@ function Feed() {
     setActiveFilter(filter);
   };
 
+  const handleCreatePostToggle = () => {
+    setShowCreatePost(true);
+  };
+
+  const handleSidebarToggle = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
   const addPost = (tripData) => {
     const newPost = {
       id: posts.length + 1,
@@ -142,17 +152,43 @@ function Feed() {
       startDate: tripData.startDate,
       endDate: tripData.endDate,
       activities: tripData.activities,
+      transport: tripData.transport,
       timestamp: new Date(),
       likes: 0,
       comments: []
     };
     setPosts([newPost, ...posts]);
+    setShowCreatePost(false); // Hide create form after successful post
   };
 
   const likePost = (postId) => {
-    setPosts(posts.map(post =>
-      post.id === postId ? { ...post, likes: post.likes + 1 } : post
-    ));
+    // Get current liked posts from localStorage
+    const storedLikedPosts = localStorage.getItem('likedPosts');
+    let likedPostIds = storedLikedPosts ? JSON.parse(storedLikedPosts) : [];
+
+    const isCurrentlyLiked = likedPostIds.includes(postId);
+
+    // Update posts like count
+    setPosts(posts.map(post => {
+      if (post.id === postId) {
+        return {
+          ...post,
+          likes: isCurrentlyLiked ? post.likes - 1 : post.likes + 1
+        };
+      }
+      return post;
+    }));
+
+    // Update liked posts tracking
+    if (isCurrentlyLiked) {
+      // Unlike
+      likedPostIds = likedPostIds.filter(id => id !== postId);
+    } else {
+      // Like
+      likedPostIds.push(postId);
+    }
+
+    localStorage.setItem('likedPosts', JSON.stringify(likedPostIds));
   };
 
   const addComment = (postId, commentContent) => {
@@ -171,15 +207,20 @@ function Feed() {
 
   return (
     <>
-      <Navbar />
+      <Navbar
+        onSearchChange={handleSearchChange}
+        onSidebarToggle={handleSidebarToggle}
+      />
       <div className="feed-container">
         <Sidebar
           posts={posts}
-          onSearchChange={handleSearchChange}
           onFilterChange={handleFilterChange}
+          onCreatePost={handleCreatePostToggle}
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
         />
         <div className="feed">
-          <CreatePost onAddPost={addPost} />
+          {showCreatePost && <CreatePost onAddPost={addPost} />}
           <div className="posts-container">
             {filteredPosts.length > 0 ? (
               filteredPosts.map(post => (

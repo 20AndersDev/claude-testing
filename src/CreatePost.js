@@ -8,7 +8,8 @@ function CreatePost({ onAddPost }) {
   const [location, setLocation] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [activities, setActivities] = useState([{ type: 'restaurant', name: '', description: '', time: '', rating: 0 }]);
+  const [activities, setActivities] = useState([{ type: 'restaurant', name: '', description: '', time: '', rating: 0, cost: '' }]);
+  const [transport, setTransport] = useState([{ type: 'plane', from: '', to: '', time: '', cost: '' }]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -19,7 +20,8 @@ function CreatePost({ onAddPost }) {
         location,
         startDate,
         endDate,
-        activities: activities.filter(activity => activity.name.trim())
+        activities: activities.filter(activity => activity.name.trim()),
+        transport: transport.filter(t => t.from.trim() && t.to.trim())
       };
       onAddPost(tripPost);
       setContent('');
@@ -27,7 +29,8 @@ function CreatePost({ onAddPost }) {
       setLocation('');
       setStartDate('');
       setEndDate('');
-      setActivities([{ type: 'restaurant', name: '', description: '', time: '', rating: 0 }]);
+      setActivities([{ type: 'restaurant', name: '', description: '', time: '', rating: 0, cost: '' }]);
+      setTransport([{ type: 'plane', from: '', to: '', time: '', cost: '' }]);
       setIsExpanded(false);
     }
   };
@@ -42,12 +45,28 @@ function CreatePost({ onAddPost }) {
     setLocation('');
     setStartDate('');
     setEndDate('');
-    setActivities([{ type: 'restaurant', name: '', description: '', time: '', rating: 0 }]);
+    setActivities([{ type: 'restaurant', name: '', description: '', time: '', rating: 0, cost: '' }]);
+    setTransport([{ type: 'plane', from: '', to: '', time: '', cost: '' }]);
     setIsExpanded(false);
   };
 
   const addActivity = () => {
-    setActivities([...activities, { type: 'restaurant', name: '', description: '', time: '', rating: 0 }]);
+    setActivities([...activities, { type: 'restaurant', name: '', description: '', time: '', rating: 0, cost: '' }]);
+  };
+
+  const addTransport = () => {
+    setTransport([...transport, { type: 'plane', from: '', to: '', time: '', cost: '' }]);
+  };
+
+  const updateTransport = (index, field, value) => {
+    const updated = transport.map((t, i) =>
+      i === index ? { ...t, [field]: value } : t
+    );
+    setTransport(updated);
+  };
+
+  const removeTransport = (index) => {
+    setTransport(transport.filter((_, i) => i !== index));
   };
 
   const updateActivity = (index, field, value) => {
@@ -162,6 +181,15 @@ function CreatePost({ onAddPost }) {
                       onChange={(e) => updateActivity(index, 'time', e.target.value)}
                       className="time-input"
                     />
+                    <input
+                      type="number"
+                      value={activity.cost}
+                      onChange={(e) => updateActivity(index, 'cost', e.target.value)}
+                      placeholder="Cost ($)"
+                      className="cost-input"
+                      min="0"
+                      step="0.01"
+                    />
                     <div className="rating-container">
                       <label className="rating-label">Rating:</label>
                       <StarRating
@@ -183,6 +211,70 @@ function CreatePost({ onAddPost }) {
                 ))}
                 <button type="button" onClick={addActivity} className="add-activity-btn">
                   + Add Activity
+                </button>
+              </div>
+
+              <div className="transport-section">
+                <h4>🚗 Transportation</h4>
+                {transport.map((t, index) => (
+                  <div key={index} className="transport-item">
+                    <select
+                      value={t.type}
+                      onChange={(e) => updateTransport(index, 'type', e.target.value)}
+                      className="transport-select"
+                    >
+                      <option value="plane">✈️ Plane</option>
+                      <option value="train">🚊 Train</option>
+                      <option value="car">🚗 Car</option>
+                      <option value="bus">🚌 Bus</option>
+                      <option value="boat">🛥️ Boat</option>
+                      <option value="bike">🚴 Bike</option>
+                      <option value="walking">🚶 Walking</option>
+                      <option value="taxi">🚕 Taxi</option>
+                      <option value="metro">🚇 Metro</option>
+                    </select>
+                    <input
+                      type="text"
+                      value={t.from}
+                      onChange={(e) => updateTransport(index, 'from', e.target.value)}
+                      placeholder="From"
+                      className="transport-input"
+                    />
+                    <input
+                      type="text"
+                      value={t.to}
+                      onChange={(e) => updateTransport(index, 'to', e.target.value)}
+                      placeholder="To"
+                      className="transport-input"
+                    />
+                    <input
+                      type="time"
+                      value={t.time}
+                      onChange={(e) => updateTransport(index, 'time', e.target.value)}
+                      className="time-input"
+                    />
+                    <input
+                      type="number"
+                      value={t.cost}
+                      onChange={(e) => updateTransport(index, 'cost', e.target.value)}
+                      placeholder="Cost ($)"
+                      className="cost-input"
+                      min="0"
+                      step="0.01"
+                    />
+                    {transport.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeTransport(index)}
+                        className="remove-transport-btn"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                ))}
+                <button type="button" onClick={addTransport} className="add-transport-btn">
+                  + Add Transportation
                 </button>
               </div>
 

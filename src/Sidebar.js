@@ -1,90 +1,52 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './Sidebar.css';
 
-function Sidebar({ posts, onFilterChange, onSearchChange }) {
-  const [searchTerm, setSearchTerm] = useState('');
+function Sidebar({ posts, onFilterChange, onCreatePost, isOpen, onClose }) {
+  const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState('all');
-
-  const handleSearchChange = (e) => {
-    const value = e.target.value;
-    setSearchTerm(value);
-    onSearchChange(value);
-  };
 
   const handleFilterClick = (filter) => {
     setActiveFilter(filter);
     onFilterChange(filter);
   };
 
-  const getUniqueLocations = () => {
+  const getTrendingDestinations = () => {
     const locations = posts
-      .filter(post => post.location)
-      .map(post => post.location)
-      .reduce((acc, location) => {
-        acc[location] = (acc[location] || 0) + 1;
-        return acc;
-      }, {});
-
-    return Object.entries(locations)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 5);
+      .filter(post => post.location && post.likes > 20)
+      .map(post => ({ location: post.location, likes: post.likes }))
+      .sort((a, b) => b.likes - a.likes)
+      .slice(0, 3);
+    return locations;
   };
 
-  const getPopularActivities = () => {
-    const activities = posts
-      .flatMap(post => post.activities || [])
-      .reduce((acc, activity) => {
-        acc[activity.type] = (acc[activity.type] || 0) + 1;
-        return acc;
-      }, {});
-
-    return Object.entries(activities)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 6);
+  const getHotTrips = () => {
+    return posts
+      .filter(post => post.likes > 25 || (post.activities && post.activities.length > 3))
+      .sort((a, b) => b.likes - a.likes)
+      .slice(0, 2);
   };
 
-  const getActivityIcon = (type) => {
-    const icons = {
-      restaurant: '🍽️',
-      bar: '🍺',
-      monument: '🏛️',
-      attraction: '🎢',
-      hotel: '🏨',
-      museum: '🏛️',
-      park: '🌳',
-      beach: '🏖️'
-    };
-    return icons[type] || '📍';
-  };
-
-  const uniqueLocations = getUniqueLocations();
-  const popularActivities = getPopularActivities();
+  const trendingDestinations = getTrendingDestinations();
+  const hotTrips = getHotTrips();
 
   return (
-    <div className="sidebar">
+    <>
+      {isOpen && <div className="sidebar-overlay" onClick={onClose}></div>}
+      <div className={`sidebar ${isOpen ? 'sidebar-open' : ''}`}>
       <div className="sidebar-section">
-        <h3 className="sidebar-title">🔍 Search Trips</h3>
-        <div className="search-container">
-          <input
-            type="text"
-            placeholder="Search destinations, activities..."
-            value={searchTerm}
-            onChange={handleSearchChange}
-            className="search-input"
-          />
-          <span className="search-icon">🔍</span>
-        </div>
+        <h3 className="sidebar-title">✏️ Create</h3>
+        <button
+          className="create-trip-btn"
+          onClick={() => navigate('/create-trip')}
+        >
+          + New Trip
+        </button>
       </div>
 
       <div className="sidebar-section">
-        <h3 className="sidebar-title">📊 Filter by</h3>
+        <h3 className="sidebar-title">🌟 Browse</h3>
         <div className="filter-buttons">
-          <button
-            className={`filter-btn ${activeFilter === 'all' ? 'active' : ''}`}
-            onClick={() => handleFilterClick('all')}
-          >
-            🌍 All Trips
-          </button>
           <button
             className={`filter-btn ${activeFilter === 'popular' ? 'active' : ''}`}
             onClick={() => handleFilterClick('popular')}
@@ -95,81 +57,54 @@ function Sidebar({ posts, onFilterChange, onSearchChange }) {
             className={`filter-btn ${activeFilter === 'recent' ? 'active' : ''}`}
             onClick={() => handleFilterClick('recent')}
           >
-            🆕 Most Recent
+            🆕 Recent
           </button>
           <button
             className={`filter-btn ${activeFilter === 'weekend' ? 'active' : ''}`}
             onClick={() => handleFilterClick('weekend')}
           >
-            📅 Weekend Trips
+            ⚡ Hot
+          </button>
+          <button
+            className={`filter-btn ${activeFilter === 'all' ? 'active' : ''}`}
+            onClick={() => handleFilterClick('all')}
+          >
+            💎 Recommended
           </button>
         </div>
       </div>
 
       <div className="sidebar-section">
-        <h3 className="sidebar-title">📍 Popular Destinations</h3>
-        <div className="destination-list">
-          {uniqueLocations.map(([location, count]) => (
-            <div key={location} className="destination-item">
-              <span className="destination-name">{location}</span>
-              <span className="destination-count">{count} trip{count > 1 ? 's' : ''}</span>
+        <h3 className="sidebar-title">🚀 Trending</h3>
+        <div className="trending-list">
+          {trendingDestinations.map((dest, index) => (
+            <div key={dest.location} className="trending-item">
+              <span className="trending-rank">#{index + 1}</span>
+              <span className="trending-name">{dest.location}</span>
+              <span className="trending-likes">❤️ {dest.likes}</span>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="sidebar-section">
-        <h3 className="sidebar-title">⭐ Popular Activities</h3>
-        <div className="activity-list">
-          {popularActivities.map(([type, count]) => (
-            <div key={type} className="activity-item">
-              <span className="activity-icon">{getActivityIcon(type)}</span>
-              <span className="activity-name">
-                {type.charAt(0).toUpperCase() + type.slice(1)}
-              </span>
-              <span className="activity-count">{count}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="sidebar-section">
-        <h3 className="sidebar-title">🎯 Quick Actions</h3>
-        <div className="quick-actions">
-          <button className="action-btn create-trip">
-            ➕ Share New Trip
-          </button>
-          <button className="action-btn explore">
-            🗺️ Explore Map
-          </button>
-          <button className="action-btn saved">
-            💾 Saved Trips
-          </button>
-        </div>
-      </div>
-
-      <div className="sidebar-section stats-section">
-        <h3 className="sidebar-title">📈 Community Stats</h3>
-        <div className="stats-grid">
-          <div className="stat-item">
-            <div className="stat-number">{posts.length}</div>
-            <div className="stat-label">Total Trips</div>
-          </div>
-          <div className="stat-item">
-            <div className="stat-number">
-              {posts.reduce((sum, post) => sum + (post.activities?.length || 0), 0)}
-            </div>
-            <div className="stat-label">Places Visited</div>
-          </div>
-          <div className="stat-item">
-            <div className="stat-number">
-              {uniqueLocations.length}
-            </div>
-            <div className="stat-label">Countries</div>
+      {hotTrips.length > 0 && (
+        <div className="sidebar-section hot-section">
+          <h3 className="sidebar-title">🔥 Hot Right Now</h3>
+          <div className="hot-trips">
+            {hotTrips.map((trip) => (
+              <div key={trip.id} className="hot-trip-item">
+                <div className="hot-trip-title">{trip.tripTitle}</div>
+                <div className="hot-trip-meta">
+                  <span>📍 {trip.location}</span>
+                  <span>❤️ {trip.likes}</span>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
+      )}
       </div>
-    </div>
+    </>
   );
 }
 

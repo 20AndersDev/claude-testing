@@ -2,13 +2,16 @@
   max-width: 800px;
   margin: 20px auto;
   padding: 0 20px;
+  padding-top: 84px;
 }
 
 .profile-container {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: var(--surface);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px var(--shadow);
   overflow: hidden;
+  border: 1px solid var(--border-light);
+  transition: all 0.3s ease;
 }
 
 .profile-header {
@@ -155,8 +158,8 @@
   display: flex;
   justify-content: space-around;
   padding: 30px;
-  background: #f8f9fa;
-  border-top: 1px solid #e9ecef;
+  background: var(--surface-secondary);
+  border-top: 1px solid var(--border);
 }
 
 .stat {
@@ -169,21 +172,59 @@
 .stat-number {
   font-size: 2rem;
   font-weight: 700;
-  color: #495057;
+  color: var(--text);
 }
 
 .stat-label {
   font-size: 0.9rem;
-  color: #6c757d;
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
+/* Tablet styles */
+@media (max-width: 968px) {
+  .profile {
+    margin: 10px auto;
+    padding: 0 16px;
+    padding-top: 84px;
+  }
+
+  .profile-header {
+    padding: 30px 24px;
+    gap: 20px;
+  }
+
+  .profile-avatar {
+    font-size: 70px;
+    width: 110px;
+    height: 110px;
+  }
+
+  .display-info .profile-name {
+    font-size: 2.2rem;
+  }
+}
+
+/* Mobile styles */
 @media (max-width: 768px) {
+  .profile {
+    margin: 0;
+    padding: 0 12px;
+    padding-top: 84px;
+  }
+
+  .profile-container {
+    border-radius: 12px;
+    margin: 12px 0;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  }
+
   .profile-header {
     flex-direction: column;
     text-align: center;
-    padding: 30px 20px;
+    padding: 24px 16px;
+    gap: 16px;
   }
 
   .profile-avatar {
@@ -193,14 +234,283 @@
   }
 
   .display-info .profile-name {
-    font-size: 2rem;
+    font-size: 1.8rem;
+    margin-bottom: 8px;
+  }
+
+  .display-info .profile-email {
+    font-size: 1rem;
+    margin-bottom: 12px;
+  }
+
+  .display-info .profile-location,
+  .display-info .profile-bio {
+    font-size: 0.95rem;
+    margin-bottom: 12px;
+  }
+
+  .display-info .profile-join-date {
+    font-size: 0.85rem;
+    margin-bottom: 16px;
+  }
+
+  .edit-btn {
+    padding: 10px 20px;
+    font-size: 0.9rem;
   }
 
   .profile-stats {
-    padding: 20px 15px;
+    padding: 20px 12px;
   }
 
   .stat-number {
     font-size: 1.5rem;
+  }
+
+  .stat-label {
+    font-size: 0.8rem;
+  }
+}
+
+/* Profile Tabs */
+.profile-tabs {
+  display: flex;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 16px 20px;
+  border: none;
+  background: none;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-bottom: 3px solid transparent;
+  position: relative;
+}
+
+.tab-btn:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.tab-btn.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+  background: var(--surface-hover);
+}
+
+/* Profile Content */
+.profile-content {
+  min-height: 400px;
+  background: var(--background-secondary);
+}
+
+.posts-section,
+.liked-section {
+  padding: 20px;
+}
+
+.posts-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-muted);
+}
+
+.empty-icon {
+  font-size: 64px;
+  margin-bottom: 20px;
+  opacity: 0.6;
+}
+
+.empty-state h3 {
+  font-size: 1.5rem;
+  margin: 0 0 10px 0;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.empty-state p {
+  font-size: 1rem;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Dark Mode Support */
+:root.dark-mode .profile-container {
+  background: var(--surface);
+}
+
+:root.dark-mode .profile-stats {
+  background: var(--surface-secondary);
+  border-top-color: var(--border);
+}
+
+:root.dark-mode .stat-number {
+  color: var(--text);
+}
+
+:root.dark-mode .stat-label {
+  color: var(--text-muted);
+}
+
+/* Small phone styles */
+@media (max-width: 480px) {
+  .profile {
+    padding: 0 8px;
+    padding-top: 84px;
+  }
+
+  .profile-container {
+    margin: 8px 0;
+    border-radius: 8px;
+  }
+
+  .profile-header {
+    padding: 20px 12px;
+  }
+
+  .profile-avatar {
+    font-size: 50px;
+    width: 80px;
+    height: 80px;
+  }
+
+  .display-info .profile-name {
+    font-size: 1.5rem;
+  }
+
+  .display-info .profile-email {
+    font-size: 0.9rem;
+  }
+
+  .display-info .profile-location,
+  .display-info .profile-bio,
+  .display-info .profile-join-date {
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+  }
+
+  .edit-btn {
+    padding: 8px 16px;
+    font-size: 0.85rem;
+  }
+
+  .profile-stats {
+    padding: 16px 8px;
+    gap: 8px;
+  }
+
+  .stat {
+    gap: 3px;
+  }
+
+  .stat-number {
+    font-size: 1.3rem;
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+  }
+
+  .tab-btn {
+    padding: 12px 16px;
+    font-size: 0.85rem;
+  }
+
+  .posts-section,
+  .liked-section {
+    padding: 12px;
+  }
+
+  .empty-state {
+    padding: 30px 12px;
+  }
+
+  .empty-icon {
+    font-size: 40px;
+    margin-bottom: 16px;
+  }
+
+  .empty-state h3 {
+    font-size: 1.2rem;
+    margin-bottom: 8px;
+  }
+
+  .empty-state p {
+    font-size: 0.9rem;
+  }
+}
+
+/* Enhanced Mobile Tab Navigation */
+@media (max-width: 768px) {
+  .profile-tabs {
+    position: sticky;
+    top: 64px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .tab-btn {
+    padding: 14px 16px;
+    font-size: 0.9rem;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .posts-section,
+  .liked-section {
+    padding: 16px 12px;
+  }
+
+  .posts-grid {
+    gap: 16px;
+  }
+
+  .empty-state {
+    padding: 40px 16px;
+  }
+
+  .empty-icon {
+    font-size: 48px;
+  }
+
+  /* Improve edit form on mobile */
+  .edit-form {
+    gap: 12px;
+  }
+
+  .edit-input,
+  .edit-textarea {
+    padding: 10px 14px;
+    font-size: 0.9rem;
+  }
+
+  .edit-buttons {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .save-btn,
+  .cancel-btn {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    width: 100%;
   }
 }

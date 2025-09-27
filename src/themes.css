@@ -29,7 +29,7 @@
 }
 
 /* Dark Mode Colors */
-.dark-mode {
+:root.dark-mode {
   --primary: #7c8cff;
   --primary-light: #a5b3ff;
   --primary-dark: #5c6ceb;
@@ -138,6 +138,7 @@ body {
 }
 
 /* Dark mode navbar transparency adjustment */
+html.dark-mode .navbar,
 .dark-mode .navbar {
   background: rgba(30, 40, 50, 0.95);
   border-bottom-color: var(--border);
@@ -158,6 +159,268 @@ body {
 .dark-mode .create-post {
   background: var(--surface);
   border-color: var(--border-light);
+}
+
+.dark-mode .user-avatar {
+  background: var(--surface-secondary);
+}
+
+.dark-mode .post-textarea.expanded {
+  background: var(--surface);
+  border-color: var(--primary);
+}
+
+.dark-mode .activities-section {
+  background: var(--surface-secondary);
+}
+
+.dark-mode .activities-section h4 {
+  color: var(--text);
+}
+
+.dark-mode .activity-item {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+.dark-mode .activity-select {
+  background: var(--surface-secondary);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.dark-mode .activity-select:focus {
+  background: var(--surface);
+  border-color: var(--primary);
+}
+
+.dark-mode .transport-section {
+  background: rgba(33, 150, 243, 0.05);
+  border-left-color: var(--primary);
+}
+
+.dark-mode .transport-section h4 {
+  color: var(--text);
+}
+
+.dark-mode .transport-item {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+.dark-mode .cancel-btn {
+  background: var(--surface-secondary);
+  color: var(--text-muted);
+}
+
+.dark-mode .cancel-btn:hover {
+  background: var(--surface-hover);
+}
+
+/* Dark mode no-results section */
+.dark-mode .no-results {
+  background: var(--surface);
+}
+
+.dark-mode .no-results h3 {
+  color: var(--text);
+}
+
+.dark-mode .no-results p {
+  color: var(--text-secondary);
+}
+
+/* Dark mode TripDetails components */
+.dark-mode .trip-details-container {
+  background: var(--surface);
+}
+
+.dark-mode .trip-content-section,
+.dark-mode .timeline-section {
+  background: var(--surface);
+}
+
+.dark-mode .trip-content-section h2,
+.dark-mode .timeline-section h2 {
+  color: var(--text);
+}
+
+.dark-mode .trip-story p {
+  color: var(--text);
+}
+
+.dark-mode .timeline-content {
+  background: var(--surface);
+  border-left-color: var(--primary);
+}
+
+.dark-mode .activity-name {
+  color: var(--text);
+}
+
+.dark-mode .activity-type {
+  color: var(--text-muted);
+}
+
+.dark-mode .activity-description {
+  color: var(--text-secondary);
+}
+
+.dark-mode .trip-stats {
+  background: var(--surface-secondary);
+}
+
+.dark-mode .stat-card {
+  background: var(--surface);
+}
+
+.dark-mode .stat-icon {
+  background: var(--primary);
+}
+
+.dark-mode .stat-number {
+  color: var(--text);
+}
+
+.dark-mode .stat-label {
+  color: var(--text-muted);
+}
+
+/* Dark mode post components */
+.dark-mode .post-header {
+  border-bottom-color: var(--border);
+}
+
+.dark-mode .post-actions {
+  background: var(--surface-secondary);
+  border-top-color: var(--border);
+}
+
+.dark-mode .post-stats {
+  border-bottom-color: var(--border);
+}
+
+.dark-mode .author-avatar,
+.dark-mode .comment-avatar {
+  background: var(--surface-secondary);
+}
+
+.dark-mode .comment-content {
+  background: var(--surface-secondary);
+}
+
+.dark-mode .comment-author,
+.dark-mode .comment-text {
+  color: var(--text);
+}
+
+.dark-mode .comment-time {
+  color: var(--text-muted);
+}
+
+.dark-mode .comment-input {
+  background: var(--surface-secondary);
+  color: var(--text);
+}
+
+.dark-mode .comment-input:focus {
+  background: var(--surface);
+  border-color: var(--primary);
+}
+
+.dark-mode .comment-submit {
+  background: var(--primary);
+}
+
+.dark-mode .comment-submit:hover:not(:disabled) {
+  background: var(--primary-dark);
+}
+
+.dark-mode .comment-submit:disabled {
+  background: var(--surface-secondary);
+  color: var(--text-muted);
+}
+
+.dark-mode .comments-section {
+  border-top-color: var(--border);
+}
+
+.dark-mode .action-btn:hover {
+  background: var(--surface-hover);
+}
+
+.dark-mode .action-count {
+  color: var(--text-secondary);
+}
+
+.dark-mode .comments-toggle {
+  color: var(--text-muted);
+}
+
+.dark-mode .trip-post {
+  border-color: var(--border);
+  background: var(--surface-secondary);
+}
+
+.dark-mode .activities-preview {
+  background: var(--surface);
+  border-top-color: var(--border);
+}
+
+.dark-mode .activities-preview h4 {
+  color: var(--text);
+}
+
+.dark-mode .activity-preview {
+  background: var(--surface-secondary);
+  border-left-color: var(--primary);
+}
+
+.dark-mode .activity-name {
+  color: var(--text);
+}
+
+.dark-mode .activity-time {
+  background: var(--primary);
+}
+
+.dark-mode .more-activities {
+  color: var(--text-muted);
+}
+
+.dark-mode .activity-cost {
+  background: rgba(75, 181, 67, 0.2);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.dark-mode .transport-item-preview {
+  background: rgba(33, 150, 243, 0.1);
+  border-left-color: var(--primary);
+}
+
+.dark-mode .transport-route {
+  color: var(--text);
+}
+
+.dark-mode .transport-cost {
+  background: rgba(33, 150, 243, 0.2);
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+.dark-mode .more-transport {
+  color: var(--text-muted);
+}
+
+.dark-mode .trip-cost-summary {
+  background: linear-gradient(135deg, rgba(255, 152, 0, 0.2) 0%, rgba(245, 124, 0, 0.2) 100%);
+  border-left-color: var(--warning);
+}
+
+.dark-mode .cost-label,
+.dark-mode .total-cost {
+  color: var(--warning);
 }
 
 /* Dark mode trip header adjustments */
@@ -188,25 +451,37 @@ body {
 }
 
 /* Dark mode form inputs */
-.dark-mode .post-textarea,
-.dark-mode .search-input,
-.dark-mode .trip-input,
-.dark-mode .date-input,
-.dark-mode .activity-input,
-.dark-mode .time-input {
+:root.dark-mode .post-textarea,
+:root.dark-mode .search-input,
+:root.dark-mode .navbar-search-input,
+:root.dark-mode .trip-input,
+:root.dark-mode .date-input,
+:root.dark-mode .activity-input,
+:root.dark-mode .time-input,
+:root.dark-mode .cost-input,
+:root.dark-mode .transport-input,
+:root.dark-mode .transport-select {
   background: var(--surface-secondary);
   color: var(--text);
   border-color: var(--border);
 }
 
-.dark-mode .post-textarea:focus,
-.dark-mode .search-input:focus,
-.dark-mode .trip-input:focus,
-.dark-mode .date-input:focus,
-.dark-mode .activity-input:focus,
-.dark-mode .time-input:focus {
+:root.dark-mode .post-textarea:focus,
+:root.dark-mode .search-input:focus,
+:root.dark-mode .navbar-search-input:focus,
+:root.dark-mode .trip-input:focus,
+:root.dark-mode .date-input:focus,
+:root.dark-mode .activity-input:focus,
+:root.dark-mode .time-input:focus,
+:root.dark-mode .cost-input:focus,
+:root.dark-mode .transport-input:focus,
+:root.dark-mode .transport-select:focus {
   background: var(--surface);
   border-color: var(--primary);
+}
+
+:root.dark-mode .navbar-search-input::placeholder {
+  color: rgba(124, 140, 255, 0.6);
 }
 
 /* Dark mode dropdown */

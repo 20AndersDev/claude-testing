@@ -202,9 +202,18 @@
   min-width: 120px;
 }
 
+.cost-input {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  min-width: 100px;
+}
+
 .activity-select:focus,
 .activity-input:focus,
-.time-input:focus {
+.time-input:focus,
+.cost-input:focus {
   outline: none;
   border-color: #1877f2;
 }
@@ -315,4 +324,90 @@
 
 .activity-item > * {
   margin-bottom: 8px;
+}
+
+/* Transport Section */
+.transport-section {
+  margin: 20px 0;
+  padding: 15px;
+  background: #f0f8ff;
+  border-radius: 8px;
+  border-left: 4px solid #667eea;
+}
+
+.transport-section h4 {
+  margin: 0 0 15px 0;
+  color: #333;
+  font-size: 16px;
+}
+
+.transport-item {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+  align-items: center;
+  padding: 15px;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #e3f2fd;
+  flex-wrap: wrap;
+}
+
+.transport-select {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  min-width: 140px;
+}
+
+.transport-input {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  min-width: 120px;
+}
+
+.transport-select:focus,
+.transport-input:focus {
+  outline: none;
+  border-color: #1877f2;
+}
+
+.remove-transport-btn {
+  background: #ff4444;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.remove-transport-btn:hover {
+  background: #cc3333;
+}
+
+.add-transport-btn {
+  background: #1877f2;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.3s;
+  margin-top: 10px;
+}
+
+.add-transport-btn:hover {
+  background: #166fe5;
 }

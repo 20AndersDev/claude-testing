@@ -6,6 +6,7 @@ import Register from './Register';
 import Feed from './Feed';
 import Profile from './Profile';
 import TripDetails from './TripDetails';
+import CreateTrip from './CreateTrip';
 import './App.css';
 import './themes.css';
 
@@ -19,6 +20,7 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/feed" element={<Feed />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/create-trip" element={<CreateTrip />} />
             <Route path="/trip/:tripId" element={<TripDetails />} />
             <Route path="/" element={<Navigate to="/login" replace />} />
           </Routes>
