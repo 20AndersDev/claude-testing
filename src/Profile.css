@@ -1,8 +1,20 @@
 .profile {
-  max-width: 800px;
+  max-width: 1200px;
   margin: 20px auto;
   padding: 0 20px;
   padding-top: 84px;
+}
+
+/* Large screen optimization */
+@media (min-width: 1200px) {
+  .profile {
+    max-width: 1400px;
+    padding: 0 40px;
+  }
+
+  .profile-container {
+    max-width: none;
+  }
 }
 
 .profile-container {
@@ -312,8 +324,16 @@
 }
 
 .posts-section,
-.liked-section {
+.liked-section,
+.traveled-section {
   padding: 20px;
+}
+
+.traveled-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 500px;
 }
 
 .posts-grid {

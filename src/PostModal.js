@@ -4,6 +4,9 @@ import './PostModal.css';
 
 function PostModal({ post, onClose, onLike, onComment }) {
   const [commentText, setCommentText] = useState('');
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [slideDirection, setSlideDirection] = useState('');
   const handleOverlayClick = (e) => {
     if (e.target === e.currentTarget) {
       onClose();
@@ -112,11 +115,83 @@ function PostModal({ post, onClose, onLike, onComment }) {
 
   const activities = post.activities || [];
 
-  // Handle escape key
+  // Image gallery functions
+  const getPostImages = () => {
+    const imageCategories = [
+      'nature',
+      'food',
+      'city',
+      'travel',
+      'architecture',
+      'landscape'
+    ];
+
+    const imageCount = Math.min(5, Math.max(1, (post.id % 4) + 1));
+    const images = [];
+
+    for (let i = 0; i < imageCount; i++) {
+      const category = imageCategories[(post.id + i) % imageCategories.length];
+      images.push({
+        id: i,
+        url: `https://picsum.photos/800/600?random=${post.id + i}&category=${category}`,
+        category
+      });
+    }
+
+    return images;
+  };
+
+  const postImages = getPostImages();
+
+  const nextImage = () => {
+    if (isTransitioning) return;
+    setSlideDirection('next');
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % postImages.length);
+      setTimeout(() => {
+        setIsTransitioning(false);
+        setSlideDirection('');
+      }, 150);
+    }, 150);
+  };
+
+  const prevImage = () => {
+    if (isTransitioning) return;
+    setSlideDirection('prev');
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setCurrentImageIndex((prev) => (prev - 1 + postImages.length) % postImages.length);
+      setTimeout(() => {
+        setIsTransitioning(false);
+        setSlideDirection('');
+      }, 150);
+    }, 150);
+  };
+
+  const goToImage = (index) => {
+    if (isTransitioning || index === currentImageIndex) return;
+    const direction = index > currentImageIndex ? 'next' : 'prev';
+    setSlideDirection(direction);
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setCurrentImageIndex(index);
+      setTimeout(() => {
+        setIsTransitioning(false);
+        setSlideDirection('');
+      }, 150);
+    }, 150);
+  };
+
+  // Handle escape key and arrow keys
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
         onClose();
+      } else if (e.key === 'ArrowLeft') {
+        prevImage();
+      } else if (e.key === 'ArrowRight') {
+        nextImage();
       }
     };
 
@@ -127,7 +202,7 @@ function PostModal({ post, onClose, onLike, onComment }) {
       document.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = 'unset';
     };
-  }, [onClose]);
+  }, [onClose, prevImage, nextImage]);
 
   if (!post) return null;
 
@@ -155,6 +230,52 @@ function PostModal({ post, onClose, onLike, onComment }) {
                 {post.startDate && formatDate(post.startDate)}
                 {post.startDate && post.endDate && ' - '}
                 {post.endDate && formatDate(post.endDate)}
+              </div>
+            </div>
+
+            <div className="modal-images">
+              <div className="modal-image-gallery">
+                <div className="modal-main-image">
+                  <img
+                    src={postImages[currentImageIndex].url}
+                    alt={`Travel photo ${currentImageIndex + 1}`}
+                    loading="lazy"
+                    className={`${isTransitioning ? 'transitioning' : ''} ${slideDirection ? `slide-${slideDirection}` : ''}`}
+                  />
+                  {postImages.length > 1 && (
+                    <>
+                      <button
+                        className="modal-nav-btn modal-prev-btn"
+                        onClick={prevImage}
+                        aria-label="Previous image"
+                      >
+                        ‹
+                      </button>
+                      <button
+                        className="modal-nav-btn modal-next-btn"
+                        onClick={nextImage}
+                        aria-label="Next image"
+                      >
+                        ›
+                      </button>
+                      <div className="modal-image-counter">
+                        {currentImageIndex + 1} / {postImages.length}
+                      </div>
+                    </>
+                  )}
+                </div>
+                {postImages.length > 1 && (
+                  <div className="modal-image-dots">
+                    {postImages.map((_, index) => (
+                      <button
+                        key={index}
+                        className={`modal-dot ${index === currentImageIndex ? 'active' : ''}`}
+                        onClick={() => goToImage(index)}
+                        aria-label={`Go to image ${index + 1}`}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -284,6 +405,51 @@ function PostModal({ post, onClose, onLike, onComment }) {
           </div>
         ) : (
           <div className="modal-simple-post">
+            <div className="modal-images">
+              <div className="modal-image-gallery">
+                <div className="modal-main-image">
+                  <img
+                    src={postImages[currentImageIndex].url}
+                    alt={`Photo ${currentImageIndex + 1}`}
+                    loading="lazy"
+                    className={`${isTransitioning ? 'transitioning' : ''} ${slideDirection ? `slide-${slideDirection}` : ''}`}
+                  />
+                  {postImages.length > 1 && (
+                    <>
+                      <button
+                        className="modal-nav-btn modal-prev-btn"
+                        onClick={prevImage}
+                        aria-label="Previous image"
+                      >
+                        ‹
+                      </button>
+                      <button
+                        className="modal-nav-btn modal-next-btn"
+                        onClick={nextImage}
+                        aria-label="Next image"
+                      >
+                        ›
+                      </button>
+                      <div className="modal-image-counter">
+                        {currentImageIndex + 1} / {postImages.length}
+                      </div>
+                    </>
+                  )}
+                </div>
+                {postImages.length > 1 && (
+                  <div className="modal-image-dots">
+                    {postImages.map((_, index) => (
+                      <button
+                        key={index}
+                        className={`modal-dot ${index === currentImageIndex ? 'active' : ''}`}
+                        onClick={() => goToImage(index)}
+                        aria-label={`Go to image ${index + 1}`}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
             <p>{post.content}</p>
           </div>
         )}

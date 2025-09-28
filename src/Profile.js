@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from './Navbar';
 import Post from './Post';
+import WorldMap from './WorldMap';
 import './Profile.css';
 
 function Profile() {
@@ -8,6 +9,7 @@ function Profile() {
   const [activeTab, setActiveTab] = useState('posts');
   const [posts, setPosts] = useState([]);
   const [likedPosts, setLikedPosts] = useState([]);
+  const [visitedCountries, setVisitedCountries] = useState([]);
   const [profile, setProfile] = useState({
     name: 'Current User',
     email: 'user@example.com',
@@ -18,7 +20,7 @@ function Profile() {
 
   const [editedProfile, setEditedProfile] = useState(profile);
 
-  // Load posts and liked posts from localStorage
+  // Load posts, liked posts, and visited countries from localStorage
   useEffect(() => {
     const storedPosts = localStorage.getItem('tripPosts');
     if (storedPosts) {
@@ -39,6 +41,12 @@ function Profile() {
         );
         setLikedPosts(likedPostsData);
       }
+    }
+
+    // Load visited countries from localStorage
+    const storedVisitedCountries = localStorage.getItem('visitedCountries');
+    if (storedVisitedCountries) {
+      setVisitedCountries(JSON.parse(storedVisitedCountries));
     }
   }, []);
 
@@ -94,6 +102,22 @@ function Profile() {
   const handleComment = (postId, comment) => {
     // Handle comment functionality
     console.log('Comment on post', postId, ':', comment);
+  };
+
+  const handleCountryToggle = (countryId, countryName) => {
+    const newVisitedCountries = [...visitedCountries];
+    const index = newVisitedCountries.indexOf(countryId);
+
+    if (index > -1) {
+      // Remove country if already visited
+      newVisitedCountries.splice(index, 1);
+    } else {
+      // Add country if not visited
+      newVisitedCountries.push(countryId);
+    }
+
+    setVisitedCountries(newVisitedCountries);
+    localStorage.setItem('visitedCountries', JSON.stringify(newVisitedCountries));
   };
 
   return (
@@ -158,21 +182,6 @@ function Profile() {
             </div>
           </div>
 
-          <div className="profile-stats">
-            <div className="stat">
-              <span className="stat-number">{posts.length}</span>
-              <span className="stat-label">Posts</span>
-            </div>
-            <div className="stat">
-              <span className="stat-number">{likedPosts.length}</span>
-              <span className="stat-label">Liked</span>
-            </div>
-            <div className="stat">
-              <span className="stat-number">{posts.reduce((total, post) => total + (post.likes || 0), 0)}</span>
-              <span className="stat-label">Total Likes</span>
-            </div>
-          </div>
-
           <div className="profile-tabs">
             <button
               className={`tab-btn ${activeTab === 'posts' ? 'active' : ''}`}
@@ -185,6 +194,12 @@ function Profile() {
               onClick={() => setActiveTab('liked')}
             >
               ❤️ Liked Posts ({likedPosts.length})
+            </button>
+            <button
+              className={`tab-btn ${activeTab === 'traveled' ? 'active' : ''}`}
+              onClick={() => setActiveTab('traveled')}
+            >
+              🌍 Traveled ({visitedCountries.length})
             </button>
           </div>
 
@@ -232,6 +247,15 @@ function Profile() {
                     <p>Like some posts to see them here!</p>
                   </div>
                 )}
+              </div>
+            )}
+
+            {activeTab === 'traveled' && (
+              <div className="traveled-section">
+                <WorldMap
+                  visitedCountries={visitedCountries}
+                  onCountryToggle={handleCountryToggle}
+                />
               </div>
             )}
           </div>

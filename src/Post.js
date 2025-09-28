@@ -8,6 +8,7 @@ function Post({ post, onLike, onComment }) {
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState('');
   const [showModal, setShowModal] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const handleLike = () => {
     onLike(post.id);
@@ -106,6 +107,46 @@ function Post({ post, onLike, onComment }) {
     setShowModal(false);
   };
 
+  const getPostImages = () => {
+    // Generate multiple images for each post
+    const imageCategories = [
+      'nature',
+      'food',
+      'city',
+      'travel',
+      'architecture',
+      'landscape'
+    ];
+
+    const imageCount = Math.min(5, Math.max(1, (post.id % 4) + 1)); // 1-4 images per post
+    const images = [];
+
+    for (let i = 0; i < imageCount; i++) {
+      const category = imageCategories[(post.id + i) % imageCategories.length];
+      images.push({
+        id: i,
+        url: `https://picsum.photos/500/300?random=${post.id + i}&category=${category}`,
+        category
+      });
+    }
+
+    return images;
+  };
+
+  const postImages = getPostImages();
+
+  const nextImage = () => {
+    setCurrentImageIndex((prev) => (prev + 1) % postImages.length);
+  };
+
+  const prevImage = () => {
+    setCurrentImageIndex((prev) => (prev - 1 + postImages.length) % postImages.length);
+  };
+
+  const goToImage = (index) => {
+    setCurrentImageIndex(index);
+  };
+
   const renderStars = (rating) => {
     return (
       <div className="rating-display">
@@ -147,6 +188,49 @@ function Post({ post, onLike, onComment }) {
 
           <div className="post-content" onClick={handleTripClick} style={{cursor: 'pointer'}}>
             <p>{post.content}</p>
+            <div className="post-images">
+              <div className="image-gallery">
+                <div className="main-image" onClick={handleTripClick}>
+                  <img
+                    src={postImages[currentImageIndex].url}
+                    alt="Travel destination"
+                    loading="lazy"
+                  />
+                  {postImages.length > 1 && (
+                    <>
+                      <div className="image-counter">
+                        📷 {postImages.length}
+                      </div>
+                      <button
+                        className="nav-btn prev-btn"
+                        onClick={(e) => { e.stopPropagation(); prevImage(); }}
+                        style={{ display: showModal ? 'flex' : 'none' }}
+                      >
+                        ‹
+                      </button>
+                      <button
+                        className="nav-btn next-btn"
+                        onClick={(e) => { e.stopPropagation(); nextImage(); }}
+                        style={{ display: showModal ? 'flex' : 'none' }}
+                      >
+                        ›
+                      </button>
+                    </>
+                  )}
+                </div>
+                {showModal && postImages.length > 1 && (
+                  <div className="image-dots">
+                    {postImages.map((_, index) => (
+                      <button
+                        key={index}
+                        className={`dot ${index === currentImageIndex ? 'active' : ''}`}
+                        onClick={() => goToImage(index)}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
           {post.activities && post.activities.length > 0 && (
@@ -204,6 +288,49 @@ function Post({ post, onLike, onComment }) {
       ) : (
         <div className="post-content" onClick={handlePostClick} style={{cursor: 'pointer'}}>
           <p>{post.content}</p>
+          <div className="post-images">
+            <div className="image-gallery">
+              <div className="main-image" onClick={handlePostClick}>
+                <img
+                  src={postImages[currentImageIndex].url}
+                  alt="Content from post"
+                  loading="lazy"
+                />
+                {postImages.length > 1 && (
+                  <>
+                    <div className="image-counter">
+                      📷 {postImages.length}
+                    </div>
+                    <button
+                      className="nav-btn prev-btn"
+                      onClick={(e) => { e.stopPropagation(); prevImage(); }}
+                      style={{ display: showModal ? 'flex' : 'none' }}
+                    >
+                      ‹
+                    </button>
+                    <button
+                      className="nav-btn next-btn"
+                      onClick={(e) => { e.stopPropagation(); nextImage(); }}
+                      style={{ display: showModal ? 'flex' : 'none' }}
+                    >
+                      ›
+                    </button>
+                  </>
+                )}
+              </div>
+              {showModal && postImages.length > 1 && (
+                <div className="image-dots">
+                  {postImages.map((_, index) => (
+                    <button
+                      key={index}
+                      className={`dot ${index === currentImageIndex ? 'active' : ''}`}
+                      onClick={() => goToImage(index)}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       )}
 
