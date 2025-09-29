@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import PostModal from './PostModal';
 import './Post.css';
 
 function Post({ post, onLike, onComment }) {
   const navigate = useNavigate();
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState('');
-  const [showModal, setShowModal] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const handleLike = () => {
@@ -96,15 +94,11 @@ function Post({ post, onLike, onComment }) {
   };
 
   const handleTripClick = () => {
-    setShowModal(true);
+    navigate(`/post/${post.id}`);
   };
 
   const handlePostClick = () => {
-    setShowModal(true);
-  };
-
-  const handleCloseModal = () => {
-    setShowModal(false);
+    navigate(`/post/${post.id}`);
   };
 
   const getPostImages = () => {
@@ -204,21 +198,21 @@ function Post({ post, onLike, onComment }) {
                       <button
                         className="nav-btn prev-btn"
                         onClick={(e) => { e.stopPropagation(); prevImage(); }}
-                        style={{ display: showModal ? 'flex' : 'none' }}
+                        style={{ display: 'none' }}
                       >
                         ‹
                       </button>
                       <button
                         className="nav-btn next-btn"
                         onClick={(e) => { e.stopPropagation(); nextImage(); }}
-                        style={{ display: showModal ? 'flex' : 'none' }}
+                        style={{ display: 'none' }}
                       >
                         ›
                       </button>
                     </>
                   )}
                 </div>
-                {showModal && postImages.length > 1 && (
+                {false && postImages.length > 1 && (
                   <div className="image-dots">
                     {postImages.map((_, index) => (
                       <button
@@ -304,21 +298,21 @@ function Post({ post, onLike, onComment }) {
                     <button
                       className="nav-btn prev-btn"
                       onClick={(e) => { e.stopPropagation(); prevImage(); }}
-                      style={{ display: showModal ? 'flex' : 'none' }}
+                      style={{ display: 'none' }}
                     >
                       ‹
                     </button>
                     <button
                       className="nav-btn next-btn"
                       onClick={(e) => { e.stopPropagation(); nextImage(); }}
-                      style={{ display: showModal ? 'flex' : 'none' }}
+                      style={{ display: 'none' }}
                     >
                       ›
                     </button>
                   </>
                 )}
               </div>
-              {showModal && postImages.length > 1 && (
+              {false && postImages.length > 1 && (
                 <div className="image-dots">
                   {postImages.map((_, index) => (
                     <button
@@ -399,14 +393,6 @@ function Post({ post, onLike, onComment }) {
         </div>
       )}
 
-      {showModal && (
-        <PostModal
-          post={post}
-          onClose={handleCloseModal}
-          onLike={onLike}
-          onComment={onComment}
-        />
-      )}
     </div>
   );
 }

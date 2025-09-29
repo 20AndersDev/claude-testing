@@ -1,11 +1,14 @@
 .post {
   background: var(--surface);
-  border-radius: 12px;
-  box-shadow: 0 2px 8px var(--shadow);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px var(--shadow-light);
   overflow: hidden;
   border: 1px solid var(--border-light);
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   animation: postFadeIn 0.6s ease-out;
+  margin-bottom: 24px;
+  max-width: 680px;
+  width: 100%;
 }
 
 @keyframes postFadeIn {
@@ -21,30 +24,34 @@
 
 .post:hover {
   box-shadow: 0 8px 32px var(--shadow-medium);
-  transform: translateY(-4px) scale(1.01);
-  border-color: var(--primary-light);
+  transform: translateY(-2px);
+  border-color: rgba(59, 130, 199, 0.2);
 }
 
 .post-header {
-  padding: 15px;
+  padding: 20px 24px 16px;
   border-bottom: 1px solid var(--border);
+  background: var(--surface);
 }
 
 .post-author-info {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .author-avatar {
-  width: 40px;
-  height: 40px;
-  background: #e4e6ea;
+  width: 44px;
+  height: 44px;
+  background: var(--gradient-primary);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 18px;
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .author-details {
@@ -52,44 +59,47 @@
 }
 
 .author-name {
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text);
-  font-size: 15px;
+  font-size: 16px;
+  line-height: 1.2;
 }
 
 .post-time {
-  color: var(--text-secondary);
-  font-size: 13px;
+  color: var(--text-muted);
+  font-size: 14px;
   margin-top: 2px;
+  font-weight: 500;
 }
 
 .post-content {
-  padding: 15px;
+  padding: 20px 24px;
 }
 
 .post-content p {
-  margin: 0 0 15px 0;
-  line-height: 1.34;
+  margin: 0 0 16px 0;
+  line-height: 1.5;
   color: var(--text);
   font-size: 16px;
+  font-weight: 400;
 }
 
 .post-image {
   width: 100%;
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
 }
 
 .post-image:hover {
-  transform: scale(1.02);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
 .post-image img {
   width: 100%;
-  height: 250px;
+  height: 280px;
   object-fit: cover;
   display: block;
   transition: all 0.3s ease;
@@ -100,13 +110,7 @@
 }
 
 .post-stats {
-  padding: 8px 15px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  color: #65676b;
-  font-size: 13px;
-  border-bottom: 1px solid #e4e6ea;
+  display: none;
 }
 
 .comments-toggle {
@@ -124,25 +128,27 @@
 .post-actions {
   display: flex;
   justify-content: space-around;
-  padding: 8px 15px;
+  padding: 12px 24px;
   border-top: 1px solid var(--border);
-  background: var(--surface-secondary);
+  background: var(--background-secondary);
+  gap: 8px;
 }
 
 .action-btn {
   background: none;
   border: none;
-  padding: 10px 16px;
-  border-radius: 20px;
+  padding: 12px 16px;
+  border-radius: 24px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
   position: relative;
   overflow: hidden;
   flex: 1;
+  min-height: 44px;
 }
 
 .action-btn::before {
@@ -152,7 +158,7 @@
   left: 50%;
   width: 0;
   height: 0;
-  background: radial-gradient(circle, rgba(102, 126, 234, 0.2) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(59, 130, 199, 0.15) 0%, transparent 70%);
   transition: all 0.4s ease;
   border-radius: 50%;
   transform: translate(-50%, -50%);
@@ -165,21 +171,22 @@
 
 .action-btn:hover {
   background: var(--surface-hover);
-  transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .action-icon {
-  font-size: 18px;
-  transition: transform 0.3s ease;
+  font-size: 20px;
+  color: var(--text-muted);
+  transition: all 0.3s ease;
 }
 
 .action-count {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--text-secondary);
   min-width: 20px;
-  text-align: center;
+  text-align: left;
 }
 
 .like-btn:hover .action-icon {
@@ -193,9 +200,14 @@
   50% { transform: scale(1.5) rotate(-10deg); }
 }
 
-.like-btn:hover .action-count {
+.like-btn:hover .action-icon {
   color: #e91e63;
   transform: scale(1.1);
+}
+
+.like-btn:hover .action-count {
+  color: #e91e63;
+  transform: scale(1.05);
   transition: all 0.3s ease;
 }
 
@@ -209,17 +221,24 @@
   50% { transform: scale(1.3) rotate(0deg); }
 }
 
-.comment-btn:hover .action-count {
-  color: #1877f2;
+.comment-btn:hover .action-icon {
+  color: var(--primary);
   transform: scale(1.1);
+}
+
+.comment-btn:hover .action-count {
+  color: var(--primary);
+  transform: scale(1.05);
   transition: all 0.3s ease;
 }
 
 .share-btn:hover .action-icon {
+  color: var(--accent);
   transform: scale(1.1);
 }
 
 .save-btn:hover .action-icon {
+  color: var(--warning);
   transform: scale(1.1);
 }
 
@@ -457,7 +476,7 @@
   padding: 10px 14px;
   background: #f8f9fa;
   border-radius: 8px;
-  border-left: 3px solid #667eea;
+  border-left: 3px solid var(--primary);
 }
 
 .activity-icon {
@@ -533,7 +552,7 @@
 }
 
 .view-timeline-btn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-primary);
   color: white;
   border: none;
   padding: 12px 20px;
@@ -564,7 +583,7 @@
 
 .view-timeline-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 15px rgba(230, 126, 34, 0.4);
 }
 
 /* Transport Preview */
@@ -593,9 +612,9 @@
   align-items: center;
   gap: 10px;
   padding: 8px 12px;
-  background: #f0f8ff;
+  background: rgba(22, 160, 133, 0.08);
   border-radius: 6px;
-  border-left: 3px solid #2196f3;
+  border-left: 3px solid var(--accent);
 }
 
 .transport-icon {
@@ -611,13 +630,13 @@
 }
 
 .transport-cost {
-  background: #e3f2fd;
-  color: #1976d2;
+  background: rgba(22, 160, 133, 0.1);
+  color: var(--accent);
   padding: 2px 6px;
   border-radius: 10px;
   font-size: 11px;
   font-weight: 600;
-  border: 1px solid #2196f3;
+  border: 1px solid var(--accent);
 }
 
 .more-transport {
@@ -634,90 +653,106 @@
   justify-content: space-between;
   align-items: center;
   padding: 12px 15px;
-  background: linear-gradient(135deg, #fff8e1 0%, #f3e5ab 100%);
+  background: linear-gradient(135deg, rgba(243, 156, 18, 0.1) 0%, rgba(230, 126, 34, 0.1) 100%);
   border-radius: 8px;
   margin: 15px 0;
-  border-left: 4px solid #ff9800;
+  border-left: 4px solid var(--warning);
 }
 
 .cost-label {
   font-weight: 600;
-  color: #e65100;
+  color: var(--warning);
   font-size: 14px;
 }
 
 .total-cost {
   font-size: 18px;
   font-weight: 700;
-  color: #e65100;
+  color: var(--warning);
 }
 
 /* Image Gallery Styles */
 .post-images {
-  margin-top: 15px;
+  margin-top: 20px;
 }
 
 .image-gallery {
   position: relative;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  background: var(--surface);
+  will-change: transform;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  margin-bottom: 4px;
 }
 
 .main-image {
   position: relative;
   width: 100%;
-  height: 300px;
+  height: 320px;
   overflow: hidden;
   cursor: pointer;
+  background: var(--background-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .main-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: opacity 0.3s ease-in-out;
+  opacity: 1;
 }
 
 .image-counter {
   position: absolute;
   top: 12px;
   right: 12px;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.75);
   color: white;
-  padding: 6px 10px;
-  border-radius: 20px;
-  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 16px;
+  font-size: 11px;
   font-weight: 600;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  transition: all 0.3s ease;
+  z-index: 10;
 }
 
 .nav-btn {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.7);
   color: white;
   border: none;
-  width: 40px;
-  height: 40px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  font-size: 18px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  z-index: 5;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  z-index: 10;
+  opacity: 0;
+  scale: 0.8;
 }
 
 .nav-btn:hover {
-  background: rgba(0, 0, 0, 0.8);
+  background: var(--primary);
   transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 .prev-btn {
@@ -731,29 +766,116 @@
 .image-dots {
   display: flex;
   justify-content: center;
-  gap: 8px;
-  padding: 15px;
+  gap: 6px;
+  padding: 12px;
   background: var(--surface);
 }
 
 .dot {
-  width: 10px;
-  height: 10px;
+  width: 4px;
+  height: 4px;
   border-radius: 50%;
   border: none;
-  background: #ddd;
+  background: var(--text-muted);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0.5;
+  position: relative;
 }
 
 .dot.active {
-  background: #667eea;
-  transform: scale(1.2);
+  background: var(--primary);
+  transform: scale(1.5);
+  opacity: 1;
+  box-shadow: 0 0 0 1px rgba(59, 130, 199, 0.4);
 }
 
 .dot:hover {
-  background: #999;
-  transform: scale(1.1);
+  background: var(--primary-light);
+  transform: scale(1.3);
+  opacity: 0.8;
+}
+
+/* Image gallery hover effects */
+.image-gallery:hover .nav-btn {
+  opacity: 1;
+  scale: 1;
+}
+
+.image-gallery:hover .image-counter {
+  background: rgba(0, 0, 0, 0.85);
+  transform: scale(1.05);
+}
+
+/* Smooth fade transition for images */
+.main-image {
+  position: relative;
+}
+
+.main-image img.fade-enter {
+  opacity: 0;
+}
+
+.main-image img.fade-enter-active {
+  opacity: 1;
+  transition: opacity 0.25s ease-in-out;
+}
+
+.main-image img.fade-exit {
+  opacity: 1;
+}
+
+.main-image img.fade-exit-active {
+  opacity: 0;
+  transition: opacity 0.15s ease-in-out;
+}
+
+/* Crossfade effect */
+.main-image img.crossfade {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.3s ease;
+}
+
+.main-image img.crossfade.entering {
+  opacity: 0;
+  z-index: 2;
+}
+
+.main-image img.crossfade.entered {
+  opacity: 1;
+  z-index: 2;
+}
+
+.main-image img.crossfade.exiting {
+  opacity: 1;
+  z-index: 1;
+}
+
+.main-image img.crossfade.exited {
+  opacity: 0;
+  z-index: 1;
+}
+
+/* Dot animation - simplified for better performance */
+@keyframes dotPulse {
+  0%, 100% {
+    transform: scale(1.5);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.6);
+    opacity: 0.8;
+  }
+}
+
+.dot.active {
+  animation: dotPulse 3s ease-in-out infinite;
+  will-change: transform, opacity;
 }
 
 /* Mobile responsive styles for post images */
@@ -767,14 +889,14 @@
   }
 
   .nav-btn {
-    width: 35px;
-    height: 35px;
-    font-size: 16px;
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
   }
 
   .image-counter {
-    padding: 4px 8px;
-    font-size: 11px;
+    padding: 3px 6px;
+    font-size: 10px;
   }
 }
 
@@ -792,9 +914,9 @@
   }
 
   .nav-btn {
-    width: 32px;
-    height: 32px;
-    font-size: 14px;
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
   }
 
   .prev-btn {
@@ -808,17 +930,25 @@
   .image-counter {
     top: 8px;
     right: 8px;
-    padding: 3px 6px;
-    font-size: 10px;
+    padding: 2px 5px;
+    font-size: 9px;
   }
 
   .image-dots {
-    padding: 12px;
-    gap: 6px;
+    padding: 10px;
+    gap: 4px;
   }
 
   .dot {
-    width: 8px;
-    height: 8px;
+    width: 3px;
+    height: 3px;
+  }
+
+  .dot.active {
+    transform: scale(1.7);
+  }
+
+  .dot:hover {
+    transform: scale(1.4);
   }
 }

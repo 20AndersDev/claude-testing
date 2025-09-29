@@ -7,6 +7,7 @@ import Feed from './Feed';
 import Profile from './Profile';
 import TripDetails from './TripDetails';
 import CreateTrip from './CreateTrip';
+import PostDetail from './PostDetail';
 import './App.css';
 import './themes.css';
 
@@ -22,6 +23,7 @@ function App() {
             <Route path="/profile" element={<Profile />} />
             <Route path="/create-trip" element={<CreateTrip />} />
             <Route path="/trip/:tripId" element={<TripDetails />} />
+            <Route path="/post/:postId" element={<PostDetail />} />
             <Route path="/" element={<Navigate to="/login" replace />} />
           </Routes>
         </div>

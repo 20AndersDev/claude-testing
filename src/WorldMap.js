@@ -152,12 +152,12 @@ function WorldMap({ userPosts, visitedCountries: propVisitedCountries, onCountry
   const getCountryFill = (geo) => {
     const countryId = geo.properties.ISO_A3 || geo.id || geo.properties.id;
     if (isCountryVisited(countryId)) {
-      return "#4CAF50"; // Green for visited countries
+      return "#3B82C7"; // Ocean blue for visited countries
     }
     if (hoveredCountry && hoveredCountry.id === countryId) {
-      return "#81C784"; // Light green on hover
+      return "#60A5FA"; // Light blue on hover
     }
-    return "#E0E0E0"; // Light gray for unvisited countries
+    return "#E2E8F0"; // Soft gray for unvisited countries
   };
 
   const getCountryStats = () => {
@@ -201,8 +201,8 @@ function WorldMap({ userPosts, visitedCountries: propVisitedCountries, onCountry
                     key={geo.rsmKey}
                     geography={geo}
                     fill={getCountryFill(geo)}
-                    stroke="#FFFFFF"
-                    strokeWidth={0.5}
+                    stroke="#2C3E50"
+                    strokeWidth={0.3}
                     style={{
                       default: {
                         outline: "none",

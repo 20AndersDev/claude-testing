@@ -36,16 +36,16 @@
 }
 
 .legend-color.visited {
-  background-color: #4CAF50;
+  background-color: #3B82C7;
 }
 
 .legend-color.unvisited {
-  background-color: #E0E0E0;
+  background-color: #E2E8F0;
 }
 
 .map-wrapper {
   position: relative;
-  background: #f8fafc;
+  background: linear-gradient(135deg, #8FB4E5 0%, #6FA8DC 100%);
   border-radius: 8px;
   border: 2px solid var(--border);
   overflow: hidden;
@@ -77,7 +77,7 @@
   bottom: 10px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.9);
+  background: linear-gradient(135deg, #1E293B, #334155);
   color: white;
   padding: 12px 16px;
   border-radius: 8px;
@@ -86,21 +86,21 @@
   z-index: 10;
   pointer-events: none;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid #3B82C7;
 }
 
 .country-name {
   font-weight: 700;
   font-size: 1rem;
   margin-bottom: 4px;
-  color: #fff;
+  color: #60A5FA;
 }
 
 .country-status {
   font-weight: 400;
   font-size: 0.85rem;
   opacity: 0.9;
-  color: #e0e0e0;
+  color: #CBD5E1;
 }
 
 .map-instructions {
@@ -187,8 +187,8 @@
 }
 
 :root.dark-mode .map-wrapper {
-  background: var(--background);
-  border-color: var(--border);
+  background: linear-gradient(135deg, #1E293B 0%, #334155 100%);
+  border-color: #3B82C7;
 }
 
 :root.dark-mode .map-legend {
@@ -202,7 +202,7 @@
 }
 
 :root.dark-mode .legend-color.unvisited {
-  background-color: #424242;
+  background-color: #475569;
 }
 
 /* Large screen optimization for world map */
