@@ -10,6 +10,7 @@ function Feed() {
     {
       id: 1,
       author: 'John Doe',
+      isFollowing: true,
       content: 'Had an incredible weekend exploring the historic charm and culinary delights of this amazing city!',
       tripTitle: 'Weekend in Paris',
       location: 'Paris, France',
@@ -31,6 +32,7 @@ function Feed() {
     {
       id: 2,
       author: 'Sarah Wilson',
+      isFollowing: true,
       content: 'Perfect day exploring the beautiful beaches and vibrant culture. The sunset at the beach was absolutely magical! 🌅',
       tripTitle: 'Barcelona Adventure',
       location: 'Barcelona, Spain',
@@ -50,6 +52,7 @@ function Feed() {
     {
       id: 3,
       author: 'Alex Chen',
+      isFollowing: false,
       content: 'Solo trip to Tokyo was life-changing. The blend of traditional and modern culture is fascinating. Every meal was an adventure!',
       tripTitle: 'Tokyo Discovery',
       location: 'Tokyo, Japan',
@@ -63,6 +66,67 @@ function Feed() {
       timestamp: new Date('2024-01-14T14:20:00'),
       likes: 18,
       comments: []
+    },
+    {
+      id: 4,
+      author: 'Maria Rodriguez',
+      isFollowing: false,
+      content: 'Backpacking through the Andes was an incredible challenge! The views from Machu Picchu at sunrise were absolutely breathtaking.',
+      tripTitle: 'Andes Adventure',
+      location: 'Cusco, Peru',
+      startDate: '2024-01-08',
+      endDate: '2024-01-11',
+      activities: [
+        { type: 'hiking', name: 'Inca Trail', description: 'Ancient trail to Machu Picchu', time: '06:00', rating: 5 },
+        { type: 'monument', name: 'Machu Picchu', description: 'Ancient Incan citadel', time: '05:30', rating: 5 },
+        { type: 'restaurant', name: 'Central', description: 'Modern Peruvian cuisine', time: '19:00', rating: 4 }
+      ],
+      timestamp: new Date('2024-01-12T16:15:00'),
+      likes: 42,
+      comments: [
+        { id: 4, author: 'Adventure Lover', content: 'This looks amazing! How long was the trek?', timestamp: new Date('2024-01-12T16:30:00') }
+      ]
+    },
+    {
+      id: 5,
+      author: 'David Kim',
+      isFollowing: false,
+      content: 'Road trip across Iceland was pure magic. From the Northern Lights to geothermal hot springs, every moment was unforgettable!',
+      tripTitle: 'Iceland Ring Road',
+      location: 'Reykjavik, Iceland',
+      startDate: '2024-01-05',
+      endDate: '2024-01-09',
+      activities: [
+        { type: 'attraction', name: 'Blue Lagoon', description: 'Geothermal spa', time: '14:00', rating: 4 },
+        { type: 'park', name: 'Gullfoss Waterfall', description: 'Powerful waterfall', time: '11:00', rating: 5 },
+        { type: 'attraction', name: 'Northern Lights', description: 'Aurora viewing', time: '23:00', rating: 5 }
+      ],
+      timestamp: new Date('2024-01-10T20:45:00'),
+      likes: 67,
+      comments: [
+        { id: 5, author: 'Nature Photographer', content: 'Did you get good photos of the Northern Lights?', timestamp: new Date('2024-01-10T21:00:00') },
+        { id: 6, author: 'Travel Enthusiast', content: 'Iceland is on my dream list!', timestamp: new Date('2024-01-10T21:15:00') }
+      ]
+    },
+    {
+      id: 6,
+      author: 'Emma Thompson',
+      isFollowing: true,
+      content: 'Wine tasting in Tuscany was the perfect romantic getaway. Rolling hills, historic vineyards, and incredible food made this trip unforgettable!',
+      tripTitle: 'Tuscan Romance',
+      location: 'Florence, Italy',
+      startDate: '2024-01-06',
+      endDate: '2024-01-08',
+      activities: [
+        { type: 'restaurant', name: 'Osteria di Passignano', description: 'Michelin-starred Tuscan cuisine', time: '20:00', rating: 5 },
+        { type: 'attraction', name: 'Chianti Wine Tour', description: 'Historic vineyard tour', time: '15:00', rating: 5 },
+        { type: 'monument', name: 'Duomo di Firenze', description: 'Gothic cathedral', time: '10:00', rating: 4 }
+      ],
+      timestamp: new Date('2024-01-09T12:30:00'),
+      likes: 35,
+      comments: [
+        { id: 7, author: 'Wine Lover', content: 'Which vineyard was your favorite?', timestamp: new Date('2024-01-09T13:00:00') }
+      ]
     }
   ]);
 
@@ -82,9 +146,17 @@ function Feed() {
   const [activeFilter, setActiveFilter] = useState('all');
   const [showCreatePost, setShowCreatePost] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('following');
 
   useEffect(() => {
     let filtered = posts;
+
+    // Apply tab filter first
+    if (activeTab === 'following') {
+      filtered = filtered.filter(post => post.isFollowing);
+    } else if (activeTab === 'discovery') {
+      filtered = filtered.filter(post => !post.isFollowing);
+    }
 
     // Apply search filter
     if (searchTerm) {
@@ -124,7 +196,7 @@ function Feed() {
     }
 
     setFilteredPosts(filtered);
-  }, [posts, searchTerm, activeFilter]);
+  }, [posts, searchTerm, activeFilter, activeTab]);
 
   const handleSearchChange = (term) => {
     setSearchTerm(term);
@@ -140,6 +212,10 @@ function Feed() {
 
   const handleSidebarToggle = () => {
     setSidebarOpen(!sidebarOpen);
+  };
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
   };
 
   const addPost = (tripData) => {
@@ -220,6 +296,22 @@ function Feed() {
           onClose={() => setSidebarOpen(false)}
         />
         <div className="feed">
+          <div className="feed-tabs">
+            <button
+              className={`feed-tab ${activeTab === 'following' ? 'active' : ''}`}
+              onClick={() => handleTabChange('following')}
+            >
+              <span className="tab-icon">👥</span>
+              Following
+            </button>
+            <button
+              className={`feed-tab ${activeTab === 'discovery' ? 'active' : ''}`}
+              onClick={() => handleTabChange('discovery')}
+            >
+              <span className="tab-icon">🌍</span>
+              Discovery
+            </button>
+          </div>
           {showCreatePost && <CreatePost onAddPost={addPost} />}
           <div className="posts-container">
             {filteredPosts.length > 0 ? (

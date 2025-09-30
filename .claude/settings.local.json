@@ -5,7 +5,8 @@
       "Bash(npm start)",
       "Bash(npx kill-port:*)",
       "Bash(move PostDetail.js PostDetailOld.js)",
-      "Bash(move PostDetailNew.js PostDetail.js)"
+      "Bash(move PostDetailNew.js PostDetail.js)",
+      "Bash(npm run build:*)"
     ],
     "deny": [],
     "ask": []

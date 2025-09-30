@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from './Navbar';
+import ImageModal from './ImageModal';
 import './PostDetail.css';
 
 function PostDetail() {
@@ -9,6 +10,7 @@ function PostDetail() {
   const [post, setPost] = useState(null);
   const [commentText, setCommentText] = useState('');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [showModal, setShowModal] = useState(false);
 
   // Mock data - in a real app, this would fetch from an API
   useEffect(() => {
@@ -205,6 +207,14 @@ function PostDetail() {
     setCurrentImageIndex(index);
   };
 
+  const handleImageClick = () => {
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+  };
+
   if (!post) {
     return (
       <div className="App">
@@ -273,7 +283,7 @@ function PostDetail() {
 
             {/* Image Gallery */}
             <div className="post-image-section">
-              <div className="main-post-image">
+              <div className="main-post-image" onClick={handleImageClick} style={{cursor: 'pointer'}}>
                 <img
                   src={postImages[currentImageIndex].url}
                   alt={`${post.tripTitle || 'Post'} photo ${currentImageIndex + 1}`}
@@ -450,6 +460,14 @@ function PostDetail() {
           </div>
         </div>
       </div>
+
+      {showModal && (
+        <ImageModal
+          images={postImages}
+          initialIndex={currentImageIndex}
+          onClose={handleCloseModal}
+        />
+      )}
     </div>
   );
 }
