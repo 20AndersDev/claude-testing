@@ -8,6 +8,7 @@ import Profile from './Profile';
 import TripDetails from './TripDetails';
 import CreateTrip from './CreateTrip';
 import PostDetail from './PostDetail';
+import HashtagFeed from './HashtagFeed';
 import './App.css';
 import './themes.css';
 
@@ -24,6 +25,7 @@ function App() {
             <Route path="/create-trip" element={<CreateTrip />} />
             <Route path="/trip/:tripId" element={<TripDetails />} />
             <Route path="/post/:postId" element={<PostDetail />} />
+            <Route path="/hashtag/:hashtag" element={<HashtagFeed />} />
             <Route path="/" element={<Navigate to="/login" replace />} />
           </Routes>
         </div>

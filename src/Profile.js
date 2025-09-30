@@ -15,10 +15,13 @@ function Profile() {
     email: 'user@example.com',
     bio: 'Welcome to my profile! I love sharing thoughts and connecting with others.',
     location: 'New York, NY',
-    joinDate: 'January 2024'
+    joinDate: 'January 2024',
+    profilePicture: '👤'
   });
 
   const [editedProfile, setEditedProfile] = useState(profile);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
 
   // Load posts, liked posts, and visited countries from localStorage
   useEffect(() => {
@@ -61,8 +64,14 @@ function Profile() {
   };
 
   const handleSave = () => {
-    setProfile(editedProfile);
+    const updatedProfile = { ...editedProfile };
+    if (previewUrl) {
+      updatedProfile.profilePicture = previewUrl;
+    }
+    setProfile(updatedProfile);
     setIsEditing(false);
+    setSelectedFile(null);
+    setPreviewUrl(null);
   };
 
   const handleChange = (e) => {
@@ -71,6 +80,26 @@ function Profile() {
       ...prev,
       [name]: value
     }));
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewUrl(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleEmojiSelect = (emoji) => {
+    setEditedProfile(prev => ({
+      ...prev,
+      profilePicture: emoji
+    }));
+    setPreviewUrl(null);
   };
 
   const handleLike = (postId) => {
@@ -126,60 +155,81 @@ function Profile() {
       <div className="profile">
         <div className="profile-container">
           <div className="profile-header">
-            <div className="profile-avatar">
-              👤
-            </div>
-            <div className="profile-info">
-              {isEditing ? (
-                <div className="edit-form">
-                  <input
-                    type="text"
-                    name="name"
-                    value={editedProfile.name}
-                    onChange={handleChange}
-                    className="edit-input"
-                    placeholder="Name"
-                  />
-                  <input
-                    type="email"
-                    name="email"
-                    value={editedProfile.email}
-                    onChange={handleChange}
-                    className="edit-input"
-                    placeholder="Email"
-                  />
-                  <input
-                    type="text"
-                    name="location"
-                    value={editedProfile.location}
-                    onChange={handleChange}
-                    className="edit-input"
-                    placeholder="Location"
-                  />
+            {isEditing ? (
+              <div className="profile-edit-container">
+                <div className="profile-picture-edit">
+                  <div className="current-avatar">
+                    {previewUrl ? (
+                      <img src={previewUrl} alt="Profile" className="avatar-preview" />
+                    ) : (
+                      <span className="avatar-emoji">{editedProfile.profilePicture}</span>
+                    )}
+                  </div>
+                  <div className="avatar-options">
+                    <label htmlFor="file-upload" className="upload-btn">
+                      📷 Upload Photo
+                      <input
+                        id="file-upload"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        style={{ display: 'none' }}
+                      />
+                    </label>
+                    <div className="emoji-picker">
+                      <p className="emoji-label">Or choose an emoji:</p>
+                      <div className="emoji-grid">
+                        {['👤', '😊', '🧳', '✈️', '🌍', '🏖️', '🗺️', '📸', '🎒', '🚀', '🌟', '💼'].map((emoji) => (
+                          <button
+                            key={emoji}
+                            className={`emoji-option ${editedProfile.profilePicture === emoji ? 'selected' : ''}`}
+                            onClick={() => handleEmojiSelect(emoji)}
+                          >
+                            {emoji}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="profile-bio-edit">
+                  <label htmlFor="bio">Bio</label>
                   <textarea
+                    id="bio"
                     name="bio"
                     value={editedProfile.bio}
                     onChange={handleChange}
                     className="edit-textarea"
-                    placeholder="Bio"
-                    rows="4"
+                    placeholder="Tell us about yourself..."
+                    rows="6"
                   />
-                  <div className="edit-buttons">
-                    <button onClick={handleSave} className="save-btn">Save</button>
-                    <button onClick={handleCancel} className="cancel-btn">Cancel</button>
+                </div>
+                <div className="edit-buttons">
+                  <button onClick={handleSave} className="save-btn">💾 Save Changes</button>
+                  <button onClick={handleCancel} className="cancel-btn">❌ Cancel</button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="profile-avatar">
+                  {profile.profilePicture.startsWith('data:') ? (
+                    <img src={profile.profilePicture} alt="Profile" className="avatar-image" />
+                  ) : (
+                    <span className="avatar-emoji">{profile.profilePicture}</span>
+                  )}
+                </div>
+                <div className="profile-info">
+                  <div className="display-info">
+                    <h1 className="profile-name">{profile.name}</h1>
+                    <p className="profile-email">{profile.email}</p>
+                    <p className="profile-location">📍 {profile.location}</p>
+                    <p className="profile-bio">{profile.bio}</p>
+                    <p className="profile-join-date">Joined {profile.joinDate}</p>
+                    <button onClick={handleEdit} className="edit-btn">✏️ Edit Profile</button>
                   </div>
                 </div>
-              ) : (
-                <div className="display-info">
-                  <h1 className="profile-name">{profile.name}</h1>
-                  <p className="profile-email">{profile.email}</p>
-                  <p className="profile-location">📍 {profile.location}</p>
-                  <p className="profile-bio">{profile.bio}</p>
-                  <p className="profile-join-date">Joined {profile.joinDate}</p>
-                  <button onClick={handleEdit} className="edit-btn">Edit Profile</button>
-                </div>
-              )}
-            </div>
+              </>
+            )}
           </div>
 
           <div className="profile-tabs">

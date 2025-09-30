@@ -5,11 +5,12 @@
   box-shadow: 0 4px 20px var(--shadow);
   padding: 0;
   margin-right: 20px;
-  height: fit-content;
+  max-height: calc(100vh - 100px);
   position: sticky;
   top: 80px;
   border: 1px solid var(--border-light);
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   animation: sidebarSlideIn 0.8s ease-out 0.2s both;
 }
 
@@ -296,6 +297,56 @@
   gap: 2px;
 }
 
+.hashtag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.hashtag-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+  border: 1px solid rgba(102, 126, 234, 0.2);
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.hashtag-item:hover {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.2);
+}
+
+.hashtag-count {
+  background: rgba(102, 126, 234, 0.2);
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+:root.dark-mode .hashtag-item {
+  background: linear-gradient(135deg, rgba(124, 140, 255, 0.1) 0%, rgba(149, 117, 205, 0.1) 100%);
+  border-color: rgba(124, 140, 255, 0.2);
+  color: var(--primary);
+}
+
+:root.dark-mode .hashtag-item:hover {
+  background: linear-gradient(135deg, rgba(124, 140, 255, 0.2) 0%, rgba(149, 117, 205, 0.2) 100%);
+}
+
+:root.dark-mode .hashtag-count {
+  background: rgba(124, 140, 255, 0.2);
+  color: var(--primary);
+}
 
 @media (max-width: 1200px) {
   .sidebar {

@@ -16,6 +16,7 @@ function Feed() {
       location: 'Paris, France',
       startDate: '2024-01-13',
       endDate: '2024-01-15',
+      hashtags: ['Paris', 'France', 'Weekend', 'Food', 'Culture', 'Demo'],
       activities: [
         { type: 'restaurant', name: 'Le Comptoir du Relais', description: 'Amazing French bistro with traditional dishes', time: '19:30', rating: 5 },
         { type: 'monument', name: 'Eiffel Tower', description: 'Iconic tower with breathtaking city views', time: '15:00', rating: 5 },
@@ -38,6 +39,7 @@ function Feed() {
       location: 'Barcelona, Spain',
       startDate: '2024-01-12',
       endDate: '2024-01-14',
+      hashtags: ['Barcelona', 'Spain', 'Beach', 'Architecture', 'Sunset', 'Demo'],
       activities: [
         { type: 'beach', name: 'Barceloneta Beach', description: 'Beautiful city beach with great atmosphere', time: '14:00', rating: 4 },
         { type: 'monument', name: 'Sagrada Familia', description: 'Gaudí\'s masterpiece basilica', time: '10:30', rating: 5 },
@@ -58,6 +60,7 @@ function Feed() {
       location: 'Tokyo, Japan',
       startDate: '2024-01-10',
       endDate: '2024-01-12',
+      hashtags: ['Tokyo', 'Japan', 'Solo', 'Food', 'Culture', 'Demo'],
       activities: [
         { type: 'restaurant', name: 'Sukiyabashi Jiro', description: 'World-renowned sushi restaurant', time: '12:00', rating: 5 },
         { type: 'park', name: 'Senso-ji Temple', description: 'Ancient Buddhist temple', time: '09:00', rating: 4 },
@@ -76,6 +79,7 @@ function Feed() {
       location: 'Cusco, Peru',
       startDate: '2024-01-08',
       endDate: '2024-01-11',
+      hashtags: ['Peru', 'MachuPicchu', 'Hiking', 'Adventure', 'Backpacking'],
       activities: [
         { type: 'hiking', name: 'Inca Trail', description: 'Ancient trail to Machu Picchu', time: '06:00', rating: 5 },
         { type: 'monument', name: 'Machu Picchu', description: 'Ancient Incan citadel', time: '05:30', rating: 5 },
@@ -96,6 +100,7 @@ function Feed() {
       location: 'Reykjavik, Iceland',
       startDate: '2024-01-05',
       endDate: '2024-01-09',
+      hashtags: ['Iceland', 'NorthernLights', 'RoadTrip', 'Nature', 'Adventure'],
       activities: [
         { type: 'attraction', name: 'Blue Lagoon', description: 'Geothermal spa', time: '14:00', rating: 4 },
         { type: 'park', name: 'Gullfoss Waterfall', description: 'Powerful waterfall', time: '11:00', rating: 5 },
@@ -117,6 +122,7 @@ function Feed() {
       location: 'Florence, Italy',
       startDate: '2024-01-06',
       endDate: '2024-01-08',
+      hashtags: ['Italy', 'Tuscany', 'Wine', 'Food', 'Romance'],
       activities: [
         { type: 'restaurant', name: 'Osteria di Passignano', description: 'Michelin-starred Tuscan cuisine', time: '20:00', rating: 5 },
         { type: 'attraction', name: 'Chianti Wine Tour', description: 'Historic vineyard tour', time: '15:00', rating: 5 },

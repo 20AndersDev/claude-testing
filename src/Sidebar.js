@@ -27,8 +27,24 @@ function Sidebar({ posts, onFilterChange, onCreatePost, isOpen, onClose }) {
       .slice(0, 2);
   };
 
+  const getTrendingHashtags = () => {
+    const hashtagCount = {};
+    posts.forEach(post => {
+      if (post.hashtags) {
+        post.hashtags.forEach(tag => {
+          hashtagCount[tag] = (hashtagCount[tag] || 0) + 1;
+        });
+      }
+    });
+    return Object.entries(hashtagCount)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 6)
+      .map(([tag, count]) => ({ tag, count }));
+  };
+
   const trendingDestinations = getTrendingDestinations();
   const hotTrips = getHotTrips();
+  const trendingHashtags = getTrendingHashtags();
 
   return (
     <>
@@ -45,32 +61,18 @@ function Sidebar({ posts, onFilterChange, onCreatePost, isOpen, onClose }) {
       </div>
 
       <div className="sidebar-section">
-        <h3 className="sidebar-title">🌟 Browse</h3>
-        <div className="filter-buttons">
-          <button
-            className={`filter-btn ${activeFilter === 'popular' ? 'active' : ''}`}
-            onClick={() => handleFilterClick('popular')}
-          >
-            🔥 Most Popular
-          </button>
-          <button
-            className={`filter-btn ${activeFilter === 'recent' ? 'active' : ''}`}
-            onClick={() => handleFilterClick('recent')}
-          >
-            🆕 Recent
-          </button>
-          <button
-            className={`filter-btn ${activeFilter === 'weekend' ? 'active' : ''}`}
-            onClick={() => handleFilterClick('weekend')}
-          >
-            ⚡ Hot
-          </button>
-          <button
-            className={`filter-btn ${activeFilter === 'all' ? 'active' : ''}`}
-            onClick={() => handleFilterClick('all')}
-          >
-            💎 Recommended
-          </button>
+        <h3 className="sidebar-title">#️⃣ Trending Hashtags</h3>
+        <div className="hashtag-list">
+          {trendingHashtags.map((item) => (
+            <button
+              key={item.tag}
+              className="hashtag-item"
+              onClick={() => navigate(`/hashtag/${item.tag}`)}
+            >
+              #{item.tag}
+              <span className="hashtag-count">{item.count}</span>
+            </button>
+          ))}
         </div>
       </div>
 

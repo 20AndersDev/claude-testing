@@ -10,6 +10,8 @@ function CreatePost({ onAddPost }) {
   const [endDate, setEndDate] = useState('');
   const [activities, setActivities] = useState([{ type: 'restaurant', name: '', description: '', time: '', rating: 0, cost: '' }]);
   const [transport, setTransport] = useState([{ type: 'plane', from: '', to: '', time: '', cost: '' }]);
+  const [hashtagInput, setHashtagInput] = useState('');
+  const [hashtags, setHashtags] = useState([]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -21,7 +23,8 @@ function CreatePost({ onAddPost }) {
         startDate,
         endDate,
         activities: activities.filter(activity => activity.name.trim()),
-        transport: transport.filter(t => t.from.trim() && t.to.trim())
+        transport: transport.filter(t => t.from.trim() && t.to.trim()),
+        hashtags: hashtags
       };
       onAddPost(tripPost);
       setContent('');
@@ -31,6 +34,8 @@ function CreatePost({ onAddPost }) {
       setEndDate('');
       setActivities([{ type: 'restaurant', name: '', description: '', time: '', rating: 0, cost: '' }]);
       setTransport([{ type: 'plane', from: '', to: '', time: '', cost: '' }]);
+      setHashtags([]);
+      setHashtagInput('');
       setIsExpanded(false);
     }
   };
@@ -47,7 +52,26 @@ function CreatePost({ onAddPost }) {
     setEndDate('');
     setActivities([{ type: 'restaurant', name: '', description: '', time: '', rating: 0, cost: '' }]);
     setTransport([{ type: 'plane', from: '', to: '', time: '', cost: '' }]);
+    setHashtags([]);
+    setHashtagInput('');
     setIsExpanded(false);
+  };
+
+  const handleHashtagInput = (e) => {
+    const value = e.target.value;
+    if (value.endsWith(' ') || value.endsWith(',')) {
+      const tag = value.slice(0, -1).trim().replace('#', '');
+      if (tag && !hashtags.includes(tag)) {
+        setHashtags([...hashtags, tag]);
+      }
+      setHashtagInput('');
+    } else {
+      setHashtagInput(value);
+    }
+  };
+
+  const removeHashtag = (tagToRemove) => {
+    setHashtags(hashtags.filter(tag => tag !== tagToRemove));
   };
 
   const addActivity = () => {
@@ -276,6 +300,35 @@ function CreatePost({ onAddPost }) {
                 <button type="button" onClick={addTransport} className="add-transport-btn">
                   + Add Transportation
                 </button>
+              </div>
+
+              <div className="hashtag-section">
+                <h4>#️⃣ Hashtags</h4>
+                <div className="hashtag-input-container">
+                  <input
+                    type="text"
+                    value={hashtagInput}
+                    onChange={handleHashtagInput}
+                    placeholder="Add hashtags (press space or comma to add)"
+                    className="hashtag-input"
+                  />
+                </div>
+                {hashtags.length > 0 && (
+                  <div className="hashtag-tags">
+                    {hashtags.map((tag, index) => (
+                      <div key={index} className="hashtag-tag">
+                        #{tag}
+                        <button
+                          type="button"
+                          onClick={() => removeHashtag(tag)}
+                          className="remove-hashtag-btn"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className="post-actions">
