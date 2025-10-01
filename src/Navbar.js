@@ -7,6 +7,7 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
   const navigate = useNavigate();
   const { isDark, toggleTheme } = useTheme();
   const [searchTerm, setSearchTerm] = useState('');
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   const handleSearchChange = (e) => {
     const value = e.target.value;
@@ -23,13 +24,30 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
 
   const handleProfileClick = () => {
     navigate('/profile');
+    setShowMobileMenu(false);
+  };
+
+  const handleHamburgerClick = () => {
+    // Check if we're on mobile (window width <= 768px)
+    const isMobile = window.innerWidth <= 768;
+
+    if (isMobile) {
+      // On mobile, always show mobile menu
+      setShowMobileMenu(!showMobileMenu);
+    } else if (onSidebarToggle) {
+      // On desktop, use sidebar if available
+      onSidebarToggle();
+    } else {
+      // Fallback to mobile menu
+      setShowMobileMenu(!showMobileMenu);
+    }
   };
 
   return (
     <nav className="navbar">
       <div className="navbar-container">
         <div className="navbar-left">
-          <button className="hamburger-btn" onClick={onSidebarToggle}>
+          <button className="hamburger-btn" onClick={handleHamburgerClick}>
             <span className="hamburger-icon">☰</span>
           </button>
           <Link to="/feed" className="navbar-logo">
@@ -68,6 +86,27 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
           </div>
         </div>
       </div>
+
+      {showMobileMenu && (
+        <div className="mobile-menu-overlay" onClick={() => setShowMobileMenu(false)}>
+          <div className="mobile-menu" onClick={(e) => e.stopPropagation()}>
+            <button className="mobile-menu-close" onClick={() => setShowMobileMenu(false)}>✕</button>
+
+            <Link to="/feed" className="mobile-menu-item" onClick={() => setShowMobileMenu(false)}>
+              🏠 Home
+            </Link>
+            <Link to="/profile" className="mobile-menu-item" onClick={() => setShowMobileMenu(false)}>
+              👤 Profile
+            </Link>
+            <button className="mobile-menu-item" onClick={toggleTheme}>
+              {isDark ? '☀️' : '🌙'} {isDark ? 'Light Mode' : 'Dark Mode'}
+            </button>
+            <button className="mobile-menu-item logout" onClick={() => { handleLogout(); setShowMobileMenu(false); }}>
+              🚪 Logout
+            </button>
+          </div>
+        </div>
+      )}
     </nav>
   );
 }

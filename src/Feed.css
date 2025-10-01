@@ -4,10 +4,18 @@
   padding: 84px 20px 20px;
   background: var(--gradient-background);
   min-height: 100vh;
+  height: 100vh;
   display: flex;
   gap: 24px;
   align-items: flex-start;
   animation: pageSlideIn 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  width: 100%;
+  box-sizing: border-box;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
 }
 
 @keyframes pageSlideIn {
@@ -24,6 +32,10 @@
 .feed {
   flex: 1;
   max-width: 600px;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 8px;
 }
 
 /* Feed Tabs */
@@ -36,6 +48,9 @@
   box-shadow: 0 4px 20px var(--shadow-light);
   border: 1px solid var(--border-light);
   backdrop-filter: blur(10px);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .feed-tab {
@@ -167,19 +182,39 @@
 @media (max-width: 968px) {
   .feed-container {
     flex-direction: column;
-    padding-top: 84px;
+    padding-top: 70px;
     gap: 16px;
+    position: relative;
+    height: auto;
+    min-height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
   }
 
   .feed {
     max-width: 100%;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+    padding-right: 0;
   }
 }
 
 @media (max-width: 768px) {
   .feed-container {
-    padding: 84px 12px 20px;
-    gap: 12px;
+    padding: 70px 8px 12px;
+    gap: 10px;
+    touch-action: pan-y;
+    overscroll-behavior-x: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .feed-container {
+    padding: 65px 4px 8px;
+    gap: 8px;
+    touch-action: pan-y;
+    overscroll-behavior-x: none;
   }
 }
 

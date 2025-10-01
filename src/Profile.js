@@ -10,6 +10,7 @@ function Profile() {
   const [posts, setPosts] = useState([]);
   const [likedPosts, setLikedPosts] = useState([]);
   const [visitedCountries, setVisitedCountries] = useState([]);
+  const [showMapModal, setShowMapModal] = useState(false);
   const [profile, setProfile] = useState({
     name: 'Current User',
     email: 'user@example.com',
@@ -302,15 +303,38 @@ function Profile() {
 
             {activeTab === 'traveled' && (
               <div className="traveled-section">
-                <WorldMap
-                  visitedCountries={visitedCountries}
-                  onCountryToggle={handleCountryToggle}
-                />
+                <button
+                  className="open-map-btn mobile-only"
+                  onClick={() => setShowMapModal(true)}
+                >
+                  🗺️ View Travel Map
+                </button>
+                <div className="desktop-map">
+                  <WorldMap
+                    visitedCountries={visitedCountries}
+                    onCountryToggle={handleCountryToggle}
+                  />
+                </div>
               </div>
             )}
           </div>
         </div>
       </div>
+
+      {showMapModal && (
+        <div className="map-modal-overlay" onClick={() => setShowMapModal(false)}>
+          <div className="map-modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="map-modal-close" onClick={() => setShowMapModal(false)}>
+              ✕
+            </button>
+            <WorldMap
+              visitedCountries={visitedCountries}
+              onCountryToggle={handleCountryToggle}
+              isModal={true}
+            />
+          </div>
+        </div>
+      )}
     </>
   );
 }

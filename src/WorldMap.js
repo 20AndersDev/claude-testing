@@ -100,7 +100,7 @@ const countryMapping = {
     'dubrovnik': 'HRV'
 };
 
-function WorldMap({ userPosts, visitedCountries: propVisitedCountries, onCountryToggle }) {
+function WorldMap({ userPosts, visitedCountries: propVisitedCountries, onCountryToggle, isModal = false }) {
   const [visitedCountries, setVisitedCountries] = useState(new Set());
   const [hoveredCountry, setHoveredCountry] = useState(null);
 
@@ -187,13 +187,14 @@ function WorldMap({ userPosts, visitedCountries: propVisitedCountries, onCountry
       <div className="map-wrapper">
         <ComposableMap
           projectionConfig={{
-            scale: 140,
-            center: [0, 20]
+            scale: isModal ? 250 : 180,
+            center: isModal ? [10, 15] : [10, 10]
           }}
           width={800}
           height={400}
+          style={{ width: "100%", height: "100%" }}
         >
-          <ZoomableGroup>
+          <ZoomableGroup zoom={isModal ? 1.3 : 1}>
             <Geographies geography={geoUrl}>
               {({ geographies }) =>
                 geographies.map((geo) => (

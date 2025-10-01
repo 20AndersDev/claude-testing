@@ -7,6 +7,7 @@ function Post({ post, onLike, onComment }) {
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState('');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   const handleLike = () => {
     onLike(post.id);
@@ -130,10 +131,12 @@ function Post({ post, onLike, onComment }) {
   const postImages = getPostImages();
 
   const nextImage = () => {
+    if (isTransitioning) return;
     setCurrentImageIndex((prev) => (prev + 1) % postImages.length);
   };
 
   const prevImage = () => {
+    if (isTransitioning) return;
     setCurrentImageIndex((prev) => (prev - 1 + postImages.length) % postImages.length);
   };
 
@@ -180,15 +183,14 @@ function Post({ post, onLike, onComment }) {
             </div>
           </div>
 
-          <div className="post-content" onClick={handleTripClick} style={{cursor: 'pointer'}}>
-            <p>{post.content}</p>
+          <div className="post-content" style={{cursor: 'pointer'}}>
+            <p onClick={handleTripClick}>{post.content}</p>
             <div className="post-images">
               <div className="image-gallery">
-                <div className="main-image" onClick={handleTripClick}>
+                <div className="main-image">
                   <img
                     src={postImages[currentImageIndex].url}
                     alt="Travel destination"
-                    loading="lazy"
                   />
                   {postImages.length > 1 && (
                     <>
@@ -198,14 +200,12 @@ function Post({ post, onLike, onComment }) {
                       <button
                         className="nav-btn prev-btn"
                         onClick={(e) => { e.stopPropagation(); prevImage(); }}
-                        style={{ display: 'none' }}
                       >
                         ‹
                       </button>
                       <button
                         className="nav-btn next-btn"
                         onClick={(e) => { e.stopPropagation(); nextImage(); }}
-                        style={{ display: 'none' }}
                       >
                         ›
                       </button>
@@ -229,6 +229,9 @@ function Post({ post, onLike, onComment }) {
 
           {post.activities && post.activities.length > 0 && (
             <div className="activities-preview">
+              <div className="activities-count-mobile">
+                📍 {post.activities.length} {post.activities.length === 1 ? 'Activity' : 'Activities'}
+              </div>
               <h4>Activities & Places</h4>
               <div className="activities-list">
                 {post.activities.slice(0, 3).map((activity, index) => (
@@ -280,15 +283,14 @@ function Post({ post, onLike, onComment }) {
           )}
         </div>
       ) : (
-        <div className="post-content" onClick={handlePostClick} style={{cursor: 'pointer'}}>
-          <p>{post.content}</p>
+        <div className="post-content" style={{cursor: 'pointer'}}>
+          <p onClick={handlePostClick}>{post.content}</p>
           <div className="post-images">
             <div className="image-gallery">
-              <div className="main-image" onClick={handlePostClick}>
+              <div className="main-image">
                 <img
                   src={postImages[currentImageIndex].url}
                   alt="Content from post"
-                  loading="lazy"
                 />
                 {postImages.length > 1 && (
                   <>
@@ -298,14 +300,12 @@ function Post({ post, onLike, onComment }) {
                     <button
                       className="nav-btn prev-btn"
                       onClick={(e) => { e.stopPropagation(); prevImage(); }}
-                      style={{ display: 'none' }}
                     >
                       ‹
                     </button>
                     <button
                       className="nav-btn next-btn"
                       onClick={(e) => { e.stopPropagation(); nextImage(); }}
-                      style={{ display: 'none' }}
                     >
                       ›
                     </button>

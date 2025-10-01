@@ -4,14 +4,14 @@
   border-radius: 16px;
   box-shadow: 0 4px 20px var(--shadow);
   padding: 0;
-  margin-right: 20px;
-  max-height: calc(100vh - 100px);
+  height: calc(100vh - 104px);
   position: sticky;
-  top: 80px;
+  top: 84px;
   border: 1px solid var(--border-light);
   overflow-y: auto;
   overflow-x: hidden;
   animation: sidebarSlideIn 0.8s ease-out 0.2s both;
+  flex-shrink: 0;
 }
 
 @keyframes sidebarSlideIn {

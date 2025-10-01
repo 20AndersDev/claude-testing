@@ -327,7 +327,7 @@
   .profile {
     margin: 10px auto;
     padding: 0 16px;
-    padding-top: 84px;
+    padding-top: 70px;
   }
 
   .profile-header {
@@ -344,14 +344,24 @@
   .display-info .profile-name {
     font-size: 2.2rem;
   }
+
+  .emoji-grid {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+  }
+
+  .emoji-option {
+    font-size: 28px;
+    padding: 10px;
+  }
 }
 
 /* Mobile styles */
 @media (max-width: 768px) {
   .profile {
     margin: 0;
-    padding: 0 12px;
-    padding-top: 84px;
+    padding: 0 8px;
+    padding-top: 70px;
   }
 
   .profile-container {
@@ -363,14 +373,14 @@
   .profile-header {
     flex-direction: column;
     text-align: center;
-    padding: 24px 16px;
+    padding: 20px 16px;
     gap: 16px;
   }
 
   .profile-avatar {
     font-size: 60px;
-    width: 100px;
-    height: 100px;
+    width: 90px;
+    height: 90px;
   }
 
   .display-info .profile-name {
@@ -380,18 +390,18 @@
 
   .display-info .profile-email {
     font-size: 1rem;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
   }
 
   .display-info .profile-location,
   .display-info .profile-bio {
-    font-size: 0.95rem;
-    margin-bottom: 12px;
+    font-size: 0.9rem;
+    margin-bottom: 10px;
   }
 
   .display-info .profile-join-date {
     font-size: 0.85rem;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
   }
 
   .edit-btn {
@@ -400,7 +410,8 @@
   }
 
   .profile-stats {
-    padding: 20px 12px;
+    padding: 18px 10px;
+    gap: 10px;
   }
 
   .stat-number {
@@ -408,7 +419,26 @@
   }
 
   .stat-label {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
+  }
+
+  .emoji-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+
+  .emoji-option {
+    font-size: 24px;
+    padding: 8px;
+  }
+
+  .current-avatar {
+    width: 120px;
+    height: 120px;
+  }
+
+  .avatar-emoji {
+    font-size: 60px;
   }
 }
 
@@ -462,6 +492,146 @@
   justify-content: center;
   align-items: center;
   min-height: 500px;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.open-map-btn {
+  display: none;
+}
+
+.desktop-map {
+  width: 100%;
+}
+
+.mobile-only {
+  display: none;
+}
+
+/* Map Modal */
+.map-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.3s ease;
+  overflow: hidden;
+  touch-action: none;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.map-modal-content {
+  position: relative;
+  background: var(--surface);
+  border-radius: 16px;
+  max-width: 95vw;
+  max-height: 90vh;
+  width: 95vw;
+  height: 90vh;
+  overflow: auto;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  animation: slideUp 0.3s ease;
+  touch-action: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Make map larger in modal */
+.map-modal-content .world-map-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 15px;
+  border-radius: 0;
+  box-shadow: none;
+  border: none;
+}
+
+.map-modal-content .map-wrapper {
+  flex: 1;
+  min-height: 500px;
+  margin: 15px 0;
+  border-radius: 12px;
+}
+
+.map-modal-content .map-wrapper svg {
+  min-height: 500px;
+  height: 100%;
+}
+
+/* Show legend and instructions in modal */
+.map-modal-content .map-legend {
+  display: flex;
+  margin-bottom: 15px;
+  padding: 12px;
+  font-size: 0.85rem;
+}
+
+.map-modal-content .map-instructions {
+  display: block;
+  margin-top: 12px;
+  padding: 12px;
+}
+
+.map-modal-content .map-instructions p {
+  font-size: 0.8rem;
+  margin: 3px 0;
+}
+
+/* Keep tooltip visible in modal */
+.map-modal-content .country-tooltip {
+  display: block;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.map-modal-close {
+  position: sticky;
+  top: 10px;
+  right: 10px;
+  float: right;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 10;
+  margin: 10px 10px 0 0;
+}
+
+.map-modal-close:hover {
+  background: rgba(0, 0, 0, 0.9);
+  transform: scale(1.1);
 }
 
 .posts-grid {
@@ -519,88 +689,136 @@
 /* Small phone styles */
 @media (max-width: 480px) {
   .profile {
-    padding: 0 8px;
-    padding-top: 84px;
+    padding: 0 4px;
+    padding-top: 65px;
   }
 
   .profile-container {
-    margin: 8px 0;
+    margin: 6px 0;
     border-radius: 8px;
   }
 
   .profile-header {
-    padding: 20px 12px;
+    padding: 16px 12px;
+    gap: 12px;
   }
 
   .profile-avatar {
-    font-size: 50px;
-    width: 80px;
-    height: 80px;
+    font-size: 48px;
+    width: 75px;
+    height: 75px;
   }
 
   .display-info .profile-name {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
+    margin-bottom: 6px;
   }
 
   .display-info .profile-email {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
+    margin-bottom: 8px;
   }
 
   .display-info .profile-location,
-  .display-info .profile-bio,
+  .display-info .profile-bio {
+    font-size: 0.8rem;
+    margin-bottom: 8px;
+  }
+
   .display-info .profile-join-date {
-    font-size: 0.85rem;
-    margin-bottom: 10px;
+    font-size: 0.75rem;
+    margin-bottom: 8px;
   }
 
   .edit-btn {
     padding: 8px 16px;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
+    border-radius: 20px;
   }
 
   .profile-stats {
-    padding: 16px 8px;
-    gap: 8px;
+    padding: 14px 6px;
+    gap: 6px;
+    flex-wrap: wrap;
   }
 
   .stat {
-    gap: 3px;
+    gap: 2px;
+    min-width: 80px;
   }
 
   .stat-number {
-    font-size: 1.3rem;
+    font-size: 1.2rem;
   }
 
   .stat-label {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
   }
 
   .tab-btn {
-    padding: 12px 16px;
-    font-size: 0.85rem;
+    padding: 10px 8px;
+    font-size: 0.8rem;
   }
 
   .posts-section,
   .liked-section {
-    padding: 12px;
+    padding: 10px 8px;
   }
 
   .empty-state {
-    padding: 30px 12px;
+    padding: 24px 10px;
   }
 
   .empty-icon {
-    font-size: 40px;
-    margin-bottom: 16px;
+    font-size: 36px;
+    margin-bottom: 12px;
   }
 
   .empty-state h3 {
-    font-size: 1.2rem;
-    margin-bottom: 8px;
+    font-size: 1.1rem;
+    margin-bottom: 6px;
   }
 
   .empty-state p {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
+  }
+
+  .emoji-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+
+  .emoji-option {
+    font-size: 20px;
+    padding: 6px;
+    border-radius: 8px;
+  }
+
+  .current-avatar {
+    width: 100px;
+    height: 100px;
+  }
+
+  .avatar-emoji {
+    font-size: 50px;
+  }
+
+  .emoji-picker {
+    padding: 12px;
+  }
+
+  .emoji-label {
+    font-size: 12px;
+    margin-bottom: 10px;
+  }
+
+  .profile-edit-container {
+    gap: 20px;
+  }
+
+  .upload-btn {
+    padding: 10px 16px;
+    font-size: 14px;
   }
 }
 
@@ -608,15 +826,15 @@
 @media (max-width: 768px) {
   .profile-tabs {
     position: sticky;
-    top: 64px;
+    top: 52px;
     z-index: 10;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
 
   .tab-btn {
-    padding: 14px 16px;
-    font-size: 0.9rem;
-    min-height: 48px;
+    padding: 12px 12px;
+    font-size: 0.85rem;
+    min-height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -624,30 +842,30 @@
 
   .posts-section,
   .liked-section {
-    padding: 16px 12px;
+    padding: 14px 10px;
   }
 
   .posts-grid {
-    gap: 16px;
+    gap: 14px;
   }
 
   .empty-state {
-    padding: 40px 16px;
+    padding: 36px 14px;
   }
 
   .empty-icon {
-    font-size: 48px;
+    font-size: 44px;
   }
 
   /* Improve edit form on mobile */
   .edit-form {
-    gap: 12px;
+    gap: 10px;
   }
 
   .edit-input,
   .edit-textarea {
-    padding: 10px 14px;
-    font-size: 0.9rem;
+    padding: 10px 12px;
+    font-size: 0.85rem;
   }
 
   .edit-buttons {
@@ -657,8 +875,119 @@
 
   .save-btn,
   .cancel-btn {
-    padding: 10px 20px;
-    font-size: 0.9rem;
+    padding: 10px 18px;
+    font-size: 0.85rem;
     width: 100%;
+  }
+
+  /* Show map button on mobile, hide desktop map */
+  .mobile-only {
+    display: flex;
+  }
+
+  .desktop-map {
+    display: none;
+  }
+
+  .open-map-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 16px 32px;
+    background: var(--gradient-primary);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(59, 130, 199, 0.3);
+  }
+
+  .open-map-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(59, 130, 199, 0.4);
+  }
+
+  .traveled-section {
+    min-height: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-tabs {
+    position: sticky;
+    top: 48px;
+    z-index: 10;
+  }
+
+  .edit-input,
+  .edit-textarea {
+    padding: 8px 10px;
+    font-size: 0.8rem;
+  }
+
+  .save-btn,
+  .cancel-btn {
+    padding: 9px 16px;
+    font-size: 0.8rem;
+  }
+
+  .open-map-btn {
+    padding: 14px 28px;
+    font-size: 0.9rem;
+    border-radius: 10px;
+  }
+
+  .traveled-section {
+    min-height: 250px;
+  }
+
+  .map-modal-overlay {
+    padding: 10px;
+  }
+
+  .map-modal-content {
+    border-radius: 12px;
+    max-width: 98vw;
+    max-height: 95vh;
+    width: 98vw;
+    height: 95vh;
+  }
+
+  .map-modal-close {
+    width: 32px;
+    height: 32px;
+    font-size: 18px;
+    top: 8px;
+    right: 8px;
+    margin: 8px 8px 0 0;
+  }
+
+  /* Make map fill modal on mobile */
+  .map-modal-content .map-wrapper {
+    min-height: 400px;
+  }
+
+  .map-modal-content .map-wrapper svg {
+    min-height: 400px;
+  }
+}
+
+/* Medium mobile screens */
+@media (max-width: 768px) {
+  .map-modal-content {
+    width: 95vw;
+    height: 90vh;
+  }
+
+  .map-modal-content .map-wrapper {
+    min-height: 450px;
+  }
+
+  .map-modal-content .map-wrapper svg {
+    min-height: 450px;
   }
 }
