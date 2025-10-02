@@ -1,11 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import './ImageModal.css';
 
 function ImageModal({ images, initialIndex = 0, onClose }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(initialIndex);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const [slideDirection, setSlideDirection] = useState('');
 
   const handleOverlayClick = (e) => {
     // Close if clicking on the overlay itself, not on any child elements
@@ -16,45 +14,20 @@ function ImageModal({ images, initialIndex = 0, onClose }) {
     }
   };
 
-  const nextImage = () => {
-    if (images.length <= 1 || isTransitioning) return;
-    setSlideDirection('next');
-    setIsTransitioning(true);
-    setTimeout(() => {
-      setCurrentImageIndex((prev) => (prev + 1) % images.length);
-      setTimeout(() => {
-        setIsTransitioning(false);
-        setSlideDirection('');
-      }, 100);
-    }, 300);
-  };
+  const nextImage = useCallback(() => {
+    if (images.length <= 1) return;
+    setCurrentImageIndex((prev) => (prev + 1) % images.length);
+  }, [images.length]);
 
-  const prevImage = () => {
-    if (images.length <= 1 || isTransitioning) return;
-    setSlideDirection('prev');
-    setIsTransitioning(true);
-    setTimeout(() => {
-      setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
-      setTimeout(() => {
-        setIsTransitioning(false);
-        setSlideDirection('');
-      }, 100);
-    }, 300);
-  };
+  const prevImage = useCallback(() => {
+    if (images.length <= 1) return;
+    setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+  }, [images.length]);
 
-  const goToImage = (index) => {
-    if (index === currentImageIndex || isTransitioning) return;
-    const direction = index > currentImageIndex ? 'next' : 'prev';
-    setSlideDirection(direction);
-    setIsTransitioning(true);
-    setTimeout(() => {
-      setCurrentImageIndex(index);
-      setTimeout(() => {
-        setIsTransitioning(false);
-        setSlideDirection('');
-      }, 100);
-    }, 300);
-  };
+  const goToImage = useCallback((index) => {
+    if (index === currentImageIndex) return;
+    setCurrentImageIndex(index);
+  }, [currentImageIndex]);
 
   // Handle escape key and arrow keys
   useEffect(() => {
@@ -75,7 +48,7 @@ function ImageModal({ images, initialIndex = 0, onClose }) {
       document.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = 'unset';
     };
-  }, [onClose]);
+  }, [onClose, nextImage, prevImage]);
 
   // Handle touch events for swipe
   useEffect(() => {
@@ -120,7 +93,7 @@ function ImageModal({ images, initialIndex = 0, onClose }) {
         modalElement.removeEventListener('touchend', handleTouchEnd);
       };
     }
-  }, []);
+  }, [nextImage, prevImage]);
 
   if (!images || images.length === 0) return null;
 
@@ -134,8 +107,7 @@ function ImageModal({ images, initialIndex = 0, onClose }) {
             <img
               src={images[currentImageIndex].url}
               alt={`${currentImageIndex + 1}`}
-              loading="lazy"
-              className={`image-modal-img ${isTransitioning ? 'transitioning' : ''} ${slideDirection ? `slide-${slideDirection}` : ''}`}
+              className="image-modal-img"
               onClick={(e) => e.stopPropagation()}
             />
 

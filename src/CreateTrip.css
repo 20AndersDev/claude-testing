@@ -1,6 +1,6 @@
 .create-trip {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #059669 0%, #34D399 100%);
   padding: 84px 20px 40px;
   position: relative;
 }
@@ -46,7 +46,7 @@
 
 /* Progress Bar */
 .progress-bar {
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+  background: linear-gradient(135deg, rgba(5, 150, 105, 0.1) 0%, rgba(52, 211, 153, 0.1) 100%);
   padding: 32px 24px;
   border-bottom: 2px solid rgba(102, 126, 234, 0.1);
   position: relative;
@@ -86,14 +86,14 @@
 }
 
 .progress-step.active .step-number {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #059669 0%, #34D399 100%);
   color: white;
   transform: scale(1.1);
   box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
 }
 
 .progress-step.current .step-number {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #059669 0%, #34D399 100%);
   color: white;
   box-shadow: 0 0 0 6px rgba(102, 126, 234, 0.15), 0 8px 20px rgba(102, 126, 234, 0.4);
   animation: pulse 2s infinite;
@@ -121,11 +121,11 @@
 }
 
 .progress-step.active .step-label {
-  color: #667eea;
+  color: #059669;
 }
 
 .progress-step.current .step-label {
-  color: #667eea;
+  color: #059669;
   transform: scale(1.05);
 }
 
@@ -143,17 +143,17 @@
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(90deg, #059669 0%, #34D399 100%);
   transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   border-radius: 2px;
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.3);
 }
 
 /* Step Content */
 .step-container {
   padding: 40px;
   min-height: 500px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(102, 126, 234, 0.02) 100%);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(5, 150, 105, 0.02) 100%);
   flex: 1;
   overflow-y: auto;
 }
@@ -167,7 +167,7 @@
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #059669 0%, #34D399 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -227,7 +227,7 @@
 .form-select:focus,
 .form-textarea:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: #059669;
   box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1), 0 4px 8px rgba(0, 0, 0, 0.08);
   transform: translateY(-2px);
 }
@@ -265,7 +265,7 @@
 .activity-card:hover,
 .accommodation-card:hover,
 .transport-card:hover {
-  border-color: #667eea;
+  border-color: #059669;
   box-shadow: 0 8px 20px rgba(102, 126, 234, 0.15);
   transform: translateY(-2px);
 }
@@ -434,7 +434,7 @@
 
 /* Buttons */
 .add-btn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #059669 0%, #34D399 100%);
   color: white;
   border: none;
   border-radius: 12px;
@@ -532,7 +532,7 @@
 
 /* Next Button - Enabled */
 .nav-btn.primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #059669 0%, #34D399 100%);
   color: #ffffff;
   border: none;
   position: relative;
@@ -546,7 +546,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, #7c8ef0 0%, #8558b0 100%);
+  background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
   opacity: 0;
   transition: opacity 0.25s ease;
 }
@@ -569,7 +569,7 @@
 
 /* Next Button - Disabled */
 .nav-btn.primary:disabled {
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%) !important;
+  background: linear-gradient(135deg, rgba(5, 150, 105, 0.2) 0%, rgba(52, 211, 153, 0.2) 100%) !important;
   color: rgba(102, 126, 234, 0.5) !important;
   box-shadow: 0 2px 6px rgba(102, 126, 234, 0.08) !important;
   cursor: not-allowed !important;

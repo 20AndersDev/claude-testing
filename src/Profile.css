@@ -29,7 +29,7 @@
 .profile-header {
   display: flex;
   padding: 40px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-primary);
   color: white;
   align-items: center;
   gap: 30px;
@@ -903,12 +903,12 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(59, 130, 199, 0.3);
+    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
   }
 
   .open-map-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(59, 130, 199, 0.4);
+    box-shadow: 0 6px 16px rgba(5, 150, 105, 0.4);
   }
 
   .traveled-section {

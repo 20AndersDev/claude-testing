@@ -1,59 +1,59 @@
 /* CSS Custom Properties for Theme System */
 
 :root {
-  /* Light Mode Colors - Refined Travel Theme */
-  --primary: #3B82C7;
-  --primary-light: #60A5FA;
-  --primary-dark: #1E40AF;
-  --secondary: #8B5CF6;
-  --background: #F8FAFC;
-  --background-secondary: #F1F5F9;
-  --background-tertiary: #E2E8F0;
+  /* Light Mode Colors - Green Nature Theme */
+  --primary: #059669;
+  --primary-light: #10B981;
+  --primary-dark: #047857;
+  --secondary: #34D399;
+  --background: #F0FDF4;
+  --background-secondary: #DCFCE7;
+  --background-tertiary: #BBF7D0;
   --surface: #FFFFFF;
-  --surface-secondary: #F8FAFC;
-  --surface-hover: rgba(59, 130, 199, 0.08);
-  --text: #1E293B;
-  --text-secondary: #475569;
-  --text-muted: #64748B;
-  --border: rgba(30, 41, 59, 0.08);
-  --border-light: rgba(30, 41, 59, 0.05);
-  --shadow: rgba(30, 41, 59, 0.1);
-  --shadow-light: rgba(30, 41, 59, 0.05);
-  --shadow-medium: rgba(30, 41, 59, 0.15);
+  --surface-secondary: #F0FDF4;
+  --surface-hover: rgba(5, 150, 105, 0.08);
+  --text: #064E3B;
+  --text-secondary: #065F46;
+  --text-muted: #047857;
+  --border: rgba(6, 78, 59, 0.08);
+  --border-light: rgba(6, 78, 59, 0.05);
+  --shadow: rgba(6, 78, 59, 0.1);
+  --shadow-light: rgba(6, 78, 59, 0.05);
+  --shadow-medium: rgba(6, 78, 59, 0.15);
   --accent: #10B981;
   --accent-secondary: #EF4444;
   --warning: #F59E0B;
   --success: #10B981;
-  --gradient-primary: linear-gradient(135deg, #3B82C7 0%, #8B5CF6 100%);
-  --gradient-background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%);
+  --gradient-primary: linear-gradient(135deg, #059669 0%, #34D399 100%);
+  --gradient-background: linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%);
 }
 
-/* Dark Mode Colors - Refined Travel Theme */
+/* Dark Mode Colors - Green Nature Theme */
 :root.dark-mode {
-  --primary: #60A5FA;
-  --primary-light: #93C5FD;
-  --primary-dark: #3B82F6;
-  --secondary: #A78BFA;
-  --background: #0F172A;
-  --background-secondary: #1E293B;
-  --background-tertiary: #334155;
-  --surface: #1E293B;
-  --surface-secondary: #334155;
-  --surface-hover: rgba(96, 165, 250, 0.1);
-  --text: #F1F5F9;
-  --text-secondary: #CBD5E1;
-  --text-muted: #94A3B8;
-  --border: rgba(241, 245, 249, 0.12);
-  --border-light: rgba(241, 245, 249, 0.08);
-  --shadow: rgba(0, 0, 0, 0.3);
-  --shadow-light: rgba(0, 0, 0, 0.2);
-  --shadow-medium: rgba(0, 0, 0, 0.4);
+  --primary: #34D399;
+  --primary-light: #6EE7B7;
+  --primary-dark: #10B981;
+  --secondary: #6EE7B7;
+  --background: #0A0F0D;
+  --background-secondary: #111816;
+  --background-tertiary: #1A2520;
+  --surface: #1A2520;
+  --surface-secondary: #243029;
+  --surface-hover: rgba(52, 211, 153, 0.1);
+  --text: #ECFDF5;
+  --text-secondary: #D1FAE5;
+  --text-muted: #86EFAC;
+  --border: rgba(52, 211, 153, 0.15);
+  --border-light: rgba(52, 211, 153, 0.08);
+  --shadow: rgba(0, 0, 0, 0.5);
+  --shadow-light: rgba(0, 0, 0, 0.3);
+  --shadow-medium: rgba(0, 0, 0, 0.6);
   --accent: #34D399;
   --accent-secondary: #F87171;
   --warning: #FBBF24;
   --success: #34D399;
-  --gradient-primary: linear-gradient(135deg, #60A5FA 0%, #A78BFA 100%);
-  --gradient-background: linear-gradient(135deg, #1E293B 0%, #334155 100%);
+  --gradient-primary: linear-gradient(135deg, #059669 0%, #34D399 100%);
+  --gradient-background: linear-gradient(135deg, #0A0F0D 0%, #111816 100%);
 }
 
 /* Global Styles */

@@ -406,11 +406,11 @@
 
 .action-btn.comment {
   color: var(--primary);
-  border-color: rgba(59, 130, 199, 0.3);
+  border-color: rgba(5, 150, 105, 0.3);
 }
 
 .action-btn.comment:hover {
-  background: rgba(59, 130, 199, 0.1);
+  background: rgba(5, 150, 105, 0.1);
 }
 
 /* Comments */
