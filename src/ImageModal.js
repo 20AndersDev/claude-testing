@@ -17,7 +17,7 @@ function ImageModal({ images, initialIndex = 0, onClose }) {
   };
 
   const nextImage = () => {
-    if (isTransitioning || images.length <= 1) return;
+    if (images.length <= 1 || isTransitioning) return;
     setSlideDirection('next');
     setIsTransitioning(true);
     setTimeout(() => {
@@ -25,12 +25,12 @@ function ImageModal({ images, initialIndex = 0, onClose }) {
       setTimeout(() => {
         setIsTransitioning(false);
         setSlideDirection('');
-      }, 150);
-    }, 150);
+      }, 100);
+    }, 300);
   };
 
   const prevImage = () => {
-    if (isTransitioning || images.length <= 1) return;
+    if (images.length <= 1 || isTransitioning) return;
     setSlideDirection('prev');
     setIsTransitioning(true);
     setTimeout(() => {
@@ -38,12 +38,12 @@ function ImageModal({ images, initialIndex = 0, onClose }) {
       setTimeout(() => {
         setIsTransitioning(false);
         setSlideDirection('');
-      }, 150);
-    }, 150);
+      }, 100);
+    }, 300);
   };
 
   const goToImage = (index) => {
-    if (isTransitioning || index === currentImageIndex) return;
+    if (index === currentImageIndex || isTransitioning) return;
     const direction = index > currentImageIndex ? 'next' : 'prev';
     setSlideDirection(direction);
     setIsTransitioning(true);
@@ -52,8 +52,8 @@ function ImageModal({ images, initialIndex = 0, onClose }) {
       setTimeout(() => {
         setIsTransitioning(false);
         setSlideDirection('');
-      }, 150);
-    }, 150);
+      }, 100);
+    }, 300);
   };
 
   // Handle escape key and arrow keys

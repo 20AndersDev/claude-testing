@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from './Navbar';
 import ImageModal from './ImageModal';
@@ -12,13 +12,13 @@ function PostDetail() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showModal, setShowModal] = useState(false);
 
-  // Mock data - in a real app, this would fetch from an API
+  // Fetch post data
   useEffect(() => {
     const mockPost = {
       id: parseInt(postId),
       author: 'Travel Explorer',
       timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-      content: 'Amazing trip to the mountains! The views were absolutely breathtaking and the hiking trails were perfect for all skill levels. This adventure took us through some of the most spectacular landscapes I have ever seen.',
+      content: 'Amazing trip to the mountains! The views were absolutely breathtaking and the hiking trails were perfect for all skill levels.',
       tripTitle: 'Mountain Adventure',
       location: 'Swiss Alps, Switzerland',
       startDate: '2024-01-15',
@@ -48,21 +48,21 @@ function PostDetail() {
         {
           name: 'Matterhorn Base Camp Hike',
           type: 'hiking',
-          description: 'Challenging but rewarding hike to the base of the famous Matterhorn peak. The trail offers incredible views and photo opportunities.',
+          description: 'Challenging but rewarding hike to the base of the famous Matterhorn peak.',
           cost: '50',
           rating: 5
         },
         {
           name: 'Alpine Restaurant Dinner',
           type: 'restaurant',
-          description: 'Traditional Swiss cuisine with amazing mountain views. The fondue was exceptional!',
+          description: 'Traditional Swiss cuisine with amazing mountain views.',
           cost: '75',
           rating: 4
         },
         {
           name: 'Cable Car to Gornergrat',
           type: 'attraction',
-          description: 'Scenic railway journey with panoramic views of the Alps. A must-do experience.',
+          description: 'Scenic railway journey with panoramic views of the Alps.',
           cost: '45',
           rating: 5
         },
@@ -87,13 +87,24 @@ function PostDetail() {
     setPost(mockPost);
   }, [postId]);
 
-  const handleLike = () => {
-    if (post) {
-      setPost(prev => ({ ...prev, likes: prev.likes + 1 }));
-    }
-  };
+  // Memoized image generation
+  const postImages = useMemo(() => {
+    if (!post) return [];
+    const imageCategories = ['nature', 'food', 'city', 'travel', 'architecture', 'landscape'];
+    const imageCount = Math.min(5, Math.max(1, (parseInt(postId) % 4) + 1));
+    return Array.from({ length: imageCount }, (_, i) => ({
+      id: i,
+      url: `https://picsum.photos/1200/800?random=${parseInt(postId) + i}&category=${imageCategories[(parseInt(postId) + i) % imageCategories.length]}`,
+      category: imageCategories[(parseInt(postId) + i) % imageCategories.length]
+    }));
+  }, [post, postId]);
 
-  const handleCommentSubmit = (e) => {
+  // Handlers
+  const handleLike = useCallback(() => {
+    setPost(prev => prev ? { ...prev, likes: prev.likes + 1 } : null);
+  }, []);
+
+  const handleCommentSubmit = useCallback((e) => {
     e.preventDefault();
     if (commentText.trim() && post) {
       const newComment = {
@@ -108,26 +119,30 @@ function PostDetail() {
       }));
       setCommentText('');
     }
-  };
+  }, [commentText, post]);
 
+  const nextImage = useCallback(() => {
+    setCurrentImageIndex(prev => (prev + 1) % postImages.length);
+  }, [postImages.length]);
+
+  const prevImage = useCallback(() => {
+    setCurrentImageIndex(prev => (prev - 1 + postImages.length) % postImages.length);
+  }, [postImages.length]);
+
+  const goToImage = useCallback((index) => {
+    setCurrentImageIndex(index);
+  }, []);
+
+  // Utility functions
   const formatTime = (timestamp) => {
-    const now = new Date();
-    const diff = now - timestamp;
+    const diff = Date.now() - timestamp;
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const days = Math.floor(hours / 24);
-
-    if (days > 0) {
-      return `${days}d ago`;
-    } else if (hours > 0) {
-      return `${hours}h ago`;
-    } else {
-      return 'Just now';
-    }
+    return days > 0 ? `${days}d ago` : hours > 0 ? `${hours}h ago` : 'Just now';
   };
 
   const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
+    return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
@@ -150,84 +165,20 @@ function PostDetail() {
     return icons[type] || '📍';
   };
 
-  const renderStars = (rating) => {
-    return (
-      <div className="activity-rating">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <span
-            key={star}
-            style={{
-              color: star <= rating ? '#FFD700' : '#E5E7EB',
-              fontSize: '14px'
-            }}
-          >
-            ⭐
-          </span>
-        ))}
-      </div>
-    );
-  };
-
-  const getPostImages = () => {
-    const imageCategories = [
-      'nature',
-      'food',
-      'city',
-      'travel',
-      'architecture',
-      'landscape'
-    ];
-
-    const imageCount = Math.min(5, Math.max(1, (parseInt(postId) % 4) + 1));
-    const images = [];
-
-    for (let i = 0; i < imageCount; i++) {
-      const category = imageCategories[(parseInt(postId) + i) % imageCategories.length];
-      images.push({
-        id: i,
-        url: `https://picsum.photos/1200/800?random=${parseInt(postId) + i}&category=${category}`,
-        category
-      });
-    }
-
-    return images;
-  };
-
-  const postImages = getPostImages();
-
-  const nextImage = () => {
-    setCurrentImageIndex((prev) => (prev + 1) % postImages.length);
-  };
-
-  const prevImage = () => {
-    setCurrentImageIndex((prev) => (prev - 1 + postImages.length) % postImages.length);
-  };
-
-  const goToImage = (index) => {
-    setCurrentImageIndex(index);
-  };
-
-  const handleImageClick = () => {
-    setShowModal(true);
-  };
-
-  const handleCloseModal = () => {
-    setShowModal(false);
-  };
+  const renderStars = (rating) => (
+    <div className="activity-rating">
+      {[1, 2, 3, 4, 5].map(star => (
+        <span key={star} className={star <= rating ? 'star-filled' : 'star-empty'}>⭐</span>
+      ))}
+    </div>
+  );
 
   if (!post) {
     return (
       <div className="App">
         <Navbar />
-        <div style={{
-          paddingTop: '80px',
-          textAlign: 'center',
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}>
-          <p style={{ fontSize: '18px', color: 'var(--text-muted)' }}>Loading post...</p>
+        <div className="loading-container">
+          <p>Loading post...</p>
         </div>
       </div>
     );
@@ -238,235 +189,162 @@ function PostDetail() {
       <Navbar />
 
       {/* Hero Section */}
-      <div className="post-detail-page">
-        <div className="post-detail-hero">
-          <button
-            className="hero-back-btn"
-            onClick={() => navigate(-1)}
-          >
-            ← Back
-          </button>
-
-          <div className="hero-content">
-            {post.tripTitle ? (
-              <>
-                <h1 className="hero-title">🗺️ {post.tripTitle}</h1>
-                <div className="hero-subtitle">📍 {post.location}</div>
-                <div className="hero-meta">
-                  {post.startDate && formatDate(post.startDate)}
-                  {post.startDate && post.endDate && ' - '}
-                  {post.endDate && formatDate(post.endDate)}
-                </div>
-              </>
-            ) : (
-              <>
-                <h1 className="hero-title">📸 Photo Post</h1>
-                <div className="hero-subtitle">By {post.author}</div>
-                <div className="hero-meta">{formatTime(post.timestamp)}</div>
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Main Content */}
-        <div className="post-detail-container">
-          <div className="post-detail-card">
-
-            {/* Author Section */}
-            <div className="post-author-section">
-              <div className="author-avatar-large">🧳</div>
-              <div className="author-info">
-                <h2 className="author-name-large">{post.author}</h2>
-                <div className="post-timestamp">{formatTime(post.timestamp)}</div>
+      <div className="detail-hero">
+        <button className="back-btn" onClick={() => navigate(-1)}>←</button>
+        <div className="hero-content">
+          {post.tripTitle ? (
+            <>
+              <h1 className="hero-title">🗺️ {post.tripTitle}</h1>
+              <div className="hero-location">📍 {post.location}</div>
+              <div className="hero-dates">
+                {post.startDate && formatDate(post.startDate)}
+                {post.startDate && post.endDate && ' - '}
+                {post.endDate && formatDate(post.endDate)}
               </div>
+            </>
+          ) : (
+            <>
+              <h1 className="hero-title">📸 Photo Post</h1>
+              <div className="hero-subtitle">By {post.author}</div>
+              <div className="hero-meta">{formatTime(post.timestamp)}</div>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="detail-container">
+        <div className="detail-card">
+
+          {/* Author Section */}
+          <div className="author-section">
+            <div className="author-avatar-lg">🧳</div>
+            <div className="author-info">
+              <h2 className="author-name">{post.author}</h2>
+              <div className="post-time">{formatTime(post.timestamp)}</div>
             </div>
+          </div>
 
-            {/* Image Gallery */}
-            <div className="post-image-section">
-              <div className="main-post-image" onClick={handleImageClick} style={{cursor: 'pointer'}}>
-                <img
-                  src={postImages[currentImageIndex].url}
-                  alt={`${post.tripTitle || 'Post'} photo ${currentImageIndex + 1}`}
-                  loading="lazy"
-                />
-                <div className="image-overlay"></div>
-
+          {/* Image Gallery */}
+          {postImages.length > 0 && (
+            <div className="image-section">
+              <div className="main-image" onClick={() => setShowModal(true)}>
+                <img src={postImages[currentImageIndex].url} alt={`${post.tripTitle || 'Post'} photo ${currentImageIndex + 1}`} loading="lazy" />
                 {postImages.length > 1 && (
                   <>
-                    <button
-                      className="image-nav-btn prev"
-                      onClick={prevImage}
-                      aria-label="Previous image"
-                    >
-                      ‹
-                    </button>
-                    <button
-                      className="image-nav-btn next"
-                      onClick={nextImage}
-                      aria-label="Next image"
-                    >
-                      ›
-                    </button>
-                    <div className="image-counter">
-                      {currentImageIndex + 1} / {postImages.length}
-                    </div>
+                    <button className="nav-btn prev" onClick={(e) => { e.stopPropagation(); prevImage(); }}>‹</button>
+                    <button className="nav-btn next" onClick={(e) => { e.stopPropagation(); nextImage(); }}>›</button>
                   </>
                 )}
               </div>
-
               {postImages.length > 1 && (
-                <div className="image-dots-container">
+                <div className="image-dots">
                   {postImages.map((_, index) => (
-                    <button
-                      key={index}
-                      className={`image-dot ${index === currentImageIndex ? 'active' : ''}`}
-                      onClick={() => goToImage(index)}
-                      aria-label={`Go to image ${index + 1}`}
-                    />
+                    <button key={index} className={`dot ${index === currentImageIndex ? 'active' : ''}`} onClick={() => goToImage(index)} />
                   ))}
                 </div>
               )}
             </div>
+          )}
 
-            {/* Content Section */}
-            <div className="post-content-section">
+          {/* Content Section */}
+          <div className="content-section">
+            <div className="story">
+              <h3 className="section-title">📖 {post.tripTitle ? 'Trip Story' : 'Story'}</h3>
+              <p className="story-text">{post.content}</p>
+            </div>
 
-              {/* Trip Story */}
-              <div className="trip-story">
-                <h3 className="story-title">
-                  📖 {post.tripTitle ? 'Trip Story' : 'Story'}
-                </h3>
-                <p className="story-text">{post.content}</p>
-              </div>
-
-              <div className="section-divider"></div>
-
-              {/* Activities */}
-              {post.activities && post.activities.length > 0 && (
-                <>
-                  <div className="activities-section">
-                    <h3 className="section-title">
-                      🎯 Activities & Places
-                    </h3>
-                    <div className="activities-grid">
-                      {post.activities.map((activity, index) => (
-                        <div key={index} className="activity-card">
-                          {activity.cost && (
-                            <div className="activity-cost">${activity.cost}</div>
-                          )}
-                          <div className="activity-header">
-                            <div className="activity-icon-large">
-                              {getActivityIcon(activity.type)}
-                            </div>
-                            <div className="activity-details">
-                              <h4 className="activity-name">{activity.name}</h4>
-                              <div className="activity-type">{activity.type}</div>
-                              {activity.rating > 0 && renderStars(activity.rating)}
-                            </div>
-                          </div>
-                          {activity.description && (
-                            <p className="activity-description">{activity.description}</p>
-                          )}
+            {/* Activities */}
+            {post.activities && post.activities.length > 0 && (
+              <>
+                <div className="divider"></div>
+                <div className="activities">
+                  <h3 className="section-title">🎯 Activities & Places</h3>
+                  <div className="activities-grid">
+                    {post.activities.map((activity, index) => (
+                      <div key={index} className="activity-card">
+                        {activity.cost && <div className="activity-cost">${activity.cost}</div>}
+                        <div className="activity-icon-lg">{getActivityIcon(activity.type)}</div>
+                        <div className="activity-details">
+                          <h4 className="activity-name">{activity.name}</h4>
+                          <div className="activity-type">{activity.type}</div>
+                          {activity.rating > 0 && renderStars(activity.rating)}
+                          {activity.description && <p className="activity-desc">{activity.description}</p>}
                         </div>
-                      ))}
-                    </div>
+                      </div>
+                    ))}
                   </div>
-                  <div className="section-divider"></div>
-                </>
-              )}
-            </div>
+                </div>
+              </>
+            )}
+          </div>
 
-            {/* Action Buttons */}
-            <div className="action-buttons">
-              <button className="action-button like" onClick={handleLike}>
-                <span>❤️</span>
-                <span>{post.likes} Likes</span>
-              </button>
-              <button className="action-button comment">
-                <span>💬</span>
-                <span>{post.comments?.length || 0} Comments</span>
-              </button>
-            </div>
+          {/* Actions */}
+          <div className="actions">
+            <button className="action-btn like" onClick={handleLike}>
+              <span>❤️</span>
+              <span>{post.likes} Likes</span>
+            </button>
+            <button className="action-btn comment">
+              <span>💬</span>
+              <span>{post.comments?.length || 0} Comments</span>
+            </button>
+          </div>
 
-            {/* Comments Section */}
-            <div className="comments-section">
-              <h3 className="section-title">
-                💬 Comments ({post.comments?.length || 0})
-              </h3>
-
-              <div className="comments-list">
-                {post.comments && post.comments.length > 0 ? (
-                  post.comments.map(comment => (
-                    <div key={comment.id} className="comment-card">
+          {/* Comments */}
+          <div className="comments">
+            <h3 className="section-title">💬 Comments ({post.comments?.length || 0})</h3>
+            <div className="comments-list">
+              {post.comments && post.comments.length > 0 ? (
+                post.comments.map(comment => (
+                  <div key={comment.id} className="comment">
+                    <div className="comment-avatar">👤</div>
+                    <div className="comment-content">
                       <div className="comment-header">
-                        <div className="comment-avatar">👤</div>
                         <div className="comment-author">{comment.author}</div>
                         <div className="comment-time">{formatTime(comment.timestamp)}</div>
                       </div>
                       <p className="comment-text">{comment.content}</p>
                     </div>
-                  ))
-                ) : (
-                  <p style={{
-                    textAlign: 'center',
-                    color: 'var(--text-muted)',
-                    fontSize: '14px',
-                    margin: '24px 0'
-                  }}>
-                    No comments yet. Be the first to comment!
-                  </p>
-                )}
-              </div>
+                  </div>
+                ))
+              ) : (
+                <p className="no-comments">No comments yet. Be the first to comment!</p>
+              )}
+            </div>
 
-              <div className="add-comment-form">
-                <div className="comment-form-header">
-                  <div className="comment-form-avatar">👤</div>
-                  <p className="comment-form-label">Add a comment</p>
-                </div>
-                <div className="comment-input-container">
-                  <textarea
-                    value={commentText}
-                    onChange={(e) => setCommentText(e.target.value)}
-                    placeholder="What are your thoughts about this trip?"
-                    className="comment-input"
-                    rows={3}
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        handleCommentSubmit(e);
-                      }
-                    }}
-                  />
-                </div>
-                <div className="comment-form-actions">
-                  <button
-                    type="button"
-                    className="comment-cancel"
-                    onClick={() => setCommentText('')}
-                    style={{ display: commentText.trim() ? 'block' : 'none' }}
-                  >
+            <div className="add-comment">
+              <div className="comment-avatar">👤</div>
+              <form onSubmit={handleCommentSubmit} className="comment-form">
+                <textarea
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  placeholder="What are your thoughts?"
+                  className="comment-input"
+                  rows={3}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleCommentSubmit(e);
+                    }
+                  }}
+                />
+                <div className="comment-actions">
+                  <button type="button" className="btn-cancel" onClick={() => setCommentText('')} style={{ display: commentText.trim() ? 'block' : 'none' }}>
                     Cancel
                   </button>
-                  <button
-                    onClick={handleCommentSubmit}
-                    className="comment-submit"
-                    disabled={!commentText.trim()}
-                  >
+                  <button type="submit" className="btn-submit" disabled={!commentText.trim()}>
                     Post Comment
                   </button>
                 </div>
-              </div>
+              </form>
             </div>
           </div>
         </div>
       </div>
 
       {showModal && (
-        <ImageModal
-          images={postImages}
-          initialIndex={currentImageIndex}
-          onClose={handleCloseModal}
-        />
+        <ImageModal images={postImages} initialIndex={currentImageIndex} onClose={() => setShowModal(false)} />
       )}
     </div>
   );

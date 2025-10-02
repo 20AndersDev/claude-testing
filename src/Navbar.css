@@ -161,14 +161,11 @@
 .action-icon {
   font-size: 18px;
   color: white;
-  transition: transform 0.3s ease;
 }
 
 .nav-action-btn:hover {
   background: rgba(255, 255, 255, 0.2);
-  transform: translateY(-3px) scale(1.1);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
-  animation: buttonPulse 0.6s ease-in-out;
 }
 
 @keyframes buttonPulse {
@@ -177,7 +174,6 @@
 }
 
 .nav-action-btn:hover .action-icon {
-  transform: scale(1.2) rotate(5deg);
   color: var(--primary-light);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -187,7 +183,6 @@
 }
 
 .theme-toggle:hover .action-icon {
-  transform: scale(1.2);
   color: var(--primary-light);
 }
 

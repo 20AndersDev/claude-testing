@@ -152,8 +152,8 @@ function PostModal({ post, onClose, onLike, onComment }) {
       setTimeout(() => {
         setIsTransitioning(false);
         setSlideDirection('');
-      }, 150);
-    }, 150);
+      }, 250);
+    }, 250);
   };
 
   const prevImage = () => {
@@ -165,8 +165,8 @@ function PostModal({ post, onClose, onLike, onComment }) {
       setTimeout(() => {
         setIsTransitioning(false);
         setSlideDirection('');
-      }, 150);
-    }, 150);
+      }, 250);
+    }, 250);
   };
 
   const goToImage = (index) => {
@@ -179,8 +179,8 @@ function PostModal({ post, onClose, onLike, onComment }) {
       setTimeout(() => {
         setIsTransitioning(false);
         setSlideDirection('');
-      }, 150);
-    }, 150);
+      }, 250);
+    }, 250);
   };
 
   // Handle escape key and arrow keys

@@ -8,6 +8,8 @@ function Post({ post, onLike, onComment }) {
   const [commentText, setCommentText] = useState('');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [touchStart, setTouchStart] = useState(null);
+  const [touchEnd, setTouchEnd] = useState(null);
 
   const handleLike = () => {
     onLike(post.id);
@@ -144,6 +146,33 @@ function Post({ post, onLike, onComment }) {
     setCurrentImageIndex(index);
   };
 
+  // Minimum swipe distance (in px)
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe) {
+      nextImage();
+    }
+    if (isRightSwipe) {
+      prevImage();
+    }
+  };
+
   const renderStars = (rating) => {
     return (
       <div className="rating-display">
@@ -187,16 +216,19 @@ function Post({ post, onLike, onComment }) {
             <p onClick={handleTripClick}>{post.content}</p>
             <div className="post-images">
               <div className="image-gallery">
-                <div className="main-image">
+                <div
+                  className="main-image"
+                  onClick={handleTripClick}
+                  onTouchStart={onTouchStart}
+                  onTouchMove={onTouchMove}
+                  onTouchEnd={onTouchEnd}
+                >
                   <img
                     src={postImages[currentImageIndex].url}
                     alt="Travel destination"
                   />
                   {postImages.length > 1 && (
                     <>
-                      <div className="image-counter">
-                        📷 {postImages.length}
-                      </div>
                       <button
                         className="nav-btn prev-btn"
                         onClick={(e) => { e.stopPropagation(); prevImage(); }}
@@ -212,13 +244,13 @@ function Post({ post, onLike, onComment }) {
                     </>
                   )}
                 </div>
-                {false && postImages.length > 1 && (
+                {postImages.length > 1 && (
                   <div className="image-dots">
                     {postImages.map((_, index) => (
                       <button
                         key={index}
                         className={`dot ${index === currentImageIndex ? 'active' : ''}`}
-                        onClick={() => goToImage(index)}
+                        onClick={(e) => { e.stopPropagation(); goToImage(index); }}
                       />
                     ))}
                   </div>
@@ -287,16 +319,19 @@ function Post({ post, onLike, onComment }) {
           <p onClick={handlePostClick}>{post.content}</p>
           <div className="post-images">
             <div className="image-gallery">
-              <div className="main-image">
+              <div
+                className="main-image"
+                onClick={handlePostClick}
+                onTouchStart={onTouchStart}
+                onTouchMove={onTouchMove}
+                onTouchEnd={onTouchEnd}
+              >
                 <img
                   src={postImages[currentImageIndex].url}
                   alt="Content from post"
                 />
                 {postImages.length > 1 && (
                   <>
-                    <div className="image-counter">
-                      📷 {postImages.length}
-                    </div>
                     <button
                       className="nav-btn prev-btn"
                       onClick={(e) => { e.stopPropagation(); prevImage(); }}
@@ -312,13 +347,13 @@ function Post({ post, onLike, onComment }) {
                   </>
                 )}
               </div>
-              {false && postImages.length > 1 && (
+              {postImages.length > 1 && (
                 <div className="image-dots">
                   {postImages.map((_, index) => (
                     <button
                       key={index}
                       className={`dot ${index === currentImageIndex ? 'active' : ''}`}
-                      onClick={() => goToImage(index)}
+                      onClick={(e) => { e.stopPropagation(); goToImage(index); }}
                     />
                   ))}
                 </div>

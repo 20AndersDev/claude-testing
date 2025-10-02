@@ -142,12 +142,6 @@
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
-}
-
-.post-image:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
 .post-image img {
@@ -155,11 +149,6 @@
   height: 280px;
   object-fit: cover;
   display: block;
-  transition: all 0.3s ease;
-}
-
-.post-image:hover img {
-  transform: scale(1.05);
 }
 
 .post-stats {
@@ -946,14 +935,14 @@
   right: 12px;
   background: rgba(0, 0, 0, 0.75);
   color: white;
-  padding: 4px 8px;
+  padding: 5px 10px;
   border-radius: 16px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.15);
-  transition: all 0.3s ease;
   z-index: 10;
+  line-height: 1;
 }
 
 .nav-btn {
@@ -963,10 +952,10 @@
   background: rgba(0, 0, 0, 0.6);
   color: white;
   border: none;
-  width: 24px;
-  height: 24px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  font-size: 13px;
+  font-size: 18px;
   font-weight: 700;
   line-height: 1;
   padding: 0;
@@ -975,20 +964,19 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.3);
   z-index: 20;
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .nav-btn:hover {
   background: rgba(59, 130, 199, 0.9);
-  transform: translateY(-50%) scale(1.08);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
   border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-50%) scale(1.1);
 }
 
 .prev-btn {
@@ -1008,95 +996,37 @@
 }
 
 .dot {
-  width: 4px;
-  height: 4px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   border: none;
   background: var(--text-muted);
   cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  opacity: 0.5;
+  opacity: 0.4;
   position: relative;
+  padding: 0;
 }
 
 .dot.active {
   background: var(--primary);
-  transform: scale(1.5);
+  transform: scale(1.4);
   opacity: 1;
-  box-shadow: 0 0 0 1px rgba(59, 130, 199, 0.4);
+  box-shadow: 0 0 0 2px rgba(59, 130, 199, 0.3);
 }
 
 .dot:hover {
-  background: var(--primary-light);
-  transform: scale(1.3);
-  opacity: 0.8;
+  background: var(--primary);
+  transform: scale(1.2);
+  opacity: 0.7;
 }
 
 /* Image gallery hover effects */
-.main-image:hover .nav-btn {
-  opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
+.image-gallery:hover .nav-btn {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
 }
 
-.main-image:hover .image-counter {
-  background: rgba(0, 0, 0, 0.85);
-  transform: scale(1.05);
-}
-
-/* Smooth fade transition for images */
-.main-image {
-  position: relative;
-}
-
-.main-image img.fade-enter {
-  opacity: 0;
-}
-
-.main-image img.fade-enter-active {
-  opacity: 1;
-  transition: opacity 0.25s ease-in-out;
-}
-
-.main-image img.fade-exit {
-  opacity: 1;
-}
-
-.main-image img.fade-exit-active {
-  opacity: 0;
-  transition: opacity 0.15s ease-in-out;
-}
-
-/* Crossfade effect */
-.main-image img.crossfade {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: opacity 0.3s ease;
-}
-
-.main-image img.crossfade.entering {
-  opacity: 0;
-  z-index: 2;
-}
-
-.main-image img.crossfade.entered {
-  opacity: 1;
-  z-index: 2;
-}
-
-.main-image img.crossfade.exiting {
-  opacity: 1;
-  z-index: 1;
-}
-
-.main-image img.crossfade.exited {
-  opacity: 0;
-  z-index: 1;
-}
 
 /* Dot animation - simplified for better performance */
 @keyframes dotPulse {
@@ -1110,11 +1040,6 @@
   }
 }
 
-.dot.active {
-  animation: dotPulse 3s ease-in-out infinite;
-  will-change: transform, opacity;
-}
-
 /* Mobile responsive styles for post images */
 @media (max-width: 768px) {
   .post-image img {
@@ -1126,9 +1051,9 @@
   }
 
   .nav-btn {
-    width: 26px;
-    height: 26px;
-    font-size: 13px;
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
   }
 
   .prev-btn {
@@ -1140,8 +1065,22 @@
   }
 
   .image-counter {
-    padding: 3px 6px;
-    font-size: 10px;
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+
+  .image-dots {
+    padding: 10px;
+    gap: 6px;
+  }
+
+  .dot {
+    width: 7px;
+    height: 7px;
+  }
+
+  .dot.active {
+    transform: scale(1.3);
   }
 }
 
@@ -1159,41 +1098,57 @@
   }
 
   .nav-btn {
-    width: 24px;
-    height: 24px;
-    font-size: 12px;
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
   }
 
   .prev-btn {
-    left: 8px;
+    left: 6px;
   }
 
   .next-btn {
-    right: 8px;
+    right: 6px;
   }
 
   .image-counter {
     top: 8px;
     right: 8px;
-    padding: 2px 5px;
-    font-size: 9px;
+    padding: 3px 7px;
+    font-size: 10px;
   }
 
   .image-dots {
-    padding: 10px;
-    gap: 4px;
+    padding: 8px;
+    gap: 5px;
   }
 
   .dot {
-    width: 3px;
-    height: 3px;
+    width: 6px;
+    height: 6px;
+    /* Make dots easier to tap on mobile */
+    min-width: 28px;
+    min-height: 28px;
   }
 
-  .dot.active {
-    transform: scale(1.7);
+  .dot::before {
+    content: '';
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: inherit;
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .dot.active::before {
+    transform: translate(-50%, -50%) scale(1.3);
+    box-shadow: 0 0 0 2px rgba(59, 130, 199, 0.3);
   }
 
   .dot:hover {
-    transform: scale(1.4);
+    transform: scale(1);
   }
 }
