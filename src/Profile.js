@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { supabase } from './supabaseClient';
 import Navbar from './Navbar';
 import Post from './Post';
 import WorldMap from './WorldMap';
@@ -24,35 +25,74 @@ function Profile() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
 
-  // Load posts, liked posts, and visited countries from localStorage
+  // Load user data from Supabase
   useEffect(() => {
-    const storedPosts = localStorage.getItem('tripPosts');
-    if (storedPosts) {
-      const allPosts = JSON.parse(storedPosts);
-
-      // Filter user's own posts (posts by "Current User" or "You")
-      const userPosts = allPosts.filter(post =>
-        post.author === 'Current User' || post.author === 'You'
-      );
-      setPosts(userPosts);
-
-      // Get liked posts from localStorage
-      const storedLikedPosts = localStorage.getItem('likedPosts');
-      if (storedLikedPosts) {
-        const likedPostIds = JSON.parse(storedLikedPosts);
-        const likedPostsData = allPosts.filter(post =>
-          likedPostIds.includes(post.id)
-        );
-        setLikedPosts(likedPostsData);
-      }
-    }
-
-    // Load visited countries from localStorage
-    const storedVisitedCountries = localStorage.getItem('visitedCountries');
-    if (storedVisitedCountries) {
-      setVisitedCountries(JSON.parse(storedVisitedCountries));
-    }
+    fetchUserProfile();
+    fetchUserPosts();
   }, []);
+
+  const fetchUserProfile = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (user) {
+        // Try to fetch profile from profiles table
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+
+        setProfile({
+          name: user.user_metadata?.display_name || profileData?.full_name || user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'Current User',
+          email: user.email || 'user@example.com',
+          bio: profileData?.bio || user.user_metadata?.bio || 'Welcome to my profile! I love sharing thoughts and connecting with others.',
+          location: profileData?.location || user.user_metadata?.location || '',
+          joinDate: new Date(user.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+          profilePicture: profileData?.avatar_url || user.user_metadata?.avatar_url || '👤'
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    }
+  };
+
+  const fetchUserPosts = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (user) {
+        const storedPosts = localStorage.getItem('tripPosts');
+        if (storedPosts) {
+          const allPosts = JSON.parse(storedPosts);
+
+          // Filter user's own posts by user email
+          const userPosts = allPosts.filter(post =>
+            post.author === 'Current User' || post.author === 'You' || post.userEmail === user.email
+          );
+          setPosts(userPosts);
+
+          // Get liked posts from localStorage
+          const storedLikedPosts = localStorage.getItem('likedPosts');
+          if (storedLikedPosts) {
+            const likedPostIds = JSON.parse(storedLikedPosts);
+            const likedPostsData = allPosts.filter(post =>
+              likedPostIds.includes(post.id)
+            );
+            setLikedPosts(likedPostsData);
+          }
+        }
+
+        // Load visited countries from localStorage
+        const storedVisitedCountries = localStorage.getItem('visitedCountries');
+        if (storedVisitedCountries) {
+          setVisitedCountries(JSON.parse(storedVisitedCountries));
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching user posts:', error);
+    }
+  };
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -246,12 +286,6 @@ function Profile() {
             >
               ❤️ Liked Posts ({likedPosts.length})
             </button>
-            <button
-              className={`tab-btn ${activeTab === 'traveled' ? 'active' : ''}`}
-              onClick={() => setActiveTab('traveled')}
-            >
-              🌍 Traveled ({visitedCountries.length})
-            </button>
           </div>
 
           <div className="profile-content">
@@ -301,22 +335,6 @@ function Profile() {
               </div>
             )}
 
-            {activeTab === 'traveled' && (
-              <div className="traveled-section">
-                <button
-                  className="open-map-btn mobile-only"
-                  onClick={() => setShowMapModal(true)}
-                >
-                  🗺️ View Travel Map
-                </button>
-                <div className="desktop-map">
-                  <WorldMap
-                    visitedCountries={visitedCountries}
-                    onCountryToggle={handleCountryToggle}
-                  />
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>

@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from './supabaseClient';
 import Navbar from './Navbar';
 import './CreateTrip.css';
 
@@ -19,15 +20,11 @@ function CreateTrip() {
   ]);
 
   const [accommodations, setAccommodations] = useState([
-    { type: 'hotel', name: '', address: '', checkIn: '', checkOut: '', cost: '', rating: 0, images: [] }
-  ]);
-
-  const [transport, setTransport] = useState([
-    { type: 'plane', from: '', to: '', date: '', time: '', cost: '', images: [] }
+    { type: 'hotel', name: '', address: '', description: '', checkIn: '', checkOut: '', cost: '', rating: 0, images: [] }
   ]);
 
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 4;
+  const totalSteps = 3;
 
   const handleTripDataChange = (field, value) => {
     setTripData(prev => ({ ...prev, [field]: value }));
@@ -55,10 +52,6 @@ function CreateTrip() {
         setAccommodations(prev => prev.map((acc, i) =>
           i === index ? { ...acc, images: [...acc.images, imageData] } : acc
         ));
-      } else if (section === 'transport' && index !== null) {
-        setTransport(prev => prev.map((t, i) =>
-          i === index ? { ...t, images: [...t.images, imageData] } : t
-        ));
       }
     };
     reader.readAsDataURL(file);
@@ -77,10 +70,6 @@ function CreateTrip() {
     } else if (section === 'accommodations' && index !== null) {
       setAccommodations(prev => prev.map((acc, i) =>
         i === index ? { ...acc, images: acc.images.filter(img => img.id !== imageId) } : acc
-      ));
-    } else if (section === 'transport' && index !== null) {
-      setTransport(prev => prev.map((t, i) =>
-        i === index ? { ...t, images: t.images.filter(img => img.id !== imageId) } : t
       ));
     }
   };
@@ -118,6 +107,7 @@ function CreateTrip() {
       type: 'hotel',
       name: '',
       address: '',
+      description: '',
       checkIn: '',
       checkOut: '',
       cost: '',
@@ -130,51 +120,38 @@ function CreateTrip() {
     setAccommodations(prev => prev.filter((_, i) => i !== index));
   };
 
-  const updateTransport = (index, field, value) => {
-    setTransport(prev => prev.map((t, i) =>
-      i === index ? { ...t, [field]: value } : t
-    ));
-  };
 
-  const addTransport = () => {
-    setTransport(prev => [...prev, {
-      type: 'plane',
-      from: '',
-      to: '',
-      date: '',
-      time: '',
-      cost: '',
-      images: []
-    }]);
-  };
+  const handleSubmit = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
 
-  const removeTransport = (index) => {
-    setTransport(prev => prev.filter((_, i) => i !== index));
-  };
+      const completeTrip = {
+        ...tripData,
+        // Provide defaults for required fields if empty
+        content: tripData.content.trim() || `Just visited ${tripData.tripTitle}!`,
+        location: tripData.location.trim() || 'Unknown location',
+        activities: activities.filter(activity => activity.name.trim()),
+        accommodations: accommodations.filter(acc => acc.name.trim()),
+        timestamp: new Date(),
+        id: Date.now(),
+        author: user?.user_metadata?.display_name || user?.email?.split('@')[0] || 'Current User',
+        userEmail: user?.email,
+        userId: user?.id,
+        likes: 0,
+        comments: []
+      };
 
-  const handleSubmit = () => {
-    const completeTrip = {
-      ...tripData,
-      // Provide defaults for required fields if empty
-      content: tripData.content.trim() || `Just visited ${tripData.tripTitle}!`,
-      location: tripData.location.trim() || 'Unknown location',
-      activities: activities.filter(activity => activity.name.trim()),
-      accommodations: accommodations.filter(acc => acc.name.trim()),
-      transport: transport.filter(t => t.from.trim() && t.to.trim()),
-      timestamp: new Date(),
-      id: Date.now(),
-      author: 'Current User',
-      likes: 0,
-      comments: []
-    };
+      // Save to localStorage
+      const existingPosts = JSON.parse(localStorage.getItem('tripPosts') || '[]');
+      const updatedPosts = [completeTrip, ...existingPosts];
+      localStorage.setItem('tripPosts', JSON.stringify(updatedPosts));
 
-    // Save to localStorage
-    const existingPosts = JSON.parse(localStorage.getItem('tripPosts') || '[]');
-    const updatedPosts = [completeTrip, ...existingPosts];
-    localStorage.setItem('tripPosts', JSON.stringify(updatedPosts));
-
-    // Navigate back to feed
-    navigate('/feed');
+      // Navigate back to feed
+      navigate('/feed');
+    } catch (error) {
+      console.error('Error creating trip:', error);
+      navigate('/feed');
+    }
   };
 
   const nextStep = () => {
@@ -188,10 +165,9 @@ function CreateTrip() {
   const isStepValid = () => {
     switch (currentStep) {
       case 1:
-        return tripData.tripTitle.trim(); // Only title is required
+        return tripData.tripTitle && tripData.tripTitle.trim().length > 0; // Only title is required
       case 2:
       case 3:
-      case 4:
         return true; // All other steps are optional
       default:
         return false;
@@ -347,29 +323,15 @@ function CreateTrip() {
                     </button>
                   )}
                 </div>
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Name</label>
-                    <input
-                      type="text"
-                      value={activity.name}
-                      onChange={(e) => updateActivity(index, 'name', e.target.value)}
-                      placeholder="Place name"
-                      className="form-input"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Cost ($)</label>
-                    <input
-                      type="number"
-                      value={activity.cost}
-                      onChange={(e) => updateActivity(index, 'cost', e.target.value)}
-                      placeholder="0.00"
-                      className="form-input"
-                      min="0"
-                      step="0.01"
-                    />
-                  </div>
+                <div className="form-group">
+                  <label>Name</label>
+                  <input
+                    type="text"
+                    value={activity.name}
+                    onChange={(e) => updateActivity(index, 'name', e.target.value)}
+                    placeholder="Place name"
+                    className="form-input"
+                  />
                 </div>
                 <div className="form-group">
                   <label>Description</label>
@@ -381,23 +343,12 @@ function CreateTrip() {
                     rows="2"
                   />
                 </div>
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Time Visited</label>
-                    <input
-                      type="time"
-                      value={activity.time}
-                      onChange={(e) => updateActivity(index, 'time', e.target.value)}
-                      className="form-input"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Rating</label>
-                    <StarRating
-                      rating={activity.rating}
-                      onRatingChange={(rating) => updateActivity(index, 'rating', rating)}
-                    />
-                  </div>
+                <div className="form-group">
+                  <label>Rating</label>
+                  <StarRating
+                    rating={activity.rating}
+                    onRatingChange={(rating) => updateActivity(index, 'rating', rating)}
+                  />
                 </div>
                 <ImageUploader
                   images={activity.images}
@@ -464,46 +415,22 @@ function CreateTrip() {
                     className="form-input"
                   />
                 </div>
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Check-in</label>
-                    <input
-                      type="date"
-                      value={acc.checkIn}
-                      onChange={(e) => updateAccommodation(index, 'checkIn', e.target.value)}
-                      className="form-input"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Check-out</label>
-                    <input
-                      type="date"
-                      value={acc.checkOut}
-                      onChange={(e) => updateAccommodation(index, 'checkOut', e.target.value)}
-                      className="form-input"
-                    />
-                  </div>
+                <div className="form-group">
+                  <label>Description</label>
+                  <textarea
+                    value={acc.description}
+                    onChange={(e) => updateAccommodation(index, 'description', e.target.value)}
+                    placeholder="Tell us about your stay..."
+                    className="form-textarea"
+                    rows="2"
+                  />
                 </div>
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Total Cost ($)</label>
-                    <input
-                      type="number"
-                      value={acc.cost}
-                      onChange={(e) => updateAccommodation(index, 'cost', e.target.value)}
-                      placeholder="Total stay cost"
-                      className="form-input"
-                      min="0"
-                      step="0.01"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Rating</label>
-                    <StarRating
-                      rating={acc.rating}
-                      onRatingChange={(rating) => updateAccommodation(index, 'rating', rating)}
-                    />
-                  </div>
+                <div className="form-group">
+                  <label>Rating</label>
+                  <StarRating
+                    rating={acc.rating}
+                    onRatingChange={(rating) => updateAccommodation(index, 'rating', rating)}
+                  />
                 </div>
                 <ImageUploader
                   images={acc.images}
@@ -519,106 +446,6 @@ function CreateTrip() {
           </div>
         );
 
-      case 4:
-        return (
-          <div className="step-content">
-            <h2>🚗 Transportation <span className="optional-step">(optional)</span></h2>
-            {transport.map((t, index) => (
-              <div key={index} className="transport-card">
-                <div className="card-header">
-                  <select
-                    value={t.type}
-                    onChange={(e) => updateTransport(index, 'type', e.target.value)}
-                    className="form-select"
-                  >
-                    <option value="plane">✈️ Flight</option>
-                    <option value="train">🚊 Train</option>
-                    <option value="car">🚗 Car</option>
-                    <option value="bus">🚌 Bus</option>
-                    <option value="boat">🛥️ Boat</option>
-                    <option value="bike">🚴 Bike</option>
-                    <option value="walking">🚶 Walking</option>
-                    <option value="taxi">🚕 Taxi/Uber</option>
-                    <option value="metro">🚇 Metro/Subway</option>
-                    <option value="rental">🚙 Rental Car</option>
-                  </select>
-                  {transport.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeTransport(index)}
-                      className="remove-btn"
-                    >
-                      ✕
-                    </button>
-                  )}
-                </div>
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>From</label>
-                    <input
-                      type="text"
-                      value={t.from}
-                      onChange={(e) => updateTransport(index, 'from', e.target.value)}
-                      placeholder="Departure location"
-                      className="form-input"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>To</label>
-                    <input
-                      type="text"
-                      value={t.to}
-                      onChange={(e) => updateTransport(index, 'to', e.target.value)}
-                      placeholder="Arrival location"
-                      className="form-input"
-                    />
-                  </div>
-                </div>
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Date</label>
-                    <input
-                      type="date"
-                      value={t.date}
-                      onChange={(e) => updateTransport(index, 'date', e.target.value)}
-                      className="form-input"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Time</label>
-                    <input
-                      type="time"
-                      value={t.time}
-                      onChange={(e) => updateTransport(index, 'time', e.target.value)}
-                      className="form-input"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Cost ($)</label>
-                    <input
-                      type="number"
-                      value={t.cost}
-                      onChange={(e) => updateTransport(index, 'cost', e.target.value)}
-                      placeholder="0.00"
-                      className="form-input"
-                      min="0"
-                      step="0.01"
-                    />
-                  </div>
-                </div>
-                <ImageUploader
-                  images={t.images}
-                  onImageUpload={(file) => handleImageUpload(file, 'transport', index)}
-                  onImageRemove={(imageId) => removeImage('transport', imageId, index)}
-                  label="Transport Photos"
-                />
-              </div>
-            ))}
-            <button type="button" onClick={addTransport} className="add-btn">
-              + Add Transportation
-            </button>
-          </div>
-        );
 
       default:
         return null;
@@ -632,7 +459,7 @@ function CreateTrip() {
         <div className="create-trip-container">
           <div className="progress-bar">
             <div className="progress-steps">
-              {[1, 2, 3, 4].map((step) => (
+              {[1, 2, 3].map((step) => (
                 <div
                   key={step}
                   className={`progress-step ${currentStep >= step ? 'active' : ''} ${currentStep === step ? 'current' : ''}`}
@@ -642,7 +469,6 @@ function CreateTrip() {
                     {step === 1 && 'Trip Info'}
                     {step === 2 && 'Activities'}
                     {step === 3 && 'Stay'}
-                    {step === 4 && 'Transport'}
                   </span>
                 </div>
               ))}
@@ -666,7 +492,7 @@ function CreateTrip() {
               className="nav-btn secondary"
               disabled={currentStep === 1}
             >
-              ← Previous
+              Previous
             </button>
 
             {currentStep < totalSteps ? (
@@ -676,7 +502,7 @@ function CreateTrip() {
                 className="nav-btn primary"
                 disabled={!isStepValid()}
               >
-                Next →
+                Next
               </button>
             ) : (
               <button
@@ -685,7 +511,7 @@ function CreateTrip() {
                 className="nav-btn primary submit"
                 disabled={!isStepValid()}
               >
-                🚀 Share Trip
+                Share Trip
               </button>
             )}
           </div>
