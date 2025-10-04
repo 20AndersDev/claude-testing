@@ -28,32 +28,33 @@
   --gradient-background: linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%);
 }
 
-/* Dark Mode Colors - Green Nature Theme */
+/* Dark Mode Colors - Midnight Blue Theme */
 :root.dark-mode {
-  --primary: #34D399;
-  --primary-light: #6EE7B7;
-  --primary-dark: #10B981;
-  --secondary: #6EE7B7;
-  --background: #0A0F0D;
-  --background-secondary: #111816;
-  --background-tertiary: #1A2520;
-  --surface: #1A2520;
-  --surface-secondary: #243029;
-  --surface-hover: rgba(52, 211, 153, 0.1);
-  --text: #ECFDF5;
-  --text-secondary: #D1FAE5;
-  --text-muted: #86EFAC;
-  --border: rgba(52, 211, 153, 0.15);
-  --border-light: rgba(52, 211, 153, 0.08);
+  --primary: #60A5FA;
+  --primary-light: #93C5FD;
+  --primary-dark: #3B82F6;
+  --primary-hover: #2563EB;
+  --secondary: #818CF8;
+  --background: #0F172A;
+  --background-secondary: #1E293B;
+  --background-tertiary: #334155;
+  --surface: #1E293B;
+  --surface-secondary: #334155;
+  --surface-hover: rgba(96, 165, 250, 0.1);
+  --text: #F1F5F9;
+  --text-secondary: #CBD5E1;
+  --text-muted: #94A3B8;
+  --border: rgba(96, 165, 250, 0.2);
+  --border-light: rgba(96, 165, 250, 0.1);
   --shadow: rgba(0, 0, 0, 0.5);
   --shadow-light: rgba(0, 0, 0, 0.3);
   --shadow-medium: rgba(0, 0, 0, 0.6);
-  --accent: #34D399;
+  --accent: #60A5FA;
   --accent-secondary: #F87171;
   --warning: #FBBF24;
   --success: #34D399;
-  --gradient-primary: linear-gradient(135deg, #059669 0%, #34D399 100%);
-  --gradient-background: linear-gradient(135deg, #0A0F0D 0%, #111816 100%);
+  --gradient-primary: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
+  --gradient-background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
 }
 
 /* Global Styles */

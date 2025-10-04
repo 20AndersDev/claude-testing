@@ -7,6 +7,7 @@ function Register() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',
+    username: '',
     email: '',
     password: '',
     confirmPassword: ''
@@ -40,6 +41,7 @@ function Register() {
           data: {
             full_name: formData.name,
             name: formData.name,
+            username: formData.username,
           }
         }
       });
@@ -54,6 +56,7 @@ function Register() {
             {
               id: data.user.id,
               full_name: formData.name,
+              username: formData.username,
               email: formData.email,
             }
           ]);
@@ -97,6 +100,21 @@ function Register() {
                 value={formData.name}
                 onChange={handleChange}
                 placeholder="Enter your full name"
+                required
+              />
+            </div>
+          </div>
+          <div className="form-group">
+            <label htmlFor="username">Username</label>
+            <div className="input-wrapper">
+              <span className="input-icon">@</span>
+              <input
+                type="text"
+                id="username"
+                name="username"
+                value={formData.username}
+                onChange={handleChange}
+                placeholder="Choose a username"
                 required
               />
             </div>
