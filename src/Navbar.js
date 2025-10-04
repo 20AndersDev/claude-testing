@@ -1,19 +1,115 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTheme } from './ThemeContext';
+import { supabase } from './supabaseClient';
+import { useLoadScript } from '@react-google-maps/api';
 import './Navbar.css';
+
+const libraries = ['places'];
 
 function Navbar({ onSearchChange, onSidebarToggle }) {
   const navigate = useNavigate();
   const { isDark, toggleTheme } = useTheme();
   const [searchTerm, setSearchTerm] = useState('');
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState(null);
+  const [quickResults, setQuickResults] = useState([]);
+  const [showQuickResults, setShowQuickResults] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState(null);
+  const [placeResults, setPlaceResults] = useState([]);
+
+  const { isLoaded } = useLoadScript({
+    googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_PLACES_API_KEY,
+    libraries,
+  });
 
   const handleSearchChange = (e) => {
     const value = e.target.value;
     setSearchTerm(value);
-    if (onSearchChange) {
-      onSearchChange(value);
+    // Show dropdown when user types
+    if (value.trim().length > 0) {
+      setShowQuickResults(true);
+      if (isLoaded) {
+        searchPlaces(value);
+      }
+    } else {
+      setShowQuickResults(false);
+      setPlaceResults([]);
+    }
+  };
+
+  const searchPlaces = async (query) => {
+    if (!window.google || !window.google.maps || !window.google.maps.places) return;
+
+    try {
+      const request = {
+        input: query,
+        includedPrimaryTypes: ['establishment', 'geocode'],
+        language: 'en',
+      };
+
+      const { suggestions } = await window.google.maps.places.AutocompleteSuggestion.fetchAutocompleteSuggestions(request);
+
+      if (suggestions && suggestions.length > 0) {
+        const formattedResults = suggestions.slice(0, 3).map(suggestion => {
+          const placePrediction = suggestion.placePrediction;
+          return {
+            place_id: placePrediction?.placeId || Math.random().toString(),
+            description: placePrediction?.text?.text || '',
+            structured_formatting: {
+              main_text: placePrediction?.structuredFormat?.mainText?.text || placePrediction?.text?.text || '',
+              secondary_text: placePrediction?.structuredFormat?.secondaryText?.text || ''
+            }
+          };
+        });
+        setPlaceResults(formattedResults);
+      } else {
+        setPlaceResults([]);
+      }
+    } catch (error) {
+      console.error('Error fetching place suggestions:', error);
+      // Fallback to old AutocompleteService if new API fails
+      try {
+        const service = new window.google.maps.places.AutocompleteService();
+        service.getPlacePredictions(
+          {
+            input: query,
+          },
+          (predictions, status) => {
+            if (status === window.google.maps.places.PlacesServiceStatus.OK && predictions) {
+              setPlaceResults(predictions.slice(0, 3));
+            } else {
+              setPlaceResults([]);
+            }
+          }
+        );
+      } catch (fallbackError) {
+        console.error('Fallback error:', fallbackError);
+        setPlaceResults([]);
+      }
+    }
+  };
+
+  const handleSearchFocus = () => {
+    if (searchTerm.trim().length > 0) {
+      setShowQuickResults(true);
+    }
+  };
+
+  const handleSearchKeyDown = (e) => {
+    if (e.key === 'Enter' && searchTerm.trim()) {
+      navigate('/search', { state: { query: searchTerm } });
+      setShowQuickResults(false);
+    }
+  };
+
+  const handleQuickResultClick = (userId) => {
+    setShowQuickResults(false);
+    setSearchTerm('');
+    if (userId === currentUserId) {
+      navigate('/profile');
+    } else {
+      navigate(`/profile/${userId}`);
     }
   };
 
@@ -43,6 +139,95 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
     }
   };
 
+  useEffect(() => {
+    fetchUserAvatar();
+    fetchCurrentUserId();
+  }, []);
+
+  useEffect(() => {
+    const searchUsers = async () => {
+      if (searchTerm.trim().length < 1) {
+        setQuickResults([]);
+        return;
+      }
+
+      try {
+        const query = searchTerm.trim().toLowerCase();
+        const isHandleSearch = query.startsWith('@');
+        const searchTermClean = isHandleSearch ? query.slice(1) : query;
+
+        let queryBuilder = supabase
+          .from('profiles')
+          .select('id, full_name, username, avatar_url');
+
+        if (isHandleSearch) {
+          queryBuilder = queryBuilder.ilike('username', `%${searchTermClean}%`);
+        } else {
+          queryBuilder = queryBuilder.or(`full_name.ilike.%${searchTermClean}%,username.ilike.%${searchTermClean}%`);
+        }
+
+        const { data, error } = await queryBuilder.limit(3);
+
+        if (error) throw error;
+        setQuickResults(data || []);
+      } catch (error) {
+        console.error('Error searching users:', error);
+        setQuickResults([]);
+      }
+    };
+
+    const debounceTimer = setTimeout(() => {
+      searchUsers();
+    }, 300);
+
+    return () => clearTimeout(debounceTimer);
+  }, [searchTerm]);
+
+  const fetchCurrentUserId = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setCurrentUserId(user.id);
+      }
+    } catch (error) {
+      console.error('Error fetching current user:', error);
+    }
+  };
+
+  const fetchUserAvatar = async () => {
+    try {
+      // Check localStorage first for cached profile
+      const cachedProfile = localStorage.getItem('userProfile');
+      if (cachedProfile) {
+        const parsedProfile = JSON.parse(cachedProfile);
+        setAvatarUrl(parsedProfile.profilePicture || null);
+      }
+
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (user) {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('avatar_url')
+          .eq('id', user.id)
+          .limit(1);
+
+        const profile = profileData && profileData.length > 0 ? profileData[0] : null;
+        const avatarUrl = profile?.avatar_url || null;
+        setAvatarUrl(avatarUrl);
+
+        // Update the cached profile with latest avatar
+        if (cachedProfile) {
+          const parsedProfile = JSON.parse(cachedProfile);
+          parsedProfile.profilePicture = avatarUrl;
+          localStorage.setItem('userProfile', JSON.stringify(parsedProfile));
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching avatar:', error);
+    }
+  };
+
   return (
     <nav className="navbar">
       <div className="navbar-container">
@@ -59,13 +244,94 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
         <div className="navbar-center">
           <div className="navbar-search">
             <input
-              type="text"
-              placeholder="Search trips, destinations, activities..."
+              type="search"
+              name="query"
+              id="query"
+              inputMode="search"
+              role="searchbox"
+              placeholder="Search users & places"
               value={searchTerm}
               onChange={handleSearchChange}
+              onFocus={handleSearchFocus}
+              onKeyDown={handleSearchKeyDown}
+              onBlur={() => setTimeout(() => setShowQuickResults(false), 200)}
               className="navbar-search-input"
+              autoComplete="off"
             />
             <span className="navbar-search-icon">🔍</span>
+
+            {showQuickResults && (quickResults.length > 0 || placeResults.length > 0) && (
+              <div className="quick-results-dropdown">
+                {quickResults.length > 0 && (
+                  <>
+                    <div className="results-group-header">👤 Users</div>
+                    {quickResults.map((user) => (
+                      <div
+                        key={user.id}
+                        className="quick-result-item"
+                        onClick={() => handleQuickResultClick(user.id)}
+                      >
+                        <div className="quick-result-avatar">
+                          {user.avatar_url ? (
+                            <img src={user.avatar_url} alt={user.full_name || user.username} />
+                          ) : (
+                            <div className="quick-avatar-placeholder">
+                              {(user.full_name || user.username || 'U').charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                        </div>
+                        <div className="quick-result-info">
+                          <div className="quick-result-name">
+                            {user.full_name || user.username || 'User'}
+                          </div>
+                          {user.username && (
+                            <div className="quick-result-username">@{user.username}</div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </>
+                )}
+
+                {placeResults.length > 0 && (
+                  <>
+                    {quickResults.length > 0 && <div className="results-divider"></div>}
+                    <div className="results-group-header">📍 Places</div>
+                    {placeResults.map((place) => (
+                      <div
+                        key={place.place_id}
+                        className="quick-result-item"
+                        onClick={() => {
+                          setShowQuickResults(false);
+                          navigate(`/place/${place.place_id}`);
+                        }}
+                      >
+                        <div className="quick-result-avatar place-icon">
+                          📍
+                        </div>
+                        <div className="quick-result-info">
+                          <div className="quick-result-name">
+                            {place.structured_formatting.main_text}
+                          </div>
+                          <div className="quick-result-username">
+                            {place.structured_formatting.secondary_text}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </>
+                )}
+
+                {(quickResults.length > 0 || placeResults.length > 0) && (
+                  <div className="quick-results-footer" onClick={() => {
+                    navigate('/search', { state: { query: searchTerm } });
+                    setShowQuickResults(false);
+                  }}>
+                    Show all results →
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
@@ -74,7 +340,13 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
             <span className="action-icon">{isDark ? '☀️' : '🌙'}</span>
           </button>
           <div className="user-menu">
-            <div className="user-avatar" onClick={handleProfileClick}>👤</div>
+            <div className="user-avatar" onClick={handleProfileClick}>
+              {avatarUrl ? (
+                <img src={avatarUrl} alt="Profile" className="navbar-avatar-image" />
+              ) : (
+                '👤'
+              )}
+            </div>
             <div className="dropdown">
               <Link to="/profile" className="profile-option">
                 👤 Profile
@@ -94,6 +366,9 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
 
             <Link to="/feed" className="mobile-menu-item" onClick={() => setShowMobileMenu(false)}>
               🏠 Home
+            </Link>
+            <Link to="/search" className="mobile-menu-item" onClick={() => setShowMobileMenu(false)}>
+              🔍 Search Users
             </Link>
             <Link to="/profile" className="mobile-menu-item" onClick={() => setShowMobileMenu(false)}>
               👤 Profile

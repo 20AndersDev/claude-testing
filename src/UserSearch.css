@@ -1,0 +1,253 @@
+.user-search-page {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  padding-top: 100px;
+}
+
+.search-container {
+  background: var(--surface);
+  border-radius: 20px;
+  padding: 32px;
+  box-shadow: 0 4px 16px var(--shadow);
+  border: 1px solid var(--border-light);
+}
+
+.search-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.search-header h1 {
+  margin: 0 0 12px 0;
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.search-subtitle {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.search-input-wrapper {
+  position: relative;
+  margin-bottom: 32px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 20px;
+  top: 18px;
+  font-size: 22px;
+  z-index: 1;
+  color: var(--primary);
+}
+
+.user-search-input {
+  width: 100%;
+  padding: 16px 20px 16px 56px;
+  border: 2px solid var(--border);
+  border-radius: 16px;
+  font-size: 16px;
+  background: var(--background-secondary);
+  color: var(--text);
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+  font-weight: 500;
+}
+
+.user-search-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 5px rgba(5, 150, 105, 0.15);
+  background: var(--surface);
+  transform: translateY(-2px);
+}
+
+.user-search-input::placeholder {
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+
+.search-results {
+  min-height: 200px;
+}
+
+.search-loading {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-secondary);
+  font-size: 16px;
+}
+
+.no-results-found {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.no-results-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.no-results-found p {
+  color: var(--text-secondary);
+  margin: 0;
+  font-size: 16px;
+}
+
+.users-results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.user-result-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+}
+
+.user-result-item:hover {
+  background: var(--background-secondary);
+  border-color: var(--primary);
+  transform: translateX(4px);
+  box-shadow: 0 4px 16px rgba(5, 150, 105, 0.2);
+}
+
+.user-result-avatar {
+  flex-shrink: 0;
+}
+
+.user-result-avatar img {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--primary);
+  transition: all 0.3s ease;
+}
+
+.user-result-item:hover .user-result-avatar img {
+  border-color: var(--primary-dark);
+}
+
+.user-result-avatar .avatar-placeholder {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 700;
+  border: 3px solid var(--primary);
+  transition: all 0.3s ease;
+}
+
+.user-result-info {
+  flex: 1;
+  width: 100%;
+}
+
+.user-result-name {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.you-badge {
+  background: var(--primary);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.user-result-username {
+  font-size: 15px;
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.search-hint {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.hint-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.search-hint p {
+  color: var(--text-secondary);
+  margin: 0 0 24px 0;
+  font-size: 16px;
+}
+
+.search-examples {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+.example {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.example strong {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .user-search-page {
+    padding: 16px;
+  }
+
+  .search-container {
+    padding: 20px;
+  }
+
+  .search-header h1 {
+    font-size: 24px;
+  }
+
+  .user-result-avatar img,
+  .user-result-avatar .avatar-placeholder {
+    width: 44px;
+    height: 44px;
+  }
+
+  .user-result-name {
+    font-size: 15px;
+  }
+
+  .user-result-username {
+    font-size: 13px;
+  }
+}

@@ -3,7 +3,7 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #059669 0%, #34D399 100%);
   position: relative;
   overflow: hidden;
 }
@@ -29,7 +29,7 @@
 .blob-1 {
   width: 400px;
   height: 400px;
-  background: rgba(102, 126, 234, 0.4);
+  background: rgba(5, 150, 105, 0.4);
   top: -100px;
   right: -100px;
   animation-delay: 0s;
@@ -38,7 +38,7 @@
 .blob-2 {
   width: 300px;
   height: 300px;
-  background: rgba(118, 75, 162, 0.4);
+  background: rgba(52, 211, 153, 0.4);
   bottom: -50px;
   left: -50px;
   animation-delay: 5s;
@@ -69,11 +69,11 @@
 .register-form {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
-  padding: 3rem 2.5rem;
+  padding: 2rem 2rem;
   border-radius: 24px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   width: 100%;
-  max-width: 440px;
+  max-width: 420px;
   position: relative;
   z-index: 1;
   animation: slideUp 0.6s ease-out;
@@ -92,12 +92,12 @@
 
 .register-header {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .register-icon {
-  font-size: 64px;
-  margin-bottom: 1rem;
+  font-size: 48px;
+  margin-bottom: 0.5rem;
   animation: flyIn 2s infinite;
 }
 
@@ -112,19 +112,19 @@
 
 .register-header h2 {
   color: #2d3748;
-  margin: 0 0 0.5rem 0;
-  font-size: 32px;
+  margin: 0 0 0.25rem 0;
+  font-size: 26px;
   font-weight: 700;
 }
 
 .register-subtitle {
   color: #718096;
   margin: 0;
-  font-size: 15px;
+  font-size: 14px;
 }
 
 .form-group {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .form-group label {
@@ -150,10 +150,10 @@
 
 .form-group input {
   width: 100%;
-  padding: 14px 16px 14px 50px;
+  padding: 12px 16px 12px 50px;
   border: 2px solid #e2e8f0;
   border-radius: 12px;
-  font-size: 15px;
+  font-size: 14px;
   transition: all 0.3s ease;
   box-sizing: border-box;
   background: white;
@@ -161,8 +161,8 @@
 
 .form-group input:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+  border-color: #059669;
+  box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.1);
   transform: translateY(-2px);
 }
 
@@ -172,22 +172,22 @@
 
 .register-btn {
   width: 100%;
-  padding: 16px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 14px;
+  background: linear-gradient(135deg, #059669 0%, #34D399 100%);
   color: white;
   border: none;
   border-radius: 12px;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  margin-top: 1rem;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  margin-top: 0.5rem;
+  box-shadow: 0 4px 15px rgba(5, 150, 105, 0.4);
 }
 
 .register-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+  box-shadow: 0 6px 20px rgba(5, 150, 105, 0.6);
 }
 
 .register-btn:active {
@@ -196,8 +196,8 @@
 
 .register-footer {
   text-align: center;
-  margin-top: 1.5rem;
-  padding-top: 1.5rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
   border-top: 1px solid #e2e8f0;
 }
 
@@ -208,14 +208,14 @@
 }
 
 .register-footer a {
-  color: #667eea;
+  color: #059669;
   text-decoration: none;
   font-weight: 600;
   transition: color 0.3s ease;
 }
 
 .register-footer a:hover {
-  color: #764ba2;
+  color: #047857;
   text-decoration: underline;
 }
 
