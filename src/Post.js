@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from './supabaseClient';
 import './Post.css';
 
-function Post({ post, onLike, onComment }) {
+function Post({ post, onLike, onComment, onDelete, onDeleteComment }) {
   const navigate = useNavigate();
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState('');
@@ -10,6 +11,150 @@ function Post({ post, onLike, onComment }) {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
+  const [currentUserId, setCurrentUserId] = useState(null);
+  const [currentUserAvatar, setCurrentUserAvatar] = useState(null);
+  const [showMenu, setShowMenu] = useState(false);
+  const [showCommentMenus, setShowCommentMenus] = useState({});
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [isLoadingFollow, setIsLoadingFollow] = useState(false);
+
+  useEffect(() => {
+    getCurrentUser();
+  }, []);
+
+  useEffect(() => {
+    if (currentUserId && post.user_id && currentUserId !== post.user_id) {
+      checkFollowStatus();
+    }
+  }, [currentUserId, post.user_id]);
+
+  useEffect(() => {
+    const handleClickOutside = () => {
+      if (showMenu) {
+        setShowMenu(false);
+      }
+      if (Object.keys(showCommentMenus).length > 0) {
+        setShowCommentMenus({});
+      }
+    };
+
+    if (showMenu || Object.keys(showCommentMenus).length > 0) {
+      document.addEventListener('click', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [showMenu, showCommentMenus]);
+
+  const getCurrentUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      setCurrentUserId(user.id);
+
+      // Fetch user's avatar
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('avatar_url')
+        .eq('id', user.id)
+        .single();
+
+      setCurrentUserAvatar(profileData?.avatar_url || user.user_metadata?.avatar_url || null);
+    }
+  };
+
+  const checkFollowStatus = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('follows')
+        .select('id')
+        .eq('follower_id', currentUserId)
+        .eq('following_id', post.user_id)
+        .single();
+
+      if (!error && data) {
+        setIsFollowing(true);
+      }
+    } catch (error) {
+      // No follow relationship exists
+      setIsFollowing(false);
+    }
+  };
+
+  const handleFollowToggle = async (e) => {
+    e.stopPropagation();
+    if (!currentUserId || currentUserId === post.user_id || isLoadingFollow) return;
+
+    setIsLoadingFollow(true);
+    try {
+      if (isFollowing) {
+        // Unfollow
+        const { error } = await supabase
+          .from('follows')
+          .delete()
+          .eq('follower_id', currentUserId)
+          .eq('following_id', post.user_id);
+
+        if (!error) {
+          setIsFollowing(false);
+        }
+      } else {
+        // Follow
+        const { error } = await supabase
+          .from('follows')
+          .insert([{
+            follower_id: currentUserId,
+            following_id: post.user_id
+          }]);
+
+        if (!error) {
+          setIsFollowing(true);
+        }
+      }
+    } catch (error) {
+      console.error('Error toggling follow:', error);
+    } finally {
+      setIsLoadingFollow(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    setShowMenu(false);
+    if (window.confirm('Are you sure you want to delete this post?')) {
+      try {
+        const { error } = await supabase
+          .from('posts')
+          .delete()
+          .eq('id', post.id);
+
+        if (error) {
+          console.error('Error deleting post:', error);
+          alert('Failed to delete post');
+        } else {
+          // Call parent component's onDelete if provided
+          if (onDelete) {
+            onDelete(post.id);
+          }
+        }
+      } catch (error) {
+        console.error('Error deleting post:', error);
+        alert('Failed to delete post');
+      }
+    }
+  };
+
+  const toggleMenu = (e) => {
+    e.stopPropagation();
+    setShowMenu(!showMenu);
+  };
+
+  const toggleCommentMenu = (commentId, e) => {
+    e.stopPropagation();
+    setShowCommentMenus(prev => ({
+      ...prev,
+      [commentId]: !prev[commentId]
+    }));
+  };
 
   const handleLike = () => {
     onLike(post.id);
@@ -25,7 +170,9 @@ function Post({ post, onLike, onComment }) {
 
   const formatTime = (timestamp) => {
     const now = new Date();
-    const diff = now - timestamp;
+    const postDate = new Date(timestamp);
+    const diff = now - postDate;
+    const minutes = Math.floor(diff / (1000 * 60));
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const days = Math.floor(hours / 24);
 
@@ -33,6 +180,8 @@ function Post({ post, onLike, onComment }) {
       return `${days}d ago`;
     } else if (hours > 0) {
       return `${hours}h ago`;
+    } else if (minutes > 0) {
+      return `${minutes}m ago`;
     } else {
       return 'Just now';
     }
@@ -104,30 +253,70 @@ function Post({ post, onLike, onComment }) {
     navigate(`/post/${post.id}`);
   };
 
+  const getCountryFlag = (country) => {
+    const countryFlags = {
+      'United States': '🇺🇸',
+      'Canada': '🇨🇦',
+      'Mexico': '🇲🇽',
+      'United Kingdom': '🇬🇧',
+      'France': '🇫🇷',
+      'Germany': '🇩🇪',
+      'Italy': '🇮🇹',
+      'Spain': '🇪🇸',
+      'Portugal': '🇵🇹',
+      'Netherlands': '🇳🇱',
+      'Belgium': '🇧🇪',
+      'Switzerland': '🇨🇭',
+      'Austria': '🇦🇹',
+      'Greece': '🇬🇷',
+      'Turkey': '🇹🇷',
+      'Poland': '🇵🇱',
+      'Czech Republic': '🇨🇿',
+      'Hungary': '🇭🇺',
+      'Romania': '🇷🇴',
+      'Sweden': '🇸🇪',
+      'Norway': '🇳🇴',
+      'Denmark': '🇩🇰',
+      'Finland': '🇫🇮',
+      'Iceland': '🇮🇸',
+      'Ireland': '🇮🇪',
+      'Russia': '🇷🇺',
+      'China': '🇨🇳',
+      'Japan': '🇯🇵',
+      'South Korea': '🇰🇷',
+      'India': '🇮🇳',
+      'Thailand': '🇹🇭',
+      'Vietnam': '🇻🇳',
+      'Singapore': '🇸🇬',
+      'Malaysia': '🇲🇾',
+      'Indonesia': '🇮🇩',
+      'Philippines': '🇵🇭',
+      'Australia': '🇦🇺',
+      'New Zealand': '🇳🇿',
+      'Brazil': '🇧🇷',
+      'Argentina': '🇦🇷',
+      'Chile': '🇨🇱',
+      'Peru': '🇵🇪',
+      'Colombia': '🇨🇴',
+      'Egypt': '🇪🇬',
+      'Morocco': '🇲🇦',
+      'South Africa': '🇿🇦',
+      'Kenya': '🇰🇪',
+      'UAE': '🇦🇪',
+      'Israel': '🇮🇱',
+      'Saudi Arabia': '🇸🇦'
+    };
+    return countryFlags[country] || '🌍';
+  };
+
   const getPostImages = () => {
-    // Generate multiple images for each post
-    const imageCategories = [
-      'nature',
-      'food',
-      'city',
-      'travel',
-      'architecture',
-      'landscape'
-    ];
-
-    const imageCount = Math.min(5, Math.max(1, (post.id % 4) + 1)); // 1-4 images per post
-    const images = [];
-
-    for (let i = 0; i < imageCount; i++) {
-      const category = imageCategories[(post.id + i) % imageCategories.length];
-      images.push({
-        id: i,
-        url: `https://picsum.photos/500/300?random=${post.id + i}&category=${category}`,
-        category
-      });
+    // Only return images if user actually uploaded them
+    if (post.images && post.images.length > 0) {
+      return post.images;
     }
 
-    return images;
+    // Return empty array if no images uploaded
+    return [];
   };
 
   const postImages = getPostImages();
@@ -191,20 +380,56 @@ function Post({ post, onLike, onComment }) {
   return (
     <div className="post">
       <div className="post-header">
-        <div className="post-author-info">
-          <div className="author-avatar">🧳</div>
+        <div
+          className="post-author-info"
+          onClick={() => navigate(currentUserId === post.user_id ? '/profile' : `/profile/${post.user_id}`)}
+          style={{ cursor: 'pointer' }}
+        >
+          <div className="author-avatar">
+            {post.author_avatar ? (
+              <img src={post.author_avatar} alt={post.author} className="avatar-image" />
+            ) : (
+              <div className="avatar-placeholder">👤</div>
+            )}
+          </div>
           <div className="author-details">
             <div className="author-name">{post.author}</div>
             <div className="post-time">{formatTime(post.timestamp)}</div>
           </div>
         </div>
+        {currentUserId && post.user_id !== currentUserId && (
+          <button
+            className={`follow-btn ${isFollowing ? 'following' : ''}`}
+            onClick={handleFollowToggle}
+            disabled={isLoadingFollow}
+          >
+            {isFollowing ? 'Following' : 'Follow'}
+          </button>
+        )}
+        {currentUserId && post.user_id === currentUserId && (
+          <div className="post-menu-container">
+            <button className="post-menu-btn" onClick={toggleMenu} title="More options">
+              ⋮
+            </button>
+            {showMenu && (
+              <div className="post-menu-dropdown">
+                <button className="menu-item delete-item" onClick={handleDelete}>
+                  🗑️ Delete Post
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {post.tripTitle ? (
         <div className="trip-post">
           <div className="trip-header" onClick={handleTripClick} style={{cursor: 'pointer'}}>
             <h3 className="trip-title">🗺️ {post.tripTitle}</h3>
-            <div className="trip-location">📍 {post.location}</div>
+            <div className="trip-location">
+              📍 {post.location}
+              {post.country && ` • ${getCountryFlag(post.country)} ${post.country}`}
+            </div>
             <div className="trip-dates">
               {post.startDate && formatDate(post.startDate)}
               {post.startDate && post.endDate && ' - '}
@@ -214,49 +439,51 @@ function Post({ post, onLike, onComment }) {
 
           <div className="post-content" style={{cursor: 'pointer'}}>
             <p onClick={handleTripClick}>{post.content}</p>
-            <div className="post-images">
-              <div className="image-gallery">
-                <div
-                  className="main-image"
-                  onClick={handleTripClick}
-                  onTouchStart={onTouchStart}
-                  onTouchMove={onTouchMove}
-                  onTouchEnd={onTouchEnd}
-                >
-                  <img
-                    src={postImages[currentImageIndex].url}
-                    alt="Travel destination"
-                  />
+            {postImages.length > 0 && (
+              <div className="post-images">
+                <div className="image-gallery">
+                  <div
+                    className="main-image"
+                    onClick={handleTripClick}
+                    onTouchStart={onTouchStart}
+                    onTouchMove={onTouchMove}
+                    onTouchEnd={onTouchEnd}
+                  >
+                    <img
+                      src={postImages[currentImageIndex].url}
+                      alt="Travel destination"
+                    />
+                    {postImages.length > 1 && (
+                      <>
+                        <button
+                          className="nav-btn prev-btn"
+                          onClick={(e) => { e.stopPropagation(); prevImage(); }}
+                        >
+                          ‹
+                        </button>
+                        <button
+                          className="nav-btn next-btn"
+                          onClick={(e) => { e.stopPropagation(); nextImage(); }}
+                        >
+                          ›
+                        </button>
+                      </>
+                    )}
+                  </div>
                   {postImages.length > 1 && (
-                    <>
-                      <button
-                        className="nav-btn prev-btn"
-                        onClick={(e) => { e.stopPropagation(); prevImage(); }}
-                      >
-                        ‹
-                      </button>
-                      <button
-                        className="nav-btn next-btn"
-                        onClick={(e) => { e.stopPropagation(); nextImage(); }}
-                      >
-                        ›
-                      </button>
-                    </>
+                    <div className="image-dots">
+                      {postImages.map((_, index) => (
+                        <button
+                          key={index}
+                          className={`dot ${index === currentImageIndex ? 'active' : ''}`}
+                          onClick={(e) => { e.stopPropagation(); goToImage(index); }}
+                        />
+                      ))}
+                    </div>
                   )}
                 </div>
-                {postImages.length > 1 && (
-                  <div className="image-dots">
-                    {postImages.map((_, index) => (
-                      <button
-                        key={index}
-                        className={`dot ${index === currentImageIndex ? 'active' : ''}`}
-                        onClick={(e) => { e.stopPropagation(); goToImage(index); }}
-                      />
-                    ))}
-                  </div>
-                )}
               </div>
-            </div>
+            )}
           </div>
 
           {post.activities && post.activities.length > 0 && (
@@ -317,97 +544,140 @@ function Post({ post, onLike, onComment }) {
       ) : (
         <div className="post-content" style={{cursor: 'pointer'}}>
           <p onClick={handlePostClick}>{post.content}</p>
-          <div className="post-images">
-            <div className="image-gallery">
-              <div
-                className="main-image"
-                onClick={handlePostClick}
-                onTouchStart={onTouchStart}
-                onTouchMove={onTouchMove}
-                onTouchEnd={onTouchEnd}
-              >
-                <img
-                  src={postImages[currentImageIndex].url}
-                  alt="Content from post"
-                />
+          {postImages.length > 0 && (
+            <div className="post-images">
+              <div className="image-gallery">
+                <div
+                  className="main-image"
+                  onClick={handlePostClick}
+                  onTouchStart={onTouchStart}
+                  onTouchMove={onTouchMove}
+                  onTouchEnd={onTouchEnd}
+                >
+                  <img
+                    src={postImages[currentImageIndex].url}
+                    alt="Content from post"
+                  />
+                  {postImages.length > 1 && (
+                    <>
+                      <button
+                        className="nav-btn prev-btn"
+                        onClick={(e) => { e.stopPropagation(); prevImage(); }}
+                      >
+                        ‹
+                      </button>
+                      <button
+                        className="nav-btn next-btn"
+                        onClick={(e) => { e.stopPropagation(); nextImage(); }}
+                      >
+                        ›
+                      </button>
+                    </>
+                  )}
+                </div>
                 {postImages.length > 1 && (
-                  <>
-                    <button
-                      className="nav-btn prev-btn"
-                      onClick={(e) => { e.stopPropagation(); prevImage(); }}
-                    >
-                      ‹
-                    </button>
-                    <button
-                      className="nav-btn next-btn"
-                      onClick={(e) => { e.stopPropagation(); nextImage(); }}
-                    >
-                      ›
-                    </button>
-                  </>
+                  <div className="image-dots">
+                    {postImages.map((_, index) => (
+                      <button
+                        key={index}
+                        className={`dot ${index === currentImageIndex ? 'active' : ''}`}
+                        onClick={(e) => { e.stopPropagation(); goToImage(index); }}
+                      />
+                    ))}
+                  </div>
                 )}
               </div>
-              {postImages.length > 1 && (
-                <div className="image-dots">
-                  {postImages.map((_, index) => (
-                    <button
-                      key={index}
-                      className={`dot ${index === currentImageIndex ? 'active' : ''}`}
-                      onClick={(e) => { e.stopPropagation(); goToImage(index); }}
-                    />
-                  ))}
-                </div>
-              )}
             </div>
-          </div>
+          )}
         </div>
       )}
 
       <div className="post-stats">
         <div className="likes-count">
-          {post.likes > 0 && `${post.likes} like${post.likes > 1 ? 's' : ''}`}
+          {(post.likes || 0) > 0 && `${post.likes} like${post.likes > 1 ? 's' : ''}`}
         </div>
         <div className="comments-count">
-          {post.comments.length > 0 && (
+          {(post.comments || []).length > 0 && (
             <button
               className="comments-toggle"
               onClick={() => setShowComments(!showComments)}
             >
-              {post.comments.length} comment{post.comments.length > 1 ? 's' : ''}
+              {(post.comments || []).length} comment{(post.comments || []).length > 1 ? 's' : ''}
             </button>
           )}
         </div>
       </div>
 
       <div className="post-actions">
-        <button className="action-btn like-btn" onClick={handleLike}>
+        <button
+          className={`action-btn like-btn ${currentUserId && (post.liked_by || []).includes(currentUserId) ? 'liked' : ''}`}
+          onClick={handleLike}
+        >
           <span className="action-icon">❤️</span>
-          <span className="action-count">{post.likes}</span>
+          <span className="action-count">{post.likes || 0}</span>
         </button>
         <button
           className="action-btn comment-btn"
           onClick={() => setShowComments(!showComments)}
         >
           <span className="action-icon">💬</span>
-          <span className="action-count">{post.comments.length}</span>
+          <span className="action-count">{(post.comments || []).length}</span>
         </button>
       </div>
 
       {showComments && (
         <div className="comments-section">
-          {post.comments.map(comment => (
+          {(post.comments || []).map(comment => (
             <div key={comment.id} className="comment">
-              <div className="comment-avatar">👤</div>
-              <div className="comment-content">
-                <div className="comment-author">{comment.author}</div>
-                <div className="comment-text">{comment.content}</div>
-                <div className="comment-time">{formatTime(comment.timestamp)}</div>
+              <div className="comment-avatar">
+                {comment.avatar_url ? (
+                  <img src={comment.avatar_url} alt={comment.author} className="comment-avatar-image" />
+                ) : (
+                  <div className="comment-avatar-placeholder">👤</div>
+                )}
               </div>
+              <div className="comment-content">
+                <div className="comment-header">
+                  <div className="comment-author">{comment.author}</div>
+                  <div className="comment-time">{formatTime(comment.timestamp)}</div>
+                </div>
+                <div className="comment-text">{comment.content}</div>
+              </div>
+              {currentUserId && comment.user_id === currentUserId && onDeleteComment && (
+                <div className="comment-menu-container">
+                  <button
+                    className="comment-menu-btn"
+                    onClick={(e) => toggleCommentMenu(comment.id, e)}
+                    title="More options"
+                  >
+                    ⋮
+                  </button>
+                  {showCommentMenus[comment.id] && (
+                    <div className="comment-menu-dropdown">
+                      <button
+                        className="menu-item delete-item"
+                        onClick={() => {
+                          setShowCommentMenus({});
+                          onDeleteComment(post.id, comment.id);
+                        }}
+                      >
+                        🗑️ Delete Comment
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           ))}
 
           <div className="add-comment">
-            <div className="comment-avatar">👤</div>
+            <div className="comment-avatar">
+              {currentUserAvatar ? (
+                <img src={currentUserAvatar} alt="Your avatar" className="comment-avatar-image" />
+              ) : (
+                <div className="comment-avatar-placeholder">👤</div>
+              )}
+            </div>
             <form onSubmit={handleCommentSubmit} className="comment-form">
               <input
                 type="text"

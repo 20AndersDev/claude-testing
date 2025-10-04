@@ -32,6 +32,26 @@ function Login() {
 
       if (error) throw error;
 
+      // Fetch and cache user profile data
+      if (data.user) {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', data.user.id)
+          .limit(1);
+
+        const profile = profileData && profileData.length > 0 ? profileData[0] : null;
+        const profileObject = {
+          name: data.user.user_metadata?.display_name || profile?.full_name || data.user.user_metadata?.full_name || data.user.user_metadata?.name || data.user.email?.split('@')[0] || 'Current User',
+          username: profile?.username || data.user.user_metadata?.username || '',
+          bio: profile?.bio || data.user.user_metadata?.bio || 'Welcome to my profile! I love sharing thoughts and connecting with others.',
+          location: profile?.location || data.user.user_metadata?.location || '',
+          joinDate: new Date(data.user.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+          profilePicture: profile?.avatar_url || data.user.user_metadata?.avatar_url || null
+        };
+        localStorage.setItem('userProfile', JSON.stringify(profileObject));
+      }
+
       navigate('/feed');
     } catch (error) {
       setError(error.message);

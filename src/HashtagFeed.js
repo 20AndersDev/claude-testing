@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { supabase } from './supabaseClient';
 import Navbar from './Navbar';
 import Post from './Post';
 import './Feed.css';
@@ -11,11 +12,38 @@ function HashtagFeed() {
   const [filteredPosts, setFilteredPosts] = useState([]);
 
   useEffect(() => {
-    const storedPosts = localStorage.getItem('tripPosts');
-    if (storedPosts) {
-      setPosts(JSON.parse(storedPosts));
-    }
+    fetchPosts();
   }, []);
+
+  const fetchPosts = async () => {
+    const { data, error } = await supabase
+      .from('posts')
+      .select(`
+        *,
+        profiles:user_id (
+          full_name,
+          username,
+          avatar_url
+        )
+      `)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching posts:', error);
+    } else {
+      // Map database fields to component format
+      const mappedPosts = (data || []).map(post => ({
+        ...post,
+        tripTitle: post.trip_title,
+        startDate: post.start_date,
+        endDate: post.end_date,
+        author: post.profiles?.full_name || post.profiles?.username || 'User',
+        timestamp: post.created_at,
+        userId: post.user_id
+      }));
+      setPosts(mappedPosts);
+    }
+  };
 
   useEffect(() => {
     if (hashtag && posts.length > 0) {
