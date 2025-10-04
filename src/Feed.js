@@ -15,6 +15,8 @@ function Feed() {
 
   const fetchPosts = async () => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+
       const { data: postsData, error: postsError } = await supabase
         .from('posts')
         .select('*')
@@ -22,36 +24,30 @@ function Feed() {
 
       if (postsError) throw postsError;
 
-      // Fetch comments for each post
-      const postsWithComments = await Promise.all(
-        postsData.map(async (post) => {
-          const { data: commentsData } = await supabase
-            .from('comments')
-            .select('*')
-            .eq('post_id', post.id)
-            .order('created_at', { ascending: true });
+      // Fetch user's follows if logged in
+      let followedUserIds = [];
+      if (user) {
+        const { data: followsData } = await supabase
+          .from('follows')
+          .select('following_id')
+          .eq('follower_id', user.id);
 
-          const { data: likesData } = await supabase
-            .from('likes')
-            .select('user_id')
-            .eq('post_id', post.id);
+        followedUserIds = (followsData || []).map(f => f.following_id);
+      }
 
-          return {
-            ...post,
-            timestamp: new Date(post.created_at),
-            likes: post.likes_count || 0,
-            comments: commentsData?.map(comment => ({
-              id: comment.id,
-              author: comment.author,
-              content: comment.content,
-              timestamp: new Date(comment.created_at)
-            })) || [],
-            isFollowing: false // You can implement following logic later
-          };
-        })
-      );
+      // Map database fields to component format
+      const mappedPosts = (postsData || []).map(post => ({
+        ...post,
+        tripTitle: post.trip_title,
+        startDate: post.start_date,
+        endDate: post.end_date,
+        timestamp: post.created_at,
+        userEmail: post.user_id,
+        userId: post.user_id,
+        isFollowing: followedUserIds.includes(post.user_id)
+      }));
 
-      setPosts(postsWithComments);
+      setPosts(mappedPosts);
     } catch (error) {
       console.error('Error fetching posts:', error);
     }
@@ -175,45 +171,49 @@ function Feed() {
   const likePost = async (postId) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-      if (!user) {
-        alert('You must be logged in to like posts');
+      // Get current post
+      const post = posts.find(p => p.id === postId);
+      if (!post) return;
+
+      // Get current liked_by array (users who liked this post)
+      const likedBy = post.liked_by || [];
+      const hasLiked = likedBy.includes(user.id);
+
+      // Toggle like
+      let newLikedBy;
+      let newLikes;
+
+      if (hasLiked) {
+        // Unlike: remove user from liked_by array
+        newLikedBy = likedBy.filter(id => id !== user.id);
+        newLikes = Math.max(0, (post.likes || 0) - 1);
+      } else {
+        // Like: add user to liked_by array
+        newLikedBy = [...likedBy, user.id];
+        newLikes = (post.likes || 0) + 1;
+      }
+
+      // Update in Supabase
+      const { error } = await supabase
+        .from('posts')
+        .update({
+          likes: newLikes,
+          liked_by: newLikedBy
+        })
+        .eq('id', postId);
+
+      if (error) {
+        console.error('Error updating likes:', error.message, error);
+        alert('Failed to update like: ' + error.message);
         return;
       }
 
-      // Check if user already liked this post
-      const { data: existingLike } = await supabase
-        .from('likes')
-        .select('*')
-        .eq('post_id', postId)
-        .eq('user_id', user.id)
-        .single();
-
-      if (existingLike) {
-        // Unlike
-        await supabase
-          .from('likes')
-          .delete()
-          .eq('post_id', postId)
-          .eq('user_id', user.id);
-
-        await supabase
-          .from('posts')
-          .update({ likes_count: supabase.raw('likes_count - 1') })
-          .eq('id', postId);
-      } else {
-        // Like
-        await supabase
-          .from('likes')
-          .insert([{ post_id: postId, user_id: user.id }]);
-
-        await supabase
-          .from('posts')
-          .update({ likes_count: supabase.raw('likes_count + 1') })
-          .eq('id', postId);
-      }
-
-      await fetchPosts(); // Refresh posts
+      // Update local state
+      setPosts(posts.map(p =>
+        p.id === postId ? { ...p, likes: newLikes, liked_by: newLikedBy } : p
+      ));
     } catch (error) {
       console.error('Error liking post:', error);
     }
@@ -222,29 +222,84 @@ function Feed() {
   const addComment = async (postId, commentContent) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-      if (!user) {
-        alert('You must be logged in to comment');
+      // Get current post
+      const post = posts.find(p => p.id === postId);
+      if (!post) return;
+
+      // Fetch user's profile to get display name and avatar
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('full_name, username, avatar_url')
+        .eq('id', user.id)
+        .single();
+
+      const displayName = profileData?.full_name || profileData?.username || user.user_metadata?.display_name || user.email?.split('@')[0] || 'User';
+      const avatarUrl = profileData?.avatar_url || user.user_metadata?.avatar_url || null;
+
+      // Create new comment
+      const newComment = {
+        id: Date.now(),
+        user_id: user.id,
+        author: displayName,
+        avatar_url: avatarUrl,
+        content: commentContent,
+        timestamp: new Date().toISOString()
+      };
+
+      // Update comments in Supabase
+      const updatedComments = [...(post.comments || []), newComment];
+      const { error } = await supabase
+        .from('posts')
+        .update({ comments: updatedComments })
+        .eq('id', postId);
+
+      if (error) {
+        console.error('Error adding comment:', error);
         return;
       }
 
-      const { error } = await supabase
-        .from('comments')
-        .insert([
-          {
-            post_id: postId,
-            user_id: user.id,
-            author: user.user_metadata?.full_name || user.email,
-            content: commentContent
-          }
-        ]);
-
-      if (error) throw error;
-
-      await fetchPosts(); // Refresh posts
+      // Update local state
+      setPosts(posts.map(p =>
+        p.id === postId ? { ...p, comments: updatedComments } : p
+      ));
     } catch (error) {
-      console.error('Error adding comment:', error);
-      alert('Failed to add comment');
+      console.error('Error commenting on post:', error);
+    }
+  };
+
+  const handleDelete = (postId) => {
+    // Remove the deleted post from state
+    setPosts(posts.filter(post => post.id !== postId));
+  };
+
+  const handleDeleteComment = async (postId, commentId) => {
+    try {
+      // Get current post
+      const post = posts.find(p => p.id === postId);
+      if (!post) return;
+
+      // Remove the comment from the array
+      const updatedComments = (post.comments || []).filter(c => c.id !== commentId);
+
+      // Update in Supabase
+      const { error } = await supabase
+        .from('posts')
+        .update({ comments: updatedComments })
+        .eq('id', postId);
+
+      if (error) {
+        console.error('Error deleting comment:', error);
+        return;
+      }
+
+      // Update local state
+      setPosts(posts.map(p =>
+        p.id === postId ? { ...p, comments: updatedComments } : p
+      ));
+    } catch (error) {
+      console.error('Error deleting comment:', error);
     }
   };
 
@@ -288,6 +343,8 @@ function Feed() {
                   post={post}
                   onLike={likePost}
                   onComment={addComment}
+                  onDelete={handleDelete}
+                  onDeleteComment={handleDeleteComment}
                 />
               ))
             ) : (

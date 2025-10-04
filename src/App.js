@@ -9,6 +9,8 @@ import TripDetails from './TripDetails';
 import CreateTrip from './CreateTrip';
 import PostDetail from './PostDetail';
 import HashtagFeed from './HashtagFeed';
+import UserSearch from './UserSearch';
+import PlaceDetail from './PlaceDetail';
 import './App.css';
 import './themes.css';
 
@@ -22,10 +24,13 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/feed" element={<Feed />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/profile/:userId" element={<Profile />} />
             <Route path="/create-trip" element={<CreateTrip />} />
             <Route path="/trip/:tripId" element={<TripDetails />} />
             <Route path="/post/:postId" element={<PostDetail />} />
             <Route path="/hashtag/:hashtag" element={<HashtagFeed />} />
+            <Route path="/search" element={<UserSearch />} />
+            <Route path="/place/:placeId" element={<PlaceDetail />} />
             <Route path="/" element={<Navigate to="/login" replace />} />
           </Routes>
         </div>

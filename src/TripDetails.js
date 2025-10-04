@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { supabase } from './supabaseClient';
 import Navbar from './Navbar';
 import './TripDetails.css';
 
@@ -9,19 +10,40 @@ function TripDetails() {
   const [trip, setTrip] = useState(null);
 
   useEffect(() => {
-    const storedPosts = localStorage.getItem('tripPosts');
-    if (storedPosts) {
-      const posts = JSON.parse(storedPosts);
-      const foundTrip = posts.find(post => post.id === parseInt(tripId));
-      if (foundTrip) {
-        setTrip(foundTrip);
-      } else {
-        navigate('/feed');
-      }
-    } else {
+    fetchTrip();
+  }, [tripId]);
+
+  const fetchTrip = async () => {
+    const { data, error } = await supabase
+      .from('posts')
+      .select(`
+        *,
+        profiles:user_id (
+          full_name,
+          username,
+          avatar_url
+        )
+      `)
+      .eq('id', tripId)
+      .single();
+
+    if (error || !data) {
+      console.error('Error fetching trip:', error);
       navigate('/feed');
+    } else {
+      // Map database fields to component format
+      const mappedTrip = {
+        ...data,
+        tripTitle: data.trip_title,
+        startDate: data.start_date,
+        endDate: data.end_date,
+        author: data.profiles?.full_name || data.profiles?.username || 'User',
+        timestamp: data.created_at,
+        userId: data.user_id
+      };
+      setTrip(mappedTrip);
     }
-  }, [tripId, navigate]);
+  };
 
   const formatDate = (dateString) => {
     if (!dateString) return '';

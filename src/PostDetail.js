@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { supabase } from './supabaseClient';
 import Navbar from './Navbar';
 import ImageModal from './ImageModal';
 import './PostDetail.css';
@@ -11,113 +12,170 @@ function PostDetail() {
   const [commentText, setCommentText] = useState('');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showModal, setShowModal] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState(null);
+  const [showMenu, setShowMenu] = useState(false);
+  const [showCommentMenus, setShowCommentMenus] = useState({});
 
   // Fetch post data
   useEffect(() => {
-    const mockPost = {
-      id: parseInt(postId),
-      author: 'Travel Explorer',
-      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-      content: 'Amazing trip to the mountains! The views were absolutely breathtaking and the hiking trails were perfect for all skill levels.',
-      tripTitle: 'Mountain Adventure',
-      location: 'Swiss Alps, Switzerland',
-      startDate: '2024-01-15',
-      endDate: '2024-01-20',
-      likes: 42,
-      comments: [
-        {
-          id: 1,
-          author: 'Adventure Seeker',
-          content: 'Looks incredible! Did you do any night hiking?',
-          timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000)
-        },
-        {
-          id: 2,
-          author: 'Mountain Lover',
-          content: 'Swiss Alps are the best! Which trail did you take?',
-          timestamp: new Date(Date.now() - 30 * 60 * 1000)
-        },
-        {
-          id: 3,
-          author: 'Photo Enthusiast',
-          content: 'The photography in this post is absolutely stunning!',
-          timestamp: new Date(Date.now() - 15 * 60 * 1000)
-        }
-      ],
-      activities: [
-        {
-          name: 'Matterhorn Base Camp Hike',
-          type: 'hiking',
-          description: 'Challenging but rewarding hike to the base of the famous Matterhorn peak.',
-          cost: '50',
-          rating: 5
-        },
-        {
-          name: 'Alpine Restaurant Dinner',
-          type: 'restaurant',
-          description: 'Traditional Swiss cuisine with amazing mountain views.',
-          cost: '75',
-          rating: 4
-        },
-        {
-          name: 'Cable Car to Gornergrat',
-          type: 'attraction',
-          description: 'Scenic railway journey with panoramic views of the Alps.',
-          cost: '45',
-          rating: 5
-        },
-        {
-          name: 'Mountain Photography Workshop',
-          type: 'activity',
-          description: 'Learn photography techniques specific to mountain landscapes.',
-          cost: '120',
-          rating: 4
-        }
-      ],
-      transport: [
-        {
-          type: 'train',
-          from: 'Zurich',
-          to: 'Zermatt',
-          cost: '120',
-          time: '3h 30m'
-        }
-      ]
-    };
-    setPost(mockPost);
+    fetchPost();
+    getCurrentUser();
   }, [postId]);
 
-  // Memoized image generation
+  useEffect(() => {
+    const handleClickOutside = () => {
+      if (showMenu) {
+        setShowMenu(false);
+      }
+      if (Object.keys(showCommentMenus).length > 0) {
+        setShowCommentMenus({});
+      }
+    };
+
+    if (showMenu || Object.keys(showCommentMenus).length > 0) {
+      document.addEventListener('click', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [showMenu, showCommentMenus]);
+
+  const getCurrentUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      setCurrentUserId(user.id);
+    }
+  };
+
+  const fetchPost = async () => {
+    const { data, error } = await supabase
+      .from('posts')
+      .select('*')
+      .eq('id', postId)
+      .single();
+
+    if (error || !data) {
+      console.error('Error fetching post:', error);
+      navigate('/feed');
+    } else {
+      // Map database fields to component format
+      const mappedPost = {
+        ...data,
+        tripTitle: data.trip_title,
+        startDate: data.start_date,
+        endDate: data.end_date,
+        timestamp: data.created_at,
+        userId: data.user_id
+      };
+      setPost(mappedPost);
+    }
+  };
+
+  // Get post images from uploaded images
   const postImages = useMemo(() => {
     if (!post) return [];
-    const imageCategories = ['nature', 'food', 'city', 'travel', 'architecture', 'landscape'];
-    const imageCount = Math.min(5, Math.max(1, (parseInt(postId) % 4) + 1));
-    return Array.from({ length: imageCount }, (_, i) => ({
-      id: i,
-      url: `https://picsum.photos/1200/800?random=${parseInt(postId) + i}&category=${imageCategories[(parseInt(postId) + i) % imageCategories.length]}`,
-      category: imageCategories[(parseInt(postId) + i) % imageCategories.length]
-    }));
-  }, [post, postId]);
+    // Only return images if user actually uploaded them
+    if (post.images && post.images.length > 0) {
+      return post.images;
+    }
+    // Return empty array if no images uploaded
+    return [];
+  }, [post]);
 
   // Handlers
-  const handleLike = useCallback(() => {
-    setPost(prev => prev ? { ...prev, likes: prev.likes + 1 } : null);
-  }, []);
+  const handleLike = useCallback(async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || !post) return;
 
-  const handleCommentSubmit = useCallback((e) => {
+      // Get current liked_by array (users who liked this post)
+      const likedBy = post.liked_by || [];
+      const hasLiked = likedBy.includes(user.id);
+
+      // Toggle like
+      let newLikedBy;
+      let newLikes;
+
+      if (hasLiked) {
+        // Unlike: remove user from liked_by array
+        newLikedBy = likedBy.filter(id => id !== user.id);
+        newLikes = Math.max(0, (post.likes || 0) - 1);
+      } else {
+        // Like: add user to liked_by array
+        newLikedBy = [...likedBy, user.id];
+        newLikes = (post.likes || 0) + 1;
+      }
+
+      // Update in Supabase
+      const { error } = await supabase
+        .from('posts')
+        .update({
+          likes: newLikes,
+          liked_by: newLikedBy
+        })
+        .eq('id', post.id);
+
+      if (error) {
+        console.error('Error updating likes:', error.message, error);
+        return;
+      }
+
+      // Update local state
+      setPost(prev => ({ ...prev, likes: newLikes, liked_by: newLikedBy }));
+    } catch (error) {
+      console.error('Error liking post:', error);
+    }
+  }, [post]);
+
+  const handleCommentSubmit = useCallback(async (e) => {
     e.preventDefault();
     if (commentText.trim() && post) {
-      const newComment = {
-        id: post.comments.length + 1,
-        author: 'Current User',
-        content: commentText,
-        timestamp: new Date()
-      };
-      setPost(prev => ({
-        ...prev,
-        comments: [...prev.comments, newComment]
-      }));
-      setCommentText('');
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        // Fetch user's profile to get display name and avatar
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('full_name, username, avatar_url')
+          .eq('id', user.id)
+          .single();
+
+        const displayName = profileData?.full_name || profileData?.username || user.user_metadata?.display_name || user.email?.split('@')[0] || 'User';
+        const avatarUrl = profileData?.avatar_url || user.user_metadata?.avatar_url || null;
+
+        // Create new comment
+        const newComment = {
+          id: Date.now(),
+          user_id: user.id,
+          author: displayName,
+          avatar_url: avatarUrl,
+          content: commentText,
+          timestamp: new Date().toISOString()
+        };
+
+        // Update comments in Supabase
+        const updatedComments = [...(post.comments || []), newComment];
+        const { error } = await supabase
+          .from('posts')
+          .update({ comments: updatedComments })
+          .eq('id', post.id);
+
+        if (error) {
+          console.error('Error adding comment:', error);
+          return;
+        }
+
+        // Update local state
+        setPost(prev => ({
+          ...prev,
+          comments: updatedComments
+        }));
+        setCommentText('');
+      } catch (error) {
+        console.error('Error commenting on post:', error);
+      }
     }
   }, [commentText, post]);
 
@@ -133,12 +191,86 @@ function PostDetail() {
     setCurrentImageIndex(index);
   }, []);
 
+  const toggleMenu = (e) => {
+    e.stopPropagation();
+    setShowMenu(!showMenu);
+  };
+
+  const toggleCommentMenu = (commentId, e) => {
+    e.stopPropagation();
+    setShowCommentMenus(prev => ({
+      ...prev,
+      [commentId]: !prev[commentId]
+    }));
+  };
+
+  const handleDelete = async () => {
+    setShowMenu(false);
+    if (window.confirm('Are you sure you want to delete this post?')) {
+      try {
+        const { error } = await supabase
+          .from('posts')
+          .delete()
+          .eq('id', post.id);
+
+        if (error) {
+          console.error('Error deleting post:', error);
+          alert('Failed to delete post');
+        } else {
+          navigate('/feed');
+        }
+      } catch (error) {
+        console.error('Error deleting post:', error);
+        alert('Failed to delete post');
+      }
+    }
+  };
+
+  const handleDeleteComment = async (commentId) => {
+    try {
+      // Remove the comment from the array
+      const updatedComments = (post.comments || []).filter(c => c.id !== commentId);
+
+      // Update in Supabase
+      const { error } = await supabase
+        .from('posts')
+        .update({ comments: updatedComments })
+        .eq('id', post.id);
+
+      if (error) {
+        console.error('Error deleting comment:', error);
+        return;
+      }
+
+      // Update local state
+      setPost(prev => ({
+        ...prev,
+        comments: updatedComments
+      }));
+      setShowCommentMenus({});
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+    }
+  };
+
   // Utility functions
   const formatTime = (timestamp) => {
-    const diff = Date.now() - timestamp;
+    const now = new Date();
+    const postDate = new Date(timestamp);
+    const diff = now - postDate;
+    const minutes = Math.floor(diff / (1000 * 60));
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const days = Math.floor(hours / 24);
-    return days > 0 ? `${days}d ago` : hours > 0 ? `${hours}h ago` : 'Just now';
+
+    if (days > 0) {
+      return `${days}d ago`;
+    } else if (hours > 0) {
+      return `${hours}h ago`;
+    } else if (minutes > 0) {
+      return `${minutes}m ago`;
+    } else {
+      return 'Just now';
+    }
   };
 
   const formatDate = (dateString) => {
@@ -218,11 +350,41 @@ function PostDetail() {
 
           {/* Author Section */}
           <div className="author-section">
-            <div className="author-avatar-lg">🧳</div>
+            <div
+              className="author-avatar-lg clickable"
+              onClick={() => navigate(currentUserId === post.userId ? '/profile' : `/profile/${post.userId}`)}
+              style={{ cursor: 'pointer' }}
+            >
+              {post.author_avatar ? (
+                <img src={post.author_avatar} alt={post.author} className="author-avatar-image" />
+              ) : (
+                <div className="author-avatar-placeholder">👤</div>
+              )}
+            </div>
             <div className="author-info">
-              <h2 className="author-name">{post.author}</h2>
+              <h2
+                className="author-name"
+                onClick={() => navigate(currentUserId === post.userId ? '/profile' : `/profile/${post.userId}`)}
+                style={{ cursor: 'pointer' }}
+              >
+                {post.author}
+              </h2>
               <div className="post-time">{formatTime(post.timestamp)}</div>
             </div>
+            {currentUserId && post.userId === currentUserId && (
+              <div className="post-menu-container">
+                <button className="post-menu-btn" onClick={toggleMenu} title="More options">
+                  ⋮
+                </button>
+                {showMenu && (
+                  <div className="post-menu-dropdown">
+                    <button className="menu-item delete-item" onClick={handleDelete}>
+                      🗑️ Delete Post
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Image Gallery */}
@@ -264,13 +426,60 @@ function PostDetail() {
                     {post.activities.map((activity, index) => (
                       <div key={index} className="activity-card">
                         {activity.cost && <div className="activity-cost">${activity.cost}</div>}
-                        <div className="activity-icon-lg">{getActivityIcon(activity.type)}</div>
-                        <div className="activity-details">
-                          <h4 className="activity-name">{activity.name}</h4>
-                          <div className="activity-type">{activity.type}</div>
-                          {activity.rating > 0 && renderStars(activity.rating)}
-                          {activity.description && <p className="activity-desc">{activity.description}</p>}
+                        <div className="activity-header">
+                          <div className="activity-icon-lg">{getActivityIcon(activity.type)}</div>
+                          <div className="activity-details">
+                            <h4 className="activity-name">{activity.name}</h4>
+                            <div className="activity-type">{activity.type}</div>
+                            {activity.rating > 0 && renderStars(activity.rating)}
+                            {activity.description && <p className="activity-desc">{activity.description}</p>}
+                          </div>
                         </div>
+                        {activity.images && activity.images.length > 0 && (
+                          <div className="activity-images-grid">
+                            {activity.images.map((image, imgIndex) => (
+                              <div key={imgIndex} className="activity-image-item">
+                                <img src={image.url} alt={`${activity.name} ${imgIndex + 1}`} />
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Accommodations */}
+            {post.accommodations && post.accommodations.length > 0 && (
+              <>
+                <div className="divider"></div>
+                <div className="accommodations">
+                  <h3 className="section-title">🏨 Accommodations</h3>
+                  <div className="activities-grid">
+                    {post.accommodations.map((acc, index) => (
+                      <div key={index} className="activity-card">
+                        {acc.cost && <div className="activity-cost">${acc.cost}</div>}
+                        <div className="activity-header">
+                          <div className="activity-icon-lg">{getActivityIcon(acc.type)}</div>
+                          <div className="activity-details">
+                            <h4 className="activity-name">{acc.name}</h4>
+                            <div className="activity-type">{acc.type}</div>
+                            {acc.address && <div className="accommodation-address">📍 {acc.address}</div>}
+                            {acc.rating > 0 && renderStars(acc.rating)}
+                            {acc.description && <p className="activity-desc">{acc.description}</p>}
+                          </div>
+                        </div>
+                        {acc.images && acc.images.length > 0 && (
+                          <div className="activity-images-grid">
+                            {acc.images.map((image, imgIndex) => (
+                              <div key={imgIndex} className="activity-image-item">
+                                <img src={image.url} alt={`${acc.name} ${imgIndex + 1}`} />
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -281,13 +490,13 @@ function PostDetail() {
 
           {/* Actions */}
           <div className="actions">
-            <button className="action-btn like" onClick={handleLike}>
-              <span>❤️</span>
-              <span>{post.likes} Likes</span>
+            <button className="action-btn" onClick={handleLike}>
+              <span className="action-icon">❤️</span>
+              <span className="action-count">{post.likes || 0}</span>
             </button>
-            <button className="action-btn comment">
-              <span>💬</span>
-              <span>{post.comments?.length || 0} Comments</span>
+            <button className="action-btn">
+              <span className="action-icon">💬</span>
+              <span className="action-count">{post.comments?.length || 0}</span>
             </button>
           </div>
 
@@ -298,7 +507,13 @@ function PostDetail() {
               {post.comments && post.comments.length > 0 ? (
                 post.comments.map(comment => (
                   <div key={comment.id} className="comment">
-                    <div className="comment-avatar">👤</div>
+                    <div className="comment-avatar">
+                      {comment.avatar_url ? (
+                        <img src={comment.avatar_url} alt={comment.author} className="comment-avatar-image" />
+                      ) : (
+                        <div className="comment-avatar-placeholder">👤</div>
+                      )}
+                    </div>
                     <div className="comment-content">
                       <div className="comment-header">
                         <div className="comment-author">{comment.author}</div>
@@ -306,6 +521,27 @@ function PostDetail() {
                       </div>
                       <p className="comment-text">{comment.content}</p>
                     </div>
+                    {currentUserId && comment.user_id === currentUserId && (
+                      <div className="comment-menu-container">
+                        <button
+                          className="comment-menu-btn"
+                          onClick={(e) => toggleCommentMenu(comment.id, e)}
+                          title="More options"
+                        >
+                          ⋮
+                        </button>
+                        {showCommentMenus[comment.id] && (
+                          <div className="comment-menu-dropdown">
+                            <button
+                              className="menu-item delete-item"
+                              onClick={() => handleDeleteComment(comment.id)}
+                            >
+                              🗑️ Delete Comment
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 ))
               ) : (
