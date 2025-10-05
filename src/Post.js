@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
+import { createLikeNotification, createCommentNotification, createFollowNotification } from './notificationHelpers';
 import './Post.css';
 
 function Post({ post, onLike, onComment, onDelete, onDeleteComment }) {
@@ -17,6 +18,7 @@ function Post({ post, onLike, onComment, onDelete, onDeleteComment }) {
   const [showCommentMenus, setShowCommentMenus] = useState({});
   const [isFollowing, setIsFollowing] = useState(false);
   const [isLoadingFollow, setIsLoadingFollow] = useState(false);
+  const [currentUserName, setCurrentUserName] = useState('');
 
   useEffect(() => {
     getCurrentUser();
@@ -52,14 +54,15 @@ function Post({ post, onLike, onComment, onDelete, onDeleteComment }) {
     if (user) {
       setCurrentUserId(user.id);
 
-      // Fetch user's avatar
+      // Fetch user's avatar and name
       const { data: profileData } = await supabase
         .from('profiles')
-        .select('avatar_url')
+        .select('avatar_url, full_name, username')
         .eq('id', user.id)
         .single();
 
       setCurrentUserAvatar(profileData?.avatar_url || user.user_metadata?.avatar_url || null);
+      setCurrentUserName(profileData?.full_name || profileData?.username || 'User');
     }
   };
 
@@ -109,6 +112,8 @@ function Post({ post, onLike, onComment, onDelete, onDeleteComment }) {
 
         if (!error) {
           setIsFollowing(true);
+          // Create follow notification
+          await createFollowNotification(post.user_id, currentUserId, currentUserName);
         }
       }
     } catch (error) {
@@ -156,14 +161,29 @@ function Post({ post, onLike, onComment, onDelete, onDeleteComment }) {
     }));
   };
 
-  const handleLike = () => {
+  const handleLike = async () => {
     onLike(post.id);
+
+    // Create like notification
+    const isLiked = post.liked_by?.includes(currentUserId);
+    if (!isLiked && post.user_id && currentUserId !== post.user_id) {
+      await createLikeNotification(post.user_id, currentUserId, currentUserName, post.id);
+    }
   };
 
-  const handleCommentSubmit = (e) => {
+  const handleCommentSubmit = async (e) => {
     e.preventDefault();
+    console.log('handleCommentSubmit called, commentText:', commentText);
     if (commentText.trim()) {
-      onComment(post.id, commentText);
+      console.log('Calling onComment with:', post.id, commentText);
+      await onComment(post.id, commentText);
+
+      // Create comment notification
+      if (post.user_id && currentUserId !== post.user_id) {
+        console.log('Creating comment notification');
+        await createCommentNotification(post.user_id, currentUserId, currentUserName, post.id, commentText);
+      }
+
       setCommentText('');
     }
   };

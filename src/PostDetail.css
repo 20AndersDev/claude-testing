@@ -90,6 +90,8 @@
   position: relative;
   overflow: hidden;
   margin-bottom: 40px;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Author Section */
@@ -425,7 +427,7 @@
   justify-content: space-around;
   padding: 12px 24px;
   border-top: 1px solid var(--border);
-  background: var(--background-secondary);
+  background: var(--surface);
   gap: 8px;
 }
 

@@ -11,6 +11,72 @@ function Feed() {
 
   useEffect(() => {
     fetchPosts();
+
+    // Set up real-time subscription for post updates
+    const postsSubscription = supabase
+      .channel('posts-feed')
+      .on('postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'posts'
+        },
+        (payload) => {
+          // Update the specific post in the list
+          setPosts(prevPosts => prevPosts.map(post => {
+            if (post.id === payload.new.id) {
+              return {
+                ...payload.new,
+                tripTitle: payload.new.trip_title,
+                startDate: payload.new.start_date,
+                endDate: payload.new.end_date,
+                timestamp: payload.new.created_at,
+                userEmail: payload.new.user_id,
+                userId: payload.new.user_id,
+                isFollowing: post.isFollowing // Keep the existing follow status
+              };
+            }
+            return post;
+          }));
+        }
+      )
+      .on('postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'posts'
+        },
+        (payload) => {
+          // Add new post to the beginning of the list
+          const newPost = {
+            ...payload.new,
+            tripTitle: payload.new.trip_title,
+            startDate: payload.new.start_date,
+            endDate: payload.new.end_date,
+            timestamp: payload.new.created_at,
+            userEmail: payload.new.user_id,
+            userId: payload.new.user_id,
+            isFollowing: false
+          };
+          setPosts(prevPosts => [newPost, ...prevPosts]);
+        }
+      )
+      .on('postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'posts'
+        },
+        (payload) => {
+          // Remove deleted post from the list
+          setPosts(prevPosts => prevPosts.filter(post => post.id !== payload.old.id));
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(postsSubscription);
+    };
   }, []);
 
   const fetchPosts = async () => {
@@ -221,12 +287,20 @@ function Feed() {
 
   const addComment = async (postId, commentContent) => {
     try {
+      console.log('addComment called with:', postId, commentContent);
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        console.log('No user found');
+        return;
+      }
 
       // Get current post
       const post = posts.find(p => p.id === postId);
-      if (!post) return;
+      if (!post) {
+        console.log('Post not found:', postId);
+        return;
+      }
+      console.log('Found post:', post);
 
       // Fetch user's profile to get display name and avatar
       const { data: profileData } = await supabase
@@ -250,15 +324,19 @@ function Feed() {
 
       // Update comments in Supabase
       const updatedComments = [...(post.comments || []), newComment];
-      const { error } = await supabase
+      console.log('Updating post with comments:', updatedComments);
+      const { data, error } = await supabase
         .from('posts')
         .update({ comments: updatedComments })
-        .eq('id', postId);
+        .eq('id', postId)
+        .select();
 
       if (error) {
         console.error('Error adding comment:', error);
         return;
       }
+
+      console.log('Comment added successfully:', data);
 
       // Update local state
       setPosts(posts.map(p =>

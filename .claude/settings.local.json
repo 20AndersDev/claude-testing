@@ -8,7 +8,8 @@
       "Bash(move PostDetailNew.js PostDetail.js)",
       "Bash(npm run build:*)",
       "mcp__ide__getDiagnostics",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Read(//c/**)"
     ],
     "deny": [],
     "ask": []
