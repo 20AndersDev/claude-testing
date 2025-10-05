@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
+import { createFollowNotification } from './notificationHelpers';
 import Navbar from './Navbar';
 import Post from './Post';
 import WorldMap from './WorldMap';
+import VisitedCountriesMap from './VisitedCountriesMap';
 import './Profile.css';
 
 function Profile() {
@@ -60,6 +62,39 @@ function Profile() {
       if (!isOwnProfile) {
         checkFollowStatus(profileUserId);
       }
+
+      // Set up real-time subscription for post updates
+      const postsSubscription = supabase
+        .channel(`profile-posts-${profileUserId}`)
+        .on('postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'posts',
+            filter: `user_id=eq.${profileUserId}`
+          },
+          (payload) => {
+            // Update the specific post in the list
+            setPosts(prevPosts => prevPosts.map(post => {
+              if (post.id === payload.new.id) {
+                return {
+                  ...payload.new,
+                  tripTitle: payload.new.trip_title,
+                  startDate: payload.new.start_date,
+                  endDate: payload.new.end_date,
+                  timestamp: payload.new.created_at,
+                  userId: payload.new.user_id
+                };
+              }
+              return post;
+            }));
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(postsSubscription);
+      };
     }
   }, [currentUserId, userId]);
 
@@ -118,12 +153,17 @@ function Profile() {
           .single();
 
         if (profileData) {
+          const followerName = profileData.full_name || profileData.username || 'User';
+
           setFollowers(prev => [...prev, {
             id: profileData.id,
-            name: profileData.full_name || profileData.username || 'User',
+            name: followerName,
             username: profileData.username,
             avatar_url: profileData.avatar_url
           }]);
+
+          // Create notification for the followed user
+          await createFollowNotification(profileUserId, currentUserId, followerName);
         }
       }
     } catch (error) {
@@ -672,6 +712,12 @@ function Profile() {
               </>
             )}
           </div>
+
+          {/* Travel Map */}
+          <VisitedCountriesMap
+            userId={userId || currentUserId}
+            isOwnProfile={isOwnProfile}
+          />
 
           <div className="profile-tabs">
             <button

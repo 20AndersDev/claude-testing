@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
+import { createLikeNotification, createCommentNotification } from './notificationHelpers';
 import Navbar from './Navbar';
 import ImageModal from './ImageModal';
 import './PostDetail.css';
@@ -13,6 +14,7 @@ function PostDetail() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showModal, setShowModal] = useState(false);
   const [currentUserId, setCurrentUserId] = useState(null);
+  const [currentUserName, setCurrentUserName] = useState('');
   const [showMenu, setShowMenu] = useState(false);
   const [showCommentMenus, setShowCommentMenus] = useState({});
 
@@ -20,6 +22,35 @@ function PostDetail() {
   useEffect(() => {
     fetchPost();
     getCurrentUser();
+
+    // Set up real-time subscription for post updates
+    const postSubscription = supabase
+      .channel(`post-${postId}`)
+      .on('postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'posts',
+          filter: `id=eq.${postId}`
+        },
+        (payload) => {
+          // Update post with new data
+          const updatedPost = {
+            ...payload.new,
+            tripTitle: payload.new.trip_title,
+            startDate: payload.new.start_date,
+            endDate: payload.new.end_date,
+            timestamp: payload.new.created_at,
+            userId: payload.new.user_id
+          };
+          setPost(updatedPost);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(postSubscription);
+    };
   }, [postId]);
 
   useEffect(() => {
@@ -45,6 +76,15 @@ function PostDetail() {
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
       setCurrentUserId(user.id);
+
+      // Fetch user's name
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('full_name, username')
+        .eq('id', user.id)
+        .single();
+
+      setCurrentUserName(profileData?.full_name || profileData?.username || 'User');
     }
   };
 
@@ -123,10 +163,15 @@ function PostDetail() {
 
       // Update local state
       setPost(prev => ({ ...prev, likes: newLikes, liked_by: newLikedBy }));
+
+      // Create like notification
+      if (!hasLiked && post.userId && user.id !== post.userId) {
+        await createLikeNotification(post.userId, user.id, currentUserName, post.id);
+      }
     } catch (error) {
       console.error('Error liking post:', error);
     }
-  }, [post]);
+  }, [post, currentUserName]);
 
   const handleCommentSubmit = useCallback(async (e) => {
     e.preventDefault();
@@ -172,6 +217,12 @@ function PostDetail() {
           ...prev,
           comments: updatedComments
         }));
+
+        // Create comment notification
+        if (post.userId && user.id !== post.userId) {
+          await createCommentNotification(post.userId, user.id, displayName, post.id, commentText);
+        }
+
         setCommentText('');
       } catch (error) {
         console.error('Error commenting on post:', error);
