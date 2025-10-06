@@ -48,7 +48,7 @@
 
 .user-search-input {
   width: 100%;
-  padding: 16px 20px 16px 56px;
+  padding: 16px 20px;
   border: 2px solid var(--border);
   border-radius: 16px;
   font-size: 16px;
@@ -97,6 +97,26 @@
   color: var(--text-secondary);
   margin: 0;
   font-size: 16px;
+}
+
+.results-group-header {
+  padding: 12px 0 8px 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 16px;
+}
+
+.results-group-header:first-child {
+  margin-top: 0;
+}
+
+.results-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 20px 0;
 }
 
 .users-results-list {
@@ -156,6 +176,13 @@
   font-weight: 700;
   border: 3px solid var(--primary);
   transition: all 0.3s ease;
+}
+
+.user-result-avatar .avatar-placeholder.place-icon {
+  background: var(--surface);
+  color: var(--primary);
+  font-size: 28px;
+  border: 3px solid var(--primary);
 }
 
 .user-result-info {
@@ -227,6 +254,7 @@
 @media (max-width: 768px) {
   .user-search-page {
     padding: 16px;
+    padding-top: 72px;
   }
 
   .search-container {

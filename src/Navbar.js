@@ -399,6 +399,13 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
 
         <div className="navbar-center">
           <div className="navbar-search">
+            <button
+              className="mobile-search-button"
+              onClick={() => navigate('/search')}
+              aria-label="Open search"
+            >
+              🔍
+            </button>
             <input
               type="search"
               name="query"
