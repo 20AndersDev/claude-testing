@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTheme } from './ThemeContext';
+import { useAuth } from './AuthContext';
 import { supabase } from './supabaseClient';
 import { useLoadScript } from '@react-google-maps/api';
 import './Navbar.css';
@@ -10,6 +11,7 @@ const libraries = ['places'];
 function Navbar({ onSearchChange, onSidebarToggle }) {
   const navigate = useNavigate();
   const { isDark, toggleTheme } = useTheme();
+  const { user, loading } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState(null);
@@ -127,25 +129,15 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
   };
 
   const handleHamburgerClick = () => {
-    // Check if we're on mobile (window width <= 768px)
-    const isMobile = window.innerWidth <= 768;
-
-    if (isMobile) {
-      // On mobile, always show mobile menu
-      setShowMobileMenu(!showMobileMenu);
-    } else if (onSidebarToggle) {
-      // On desktop, use sidebar if available
-      onSidebarToggle();
-    } else {
-      // Fallback to mobile menu
-      setShowMobileMenu(!showMobileMenu);
-    }
+    setShowMobileMenu(!showMobileMenu);
   };
 
   useEffect(() => {
-    fetchUserAvatar();
-    fetchCurrentUserId();
-  }, []);
+    if (user && !loading) {
+      fetchUserAvatar();
+      fetchCurrentUserId();
+    }
+  }, [user, loading]);
 
   useEffect(() => {
     if (currentUserId) {
@@ -186,10 +178,15 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
 
     if (showNotifications) {
       document.addEventListener('mousedown', handleClickOutside);
+      // Prevent body scroll when notifications are open
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      document.body.style.overflow = 'unset';
     };
   }, [showNotifications]);
 
@@ -234,7 +231,6 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
 
   const fetchCurrentUserId = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         setCurrentUserId(user.id);
       }
@@ -251,8 +247,6 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
         const parsedProfile = JSON.parse(cachedProfile);
         setAvatarUrl(parsedProfile.profilePicture || null);
       }
-
-      const { data: { user } } = await supabase.auth.getUser();
 
       if (user) {
         const { data: profileData } = await supabase
@@ -503,7 +497,7 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
             <span className="action-icon">{isDark ? '☀️' : '🌙'}</span>
           </button>
 
-          {currentUserId ? (
+          {!loading && user ? (
             <>
               <div className="notifications-container">
                 <button
@@ -585,22 +579,25 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
       </div>
 
       {showMobileMenu && (
-        <div className="mobile-menu-overlay" onClick={() => setShowMobileMenu(false)}>
-          <div className="mobile-menu" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="mobile-menu-overlay"
+          onClick={() => setShowMobileMenu(false)}
+        >
+          <div
+            className="mobile-menu"
+            onClick={(e) => e.stopPropagation()}
+          >
             <button className="mobile-menu-close" onClick={() => setShowMobileMenu(false)}>✕</button>
 
-            <Link to="/feed" className="mobile-menu-item" onClick={() => setShowMobileMenu(false)}>
-              🏠 Home
+            <Link to="/bookmarks" className="mobile-menu-item" onClick={() => setShowMobileMenu(false)}>
+              🔖 Bookmarks
             </Link>
-            <Link to="/search" className="mobile-menu-item" onClick={() => setShowMobileMenu(false)}>
-              🔍 Search Users
+            <Link to="/settings" className="mobile-menu-item" onClick={() => setShowMobileMenu(false)}>
+              ⚙️ Settings
             </Link>
-            <Link to="/profile" className="mobile-menu-item" onClick={() => setShowMobileMenu(false)}>
-              👤 Profile
-            </Link>
-            <button className="mobile-menu-item" onClick={toggleTheme}>
-              {isDark ? '☀️' : '🌙'} {isDark ? 'Light Mode' : 'Dark Mode'}
-            </button>
+
+            <div className="mobile-menu-divider"></div>
+
             <button className="mobile-menu-item logout" onClick={() => { handleLogout(); setShowMobileMenu(false); }}>
               🚪 Logout
             </button>

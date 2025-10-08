@@ -2,15 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
 import { createFollowNotification } from './notificationHelpers';
+import { useAuth } from './AuthContext';
 import Navbar from './Navbar';
 import Post from './Post';
 import WorldMap from './WorldMap';
 import VisitedCountriesMap from './VisitedCountriesMap';
+import useSwipeNavigation from './useSwipeNavigation';
 import './Profile.css';
 
 function Profile() {
   const { userId } = useParams();
   const navigate = useNavigate();
+  const { user, loading } = useAuth();
+  useSwipeNavigation();
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState('posts');
   const [posts, setPosts] = useState([]);
@@ -40,17 +44,16 @@ function Profile() {
   // Load user data from Supabase
   useEffect(() => {
     const loadProfile = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        setCurrentUserId(user.id);
-        // If no userId param, viewing own profile
-        // If userId param matches current user, also own profile
-        const viewingOwnProfile = !userId || userId === user.id;
-        setIsOwnProfile(viewingOwnProfile);
-      }
+      if (!user || loading) return;
+
+      setCurrentUserId(user.id);
+      // If no userId param, viewing own profile
+      // If userId param matches current user, also own profile
+      const viewingOwnProfile = !userId || userId === user.id;
+      setIsOwnProfile(viewingOwnProfile);
     };
     loadProfile();
-  }, [userId]);
+  }, [user, loading, userId]);
 
   useEffect(() => {
     if (currentUserId !== null) {
@@ -175,6 +178,15 @@ function Profile() {
 
   const fetchUserProfile = async (profileUserId) => {
     try {
+      // Check cache first
+      const cacheKey = `profile_${profileUserId}`;
+      const cached = sessionStorage.getItem(cacheKey);
+      if (cached) {
+        const cachedProfile = JSON.parse(cached);
+        setProfile(cachedProfile);
+        setEditedProfile(cachedProfile);
+      }
+
       // Fetch profile data from database
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
@@ -187,8 +199,6 @@ function Profile() {
         return;
       }
 
-      // Get user creation date and email from auth.users
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
       let joinDate = 'Recently';
       let userEmail = '';
 
@@ -209,6 +219,10 @@ function Profile() {
         };
 
         setProfile(profileObject);
+        setEditedProfile(profileObject);
+
+        // Cache in sessionStorage for faster navigation
+        sessionStorage.setItem(cacheKey, JSON.stringify(profileObject));
 
         // Only cache own profile in localStorage
         if (isOwnProfile) {
@@ -607,7 +621,7 @@ function Profile() {
   return (
     <>
       <Navbar />
-      <div className="profile">
+      <div className="profile page-transition-container">
         <div className="profile-container">
           <div className="profile-header">
             {isEditing ? (

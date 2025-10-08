@@ -1,0 +1,147 @@
+.bookmarks-page {
+  min-height: 100vh;
+  padding-top: 90px;
+  padding-bottom: 40px;
+  background: var(--gradient-background);
+}
+
+.bookmarks-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.bookmarks-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.bookmarks-header h1 {
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 12px 0;
+}
+
+.bookmarks-subtitle {
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.bookmarks-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  gap: 16px;
+}
+
+.loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.bookmarks-loading p {
+  color: var(--text-secondary);
+  font-size: 16px;
+  margin: 0;
+}
+
+.bookmarks-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  background: var(--surface);
+  border-radius: 24px;
+  box-shadow: 0 4px 20px var(--shadow-light);
+  border: 1px solid var(--border-light);
+}
+
+.empty-icon {
+  font-size: 80px;
+  margin-bottom: 24px;
+  opacity: 0.5;
+}
+
+.bookmarks-empty h3 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 12px 0;
+}
+
+.bookmarks-empty p {
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin: 0 0 24px 0;
+}
+
+.browse-btn {
+  padding: 14px 32px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.browse-btn:hover {
+  background: var(--primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(5, 150, 105, 0.3);
+}
+
+.bookmarks-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+@media (max-width: 1088px) {
+  .bookmarks-page {
+    padding-bottom: 120px;
+  }
+}
+
+@media (max-width: 768px) {
+  .bookmarks-page {
+    padding-top: 70px;
+  }
+
+  .bookmarks-header h1 {
+    font-size: 28px;
+  }
+
+  .bookmarks-subtitle {
+    font-size: 14px;
+  }
+
+  .empty-icon {
+    font-size: 64px;
+  }
+
+  .bookmarks-empty h3 {
+    font-size: 20px;
+  }
+
+  .bookmarks-empty p {
+    font-size: 14px;
+  }
+}

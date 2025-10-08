@@ -354,12 +354,19 @@
   }
 }
 
+@media (max-width: 1088px) {
+  .sidebar {
+    display: none;
+  }
+}
+
 @media (max-width: 768px) {
   .sidebar-overlay {
     display: block;
   }
 
   .sidebar {
+    display: block;
     position: fixed;
     top: 0;
     left: -320px;

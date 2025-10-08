@@ -78,10 +78,6 @@ function PlaceDetail() {
       <Navbar />
       <div className="place-detail-page">
         <div className="place-detail-container">
-          <button className="back-btn" onClick={() => navigate(-1)}>
-            ← Back
-          </button>
-
           {placeDetails.photos && placeDetails.photos.length > 0 && (
             <div className="place-hero-image">
               <img src={placeDetails.photos[0].getUrl({ maxWidth: 1200 })} alt={placeDetails.name} />

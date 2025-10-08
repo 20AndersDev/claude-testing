@@ -21,10 +21,11 @@
 }
 
 .map-title-row {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 12px;
+  position: relative;
 }
 
 .map-header h3 {
@@ -32,15 +33,15 @@
   font-size: 18px;
   font-weight: 700;
   color: var(--text-primary);
-  justify-self: start;
+  text-align: center;
 }
 
 .map-stats {
-  justify-self: center;
   display: flex;
   align-items: baseline;
   gap: 6px;
   font-size: 14px;
+  justify-content: center;
 }
 
 .collapse-arrow {
@@ -56,7 +57,9 @@
   justify-content: center;
   width: 20px;
   height: 20px;
-  justify-self: end;
+  position: absolute;
+  right: 0;
+  top: 0;
 }
 
 .collapse-arrow:hover {
@@ -284,24 +287,27 @@
 
 @media (max-width: 768px) {
   .visited-countries-map-container {
-    padding: 16px;
+    padding: 14px;
   }
 
   .map-title-row {
-    flex-direction: column;
-    align-items: flex-start;
+    gap: 10px;
   }
 
   .map-header h3 {
-    font-size: 16px;
+    font-size: 15px;
   }
 
   .map-stats {
-    font-size: 13px;
+    font-size: 12px;
   }
 
   .stat-highlight {
-    font-size: 18px;
+    font-size: 16px;
+  }
+
+  .stat-label {
+    font-size: 11px;
   }
 
   .map-wrapper {
@@ -310,17 +316,28 @@
 
   .map-legend {
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
     align-items: flex-start;
+    margin-top: 16px;
+    padding-top: 12px;
+  }
+
+  .legend-item {
+    font-size: 12px;
+  }
+
+  .legend-color {
+    width: 20px;
+    height: 14px;
   }
 
   .country-tooltip {
-    font-size: 12px;
-    padding: 5px 12px;
+    font-size: 11px;
+    padding: 5px 10px;
   }
 
   .map-instructions-overlay {
-    font-size: 12px;
+    font-size: 11px;
     padding: 6px 12px;
     max-width: calc(100% - 24px);
     white-space: normal;
@@ -348,5 +365,80 @@
 
   .zoom-btn.zoom-reset {
     font-size: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .visited-countries-map-container {
+    padding: 12px;
+  }
+
+  .map-title-row {
+    gap: 8px;
+  }
+
+  .map-header h3 {
+    font-size: 14px;
+  }
+
+  .map-stats {
+    font-size: 11px;
+  }
+
+  .stat-highlight {
+    font-size: 14px;
+  }
+
+  .stat-label {
+    font-size: 10px;
+  }
+
+  .map-legend {
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 10px;
+  }
+
+  .legend-item {
+    font-size: 11px;
+  }
+
+  .legend-color {
+    width: 18px;
+    height: 12px;
+  }
+
+  .country-tooltip {
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+
+  .map-instructions-overlay {
+    font-size: 10px;
+    padding: 5px 10px;
+  }
+
+  .zoom-controls {
+    bottom: 10px;
+    right: 10px;
+    gap: 6px;
+  }
+
+  .zoom-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+  }
+
+  .zoom-btn.zoom-in {
+    font-size: 18px;
+  }
+
+  .zoom-btn.zoom-out {
+    font-size: 22px;
+  }
+
+  .zoom-btn.zoom-reset {
+    font-size: 16px;
   }
 }
