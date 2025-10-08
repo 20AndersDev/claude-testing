@@ -4,10 +4,12 @@ import Navbar from './Navbar';
 import CreatePost from './CreatePost';
 import Post from './Post';
 import Sidebar from './Sidebar';
+import useSwipeNavigation from './useSwipeNavigation';
 import './Feed.css';
 
 function Feed() {
   const [posts, setPosts] = useState([]);
+  useSwipeNavigation();
 
   useEffect(() => {
     fetchPosts();
@@ -387,7 +389,7 @@ function Feed() {
         onSearchChange={handleSearchChange}
         onSidebarToggle={handleSidebarToggle}
       />
-      <div className="feed-container">
+      <div className="feed-container page-transition-container">
         <Sidebar
           posts={posts}
           onFilterChange={handleFilterChange}

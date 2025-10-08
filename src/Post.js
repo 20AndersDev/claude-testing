@@ -4,7 +4,7 @@ import { supabase } from './supabaseClient';
 import { createLikeNotification, createCommentNotification, createFollowNotification } from './notificationHelpers';
 import './Post.css';
 
-function Post({ post, onLike, onComment, onDelete, onDeleteComment }) {
+function Post({ post, onLike, onComment, onDelete, onDeleteComment, onBookmarkRemove, isBookmarked: initialBookmarked }) {
   const navigate = useNavigate();
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState('');
@@ -19,6 +19,7 @@ function Post({ post, onLike, onComment, onDelete, onDeleteComment }) {
   const [isFollowing, setIsFollowing] = useState(false);
   const [isLoadingFollow, setIsLoadingFollow] = useState(false);
   const [currentUserName, setCurrentUserName] = useState('');
+  const [isBookmarked, setIsBookmarked] = useState(initialBookmarked || false);
 
   useEffect(() => {
     getCurrentUser();
@@ -29,6 +30,12 @@ function Post({ post, onLike, onComment, onDelete, onDeleteComment }) {
       checkFollowStatus();
     }
   }, [currentUserId, post.user_id]);
+
+  useEffect(() => {
+    if (currentUserId && post.id && !initialBookmarked) {
+      checkBookmarkStatus();
+    }
+  }, [currentUserId, post.id]);
 
   useEffect(() => {
     const handleClickOutside = () => {
@@ -81,6 +88,60 @@ function Post({ post, onLike, onComment, onDelete, onDeleteComment }) {
     } catch (error) {
       // No follow relationship exists
       setIsFollowing(false);
+    }
+  };
+
+  const checkBookmarkStatus = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('bookmarks')
+        .select('id')
+        .eq('user_id', currentUserId)
+        .eq('post_id', post.id)
+        .single();
+
+      if (!error && data) {
+        setIsBookmarked(true);
+      }
+    } catch (error) {
+      setIsBookmarked(false);
+    }
+  };
+
+  const handleBookmarkToggle = async (e) => {
+    e.stopPropagation();
+    if (!currentUserId) return;
+
+    try {
+      if (isBookmarked) {
+        // Remove bookmark
+        const { error } = await supabase
+          .from('bookmarks')
+          .delete()
+          .eq('user_id', currentUserId)
+          .eq('post_id', post.id);
+
+        if (error) throw error;
+        setIsBookmarked(false);
+
+        // Call the remove callback if provided (for bookmarks page)
+        if (onBookmarkRemove) {
+          onBookmarkRemove();
+        }
+      } else {
+        // Add bookmark
+        const { error } = await supabase
+          .from('bookmarks')
+          .insert({
+            user_id: currentUserId,
+            post_id: post.id
+          });
+
+        if (error) throw error;
+        setIsBookmarked(true);
+      }
+    } catch (error) {
+      console.error('Error toggling bookmark:', error);
     }
   };
 
@@ -642,6 +703,13 @@ function Post({ post, onLike, onComment, onDelete, onDeleteComment }) {
         >
           <span className="action-icon">💬</span>
           <span className="action-count">{(post.comments || []).length}</span>
+        </button>
+        <button
+          className={`action-btn bookmark-btn ${isBookmarked ? 'bookmarked' : ''}`}
+          onClick={handleBookmarkToggle}
+          title={isBookmarked ? 'Remove bookmark' : 'Bookmark this post'}
+        >
+          <span className="action-icon">{isBookmarked ? '🔖' : '🏷️'}</span>
         </button>
       </div>
 

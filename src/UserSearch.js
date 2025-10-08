@@ -3,17 +3,20 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from './supabaseClient';
 import { useLoadScript } from '@react-google-maps/api';
 import Navbar from './Navbar';
+import useSwipeNavigation from './useSwipeNavigation';
 import './UserSearch.css';
 
 const libraries = ['places'];
 
 function UserSearch() {
   const location = useLocation();
+  useSwipeNavigation();
   const [searchQuery, setSearchQuery] = useState(location.state?.query || '');
   const [searchResults, setSearchResults] = useState([]);
   const [placeResults, setPlaceResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [currentUserId, setCurrentUserId] = useState(null);
+  const [posts, setPosts] = useState([]);
   const navigate = useNavigate();
 
   const { isLoaded } = useLoadScript({
@@ -29,7 +32,46 @@ function UserSearch() {
       }
     };
     fetchCurrentUser();
+    fetchPosts();
   }, []);
+
+  const fetchPosts = async () => {
+    try {
+      const { data: postsData, error } = await supabase
+        .from('posts')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setPosts(postsData || []);
+    } catch (error) {
+      console.error('Error fetching posts:', error);
+    }
+  };
+
+  const getTrendingHashtags = () => {
+    const hashtagCount = {};
+    posts.forEach(post => {
+      if (post.hashtags) {
+        post.hashtags.forEach(tag => {
+          hashtagCount[tag] = (hashtagCount[tag] || 0) + 1;
+        });
+      }
+    });
+    return Object.entries(hashtagCount)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([tag, count]) => ({ tag, count }));
+  };
+
+  const getTrendingDestinations = () => {
+    const locations = posts
+      .filter(post => post.location && post.likes > 10)
+      .map(post => ({ location: post.location, likes: post.likes }))
+      .sort((a, b) => b.likes - a.likes)
+      .slice(0, 5);
+    return locations;
+  };
 
   useEffect(() => {
     const searchUsers = async () => {
@@ -85,51 +127,23 @@ function UserSearch() {
     if (!window.google || !window.google.maps || !window.google.maps.places) return;
 
     try {
-      const request = {
-        input: query,
-        includedPrimaryTypes: ['establishment', 'geocode'],
-        language: 'en',
-      };
-
-      const { suggestions } = await window.google.maps.places.AutocompleteSuggestion.fetchAutocompleteSuggestions(request);
-
-      if (suggestions && suggestions.length > 0) {
-        const formattedResults = suggestions.slice(0, 10).map(suggestion => {
-          const placePrediction = suggestion.placePrediction;
-          return {
-            place_id: placePrediction?.placeId || Math.random().toString(),
-            description: placePrediction?.text?.text || '',
-            structured_formatting: {
-              main_text: placePrediction?.structuredFormat?.mainText?.text || placePrediction?.text?.text || '',
-              secondary_text: placePrediction?.structuredFormat?.secondaryText?.text || ''
-            }
-          };
-        });
-        setPlaceResults(formattedResults);
-      } else {
-        setPlaceResults([]);
-      }
+      // Use the standard AutocompleteService which is more reliable
+      const service = new window.google.maps.places.AutocompleteService();
+      service.getPlacePredictions(
+        {
+          input: query,
+        },
+        (predictions, status) => {
+          if (status === window.google.maps.places.PlacesServiceStatus.OK && predictions) {
+            setPlaceResults(predictions.slice(0, 10));
+          } else {
+            setPlaceResults([]);
+          }
+        }
+      );
     } catch (error) {
       console.error('Error fetching place suggestions:', error);
-      // Fallback to old AutocompleteService if new API fails
-      try {
-        const service = new window.google.maps.places.AutocompleteService();
-        service.getPlacePredictions(
-          {
-            input: query,
-          },
-          (predictions, status) => {
-            if (status === window.google.maps.places.PlacesServiceStatus.OK && predictions) {
-              setPlaceResults(predictions.slice(0, 10));
-            } else {
-              setPlaceResults([]);
-            }
-          }
-        );
-      } catch (fallbackError) {
-        console.error('Fallback error:', fallbackError);
-        setPlaceResults([]);
-      }
+      setPlaceResults([]);
     }
   };
 
@@ -144,7 +158,7 @@ function UserSearch() {
   return (
     <>
       <Navbar />
-      <div className="user-search-page">
+      <div className="user-search-page page-transition-container">
       <div className="search-container">
         <div className="search-header">
           <h1>🔍 Search</h1>
@@ -171,6 +185,41 @@ function UserSearch() {
         <div className="search-results">
           {isLoading && (
             <div className="search-loading">Searching...</div>
+          )}
+
+          {!isLoading && searchQuery.trim().length < 2 && (
+            <>
+              <div className="trending-section mobile-only-trending">
+                <div className="trending-subsection">
+                  <h3 className="trending-title">#️⃣ Trending Hashtags</h3>
+                  <div className="hashtag-grid">
+                    {getTrendingHashtags().map((item) => (
+                      <button
+                        key={item.tag}
+                        className="hashtag-chip"
+                        onClick={() => navigate(`/hashtag/${item.tag}`)}
+                      >
+                        #{item.tag}
+                        <span className="hashtag-count-badge">{item.count}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="trending-subsection">
+                  <h3 className="trending-title">🚀 Trending Destinations</h3>
+                  <div className="trending-destinations-list">
+                    {getTrendingDestinations().map((dest, index) => (
+                      <div key={dest.location} className="trending-destination-item">
+                        <span className="destination-rank">#{index + 1}</span>
+                        <span className="destination-name">{dest.location}</span>
+                        <span className="destination-likes">❤️ {dest.likes}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </>
           )}
 
           {!isLoading && searchQuery.trim().length >= 2 && searchResults.length === 0 && placeResults.length === 0 && (

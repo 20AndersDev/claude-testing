@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './ThemeContext';
+import { AuthProvider } from './AuthContext';
 import Login from './Login';
 import Register from './Register';
 import Feed from './Feed';
@@ -11,13 +12,17 @@ import PostDetail from './PostDetail';
 import HashtagFeed from './HashtagFeed';
 import UserSearch from './UserSearch';
 import PlaceDetail from './PlaceDetail';
+import Settings from './Settings';
+import Bookmarks from './Bookmarks';
+import BottomNav from './BottomNav';
 import './App.css';
 import './themes.css';
 
 function App() {
   return (
     <ThemeProvider>
-      <Router>
+      <AuthProvider>
+        <Router>
         <div className="App">
           <Routes>
             <Route path="/login" element={<Login />} />
@@ -31,10 +36,14 @@ function App() {
             <Route path="/hashtag/:hashtag" element={<HashtagFeed />} />
             <Route path="/search" element={<UserSearch />} />
             <Route path="/place/:placeId" element={<PlaceDetail />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/bookmarks" element={<Bookmarks />} />
             <Route path="/" element={<Navigate to="/login" replace />} />
           </Routes>
+          <BottomNav />
         </div>
       </Router>
+      </AuthProvider>
     </ThemeProvider>
   );
 }

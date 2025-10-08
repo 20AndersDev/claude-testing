@@ -424,11 +424,12 @@
 /* Actions */
 .actions {
   display: flex;
-  justify-content: space-around;
+  justify-content: center;
+  align-items: center;
   padding: 12px 24px;
   border-top: 1px solid var(--border);
   background: var(--surface);
-  gap: 8px;
+  gap: 24px;
 }
 
 .action-btn {
@@ -438,14 +439,16 @@
   border-radius: 24px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  display: flex;
+  display: inline-flex;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
   gap: 8px;
   position: relative;
   overflow: hidden;
-  flex: 1;
   min-height: 40px;
+  width: auto;
+  flex-shrink: 0;
 }
 
 .action-btn::before {
@@ -476,6 +479,11 @@
   font-size: 20px;
   color: var(--text-muted);
   transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  height: 20px;
 }
 
 .action-count {
@@ -483,6 +491,11 @@
   font-weight: 600;
   color: var(--text-secondary);
   transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  height: 20px;
 }
 
 .action-btn:hover .action-icon {
@@ -649,51 +662,207 @@
 }
 
 /* Responsive Design */
+@media (max-width: 1088px) {
+  .post-detail-page {
+    padding-bottom: 120px;
+  }
+}
+
 @media (max-width: 768px) {
+  .post-detail-page {
+    padding-top: 70px;
+  }
+
+  .detail-container {
+    padding: 0;
+  }
+
   .detail-hero {
-    min-height: 250px;
-    padding: 32px 16px;
+    min-height: 200px;
+    padding: 24px 16px;
   }
 
   .hero-title {
-    font-size: 2rem;
+    font-size: 1.5rem;
   }
 
   .detail-card {
-    margin-top: -60px;
-    border-radius: 20px;
+    margin-top: -40px;
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
   }
 
-  .author-section,
-  .content-section,
-  .actions,
-  .comments {
-    padding: 20px;
+  .author-section {
+    padding: 16px;
+  }
+
+  .author-info h3 {
+    font-size: 15px;
+  }
+
+  .author-meta {
+    font-size: 12px;
+  }
+
+  .content-section {
+    padding: 16px;
+  }
+
+  .detail-content {
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .actions {
+    padding: 12px 16px;
+    gap: 12px;
+  }
+
+  .action-btn {
+    padding: 10px 16px;
+    font-size: 14px;
   }
 
   .image-section {
-    margin: 20px;
+    margin: 0;
+    border-radius: 0;
   }
 
   .main-image {
-    height: 300px;
+    height: 280px;
+    border-radius: 0;
+  }
+
+  .thumbnail-grid {
+    padding: 12px 16px;
+    gap: 8px;
+  }
+
+  .thumbnail {
+    height: 60px;
   }
 
   .activity-card {
     flex-direction: column;
     align-items: flex-start;
+    padding: 16px;
   }
 
   .activity-icon-lg {
-    width: 40px;
-    height: 40px;
-    font-size: 20px;
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+
+  .activity-content h4 {
+    font-size: 14px;
+  }
+
+  .activity-content p {
+    font-size: 13px;
+  }
+
+  .comments {
+    padding: 16px;
+  }
+
+  .comments h3 {
+    font-size: 18px;
+  }
+
+  .comment {
+    padding: 12px;
+  }
+
+  .comment-author {
+    font-size: 14px;
+  }
+
+  .comment-text {
+    font-size: 14px;
+  }
+
+  .comment-input {
+    font-size: 14px;
+    padding: 10px 12px;
   }
 }
 
 @media (max-width: 480px) {
   .detail-container {
-    padding: 0 12px;
+    padding: 0;
+  }
+
+  .detail-hero {
+    min-height: 180px;
+    padding: 20px 12px;
+  }
+
+  .hero-title {
+    font-size: 1.25rem;
+  }
+
+  .detail-card {
+    margin-top: -30px;
+  }
+
+  .author-section {
+    padding: 12px;
+  }
+
+  .author-avatar {
+    width: 36px;
+    height: 36px;
+  }
+
+  .author-info h3 {
+    font-size: 14px;
+  }
+
+  .author-meta {
+    font-size: 11px;
+  }
+
+  .content-section {
+    padding: 12px;
+  }
+
+  .detail-content {
+    font-size: 14px;
+  }
+
+  .actions {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+
+  .action-btn {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .main-image {
+    height: 240px;
+  }
+
+  .thumbnail {
+    height: 50px;
+  }
+
+  .activity-card {
+    padding: 12px;
+  }
+
+  .comments {
+    padding: 12px;
+  }
+
+  .comments h3 {
+    font-size: 16px;
+  }
+
+  .comment {
+    padding: 10px;
   }
 
   .back-btn {

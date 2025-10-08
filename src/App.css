@@ -47,3 +47,15 @@
     transform: rotate(360deg);
   }
 }
+
+/* Smooth swipe transitions */
+.page-transition-container {
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+
+@media (max-width: 1088px) {
+  .page-transition-container {
+    touch-action: pan-y;
+  }
+}

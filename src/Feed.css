@@ -106,7 +106,11 @@
 }
 
 /* Mobile responsiveness for tabs */
-@media (max-width: 768px) {
+@media (max-width: 1088px) {
+  .feed-container {
+    padding-bottom: 90px;
+  }
+
   .feed-tabs {
     margin-bottom: 16px;
     padding: 4px;
@@ -179,20 +183,22 @@
   margin: 0;
 }
 
-@media (max-width: 968px) {
+@media (max-width: 1088px) {
   .feed-container {
     flex-direction: column;
     padding-top: 70px;
+    padding-bottom: 90px;
     gap: 16px;
     position: relative;
     height: auto;
     min-height: 100vh;
     overflow-y: auto;
     overflow-x: hidden;
+    align-items: center;
   }
 
   .feed {
-    max-width: 100%;
+    max-width: 600px;
     width: 100%;
     height: auto;
     overflow: visible;
@@ -200,9 +206,9 @@
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1088px) {
   .feed-container {
-    padding: 70px 8px 12px;
+    padding: 70px 8px 90px;
     gap: 10px;
     touch-action: pan-y;
     overscroll-behavior-x: none;
@@ -211,7 +217,7 @@
 
 @media (max-width: 480px) {
   .feed-container {
-    padding: 65px 4px 8px;
+    padding: 65px 4px 90px;
     gap: 8px;
     touch-action: pan-y;
     overscroll-behavior-x: none;
