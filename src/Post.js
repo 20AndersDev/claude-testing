@@ -20,6 +20,7 @@ function Post({ post, onLike, onComment, onDelete, onDeleteComment, onBookmarkRe
   const [isLoadingFollow, setIsLoadingFollow] = useState(false);
   const [currentUserName, setCurrentUserName] = useState('');
   const [isBookmarked, setIsBookmarked] = useState(initialBookmarked || false);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
   useEffect(() => {
     getCurrentUser();
@@ -110,7 +111,10 @@ function Post({ post, onLike, onComment, onDelete, onDeleteComment, onBookmarkRe
 
   const handleBookmarkToggle = async (e) => {
     e.stopPropagation();
-    if (!currentUserId) return;
+    if (!currentUserId) {
+      setShowLoginPrompt(true);
+      return;
+    }
 
     try {
       if (isBookmarked) {
@@ -223,6 +227,11 @@ function Post({ post, onLike, onComment, onDelete, onDeleteComment, onBookmarkRe
   };
 
   const handleLike = async () => {
+    if (!currentUserId) {
+      setShowLoginPrompt(true);
+      return;
+    }
+
     onLike(post.id);
 
     // Create like notification
@@ -234,6 +243,10 @@ function Post({ post, onLike, onComment, onDelete, onDeleteComment, onBookmarkRe
 
   const handleCommentSubmit = async (e) => {
     e.preventDefault();
+    if (!currentUserId) {
+      setShowLoginPrompt(true);
+      return;
+    }
     console.log('handleCommentSubmit called, commentText:', commentText);
     if (commentText.trim()) {
       console.log('Calling onComment with:', post.id, commentText);
@@ -782,6 +795,33 @@ function Post({ post, onLike, onComment, onDelete, onDeleteComment, onBookmarkRe
                 Post
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {showLoginPrompt && (
+        <div className="login-prompt-overlay" onClick={() => setShowLoginPrompt(false)}>
+          <div className="login-prompt-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="login-prompt-close" onClick={() => setShowLoginPrompt(false)}>
+              ✕
+            </button>
+            <div className="login-prompt-icon">🔒</div>
+            <h3>Sign in required</h3>
+            <p>You need to be signed in to interact with posts.</p>
+            <div className="login-prompt-actions">
+              <button
+                className="login-prompt-btn primary"
+                onClick={() => navigate('/login')}
+              >
+                Sign In
+              </button>
+              <button
+                className="login-prompt-btn secondary"
+                onClick={() => setShowLoginPrompt(false)}
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}
