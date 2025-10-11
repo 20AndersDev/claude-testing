@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
-import { createFollowNotification } from './notificationHelpers';
+import { createFollowNotification, createFollowRequestNotification } from './notificationHelpers';
 import { useAuth } from './AuthContext';
 import Navbar from './Navbar';
 import Post from './Post';
@@ -41,6 +41,8 @@ function Profile() {
   const [isFollowing, setIsFollowing] = useState(false);
   const [isLoadingFollow, setIsLoadingFollow] = useState(false);
   const [isHoveringFollow, setIsHoveringFollow] = useState(false);
+  const [followRequestStatus, setFollowRequestStatus] = useState(null); // 'pending', 'accepted', 'rejected', or null
+  const [followRequestId, setFollowRequestId] = useState(null);
 
   // Load user data from Supabase
   useEffect(() => {
@@ -65,6 +67,7 @@ function Profile() {
       fetchFollowing(profileUserId);
       if (!isOwnProfile) {
         checkFollowStatus(profileUserId);
+        checkFollowRequestStatus(profileUserId);
       }
 
       // Set up real-time subscription for post updates
@@ -117,6 +120,28 @@ function Profile() {
     }
   };
 
+  const checkFollowRequestStatus = async (profileUserId) => {
+    try {
+      const { data, error } = await supabase
+        .from('follow_requests')
+        .select('id, status')
+        .eq('requester_id', currentUserId)
+        .eq('requested_id', profileUserId)
+        .single();
+
+      if (data) {
+        setFollowRequestStatus(data.status);
+        setFollowRequestId(data.id);
+      } else {
+        setFollowRequestStatus(null);
+        setFollowRequestId(null);
+      }
+    } catch (error) {
+      setFollowRequestStatus(null);
+      setFollowRequestId(null);
+    }
+  };
+
   const handleFollowToggle = async () => {
     if (isLoadingFollow) return;
 
@@ -137,37 +162,78 @@ function Profile() {
 
         // Update followers count
         setFollowers(prev => prev.filter(f => f.id !== currentUserId));
-      } else {
-        // Follow
+      } else if (followRequestStatus === 'pending') {
+        // Cancel follow request
         const { error } = await supabase
-          .from('follows')
-          .insert({
-            follower_id: currentUserId,
-            following_id: profileUserId
-          });
+          .from('follow_requests')
+          .delete()
+          .eq('id', followRequestId);
 
         if (error) throw error;
-        setIsFollowing(true);
+        setFollowRequestStatus(null);
+        setFollowRequestId(null);
+      } else {
+        // Check if the profile is private
+        if (profile.isPrivate) {
+          // Create follow request instead of direct follow
+          const { data: requestData, error: requestError } = await supabase
+            .from('follow_requests')
+            .insert({
+              requester_id: currentUserId,
+              requested_id: profileUserId,
+              status: 'pending'
+            })
+            .select()
+            .single();
 
-        // Update followers count - fetch current user profile
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('id, full_name, username, avatar_url')
-          .eq('id', currentUserId)
-          .single();
+          if (requestError) throw requestError;
+          setFollowRequestStatus('pending');
+          setFollowRequestId(requestData.id);
 
-        if (profileData) {
-          const followerName = profileData.full_name || profileData.username || 'User';
+          // Get current user profile for notification
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('id, full_name, username, avatar_url')
+            .eq('id', currentUserId)
+            .single();
 
-          setFollowers(prev => [...prev, {
-            id: profileData.id,
-            name: followerName,
-            username: profileData.username,
-            avatar_url: profileData.avatar_url
-          }]);
+          if (profileData) {
+            const requesterName = profileData.full_name || profileData.username || 'User';
+            // Create notification for the follow request
+            await createFollowRequestNotification(profileUserId, currentUserId, requesterName, requestData.id);
+          }
+        } else {
+          // Public profile - direct follow
+          const { error } = await supabase
+            .from('follows')
+            .insert({
+              follower_id: currentUserId,
+              following_id: profileUserId
+            });
 
-          // Create notification for the followed user
-          await createFollowNotification(profileUserId, currentUserId, followerName);
+          if (error) throw error;
+          setIsFollowing(true);
+
+          // Update followers count - fetch current user profile
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('id, full_name, username, avatar_url')
+            .eq('id', currentUserId)
+            .single();
+
+          if (profileData) {
+            const followerName = profileData.full_name || profileData.username || 'User';
+
+            setFollowers(prev => [...prev, {
+              id: profileData.id,
+              name: followerName,
+              username: profileData.username,
+              avatar_url: profileData.avatar_url
+            }]);
+
+            // Create notification for the followed user
+            await createFollowNotification(profileUserId, currentUserId, followerName);
+          }
         }
       }
     } catch (error) {
@@ -666,10 +732,10 @@ function Profile() {
                   </div>
                   <button
                     onClick={handleFollowToggle}
-                    className={`follow-profile-btn ${isFollowing ? 'following' : ''}`}
+                    className={`follow-profile-btn ${isFollowing ? 'following' : ''} ${followRequestStatus === 'pending' ? 'requested' : ''}`}
                     disabled={isLoadingFollow}
                   >
-                    {isFollowing ? '✓ Following' : '+ Follow'}
+                    {isFollowing ? '✓ Following' : followRequestStatus === 'pending' ? '⏳ Requested' : '+ Follow'}
                   </button>
                 </div>
                 <div className="profile-info">
@@ -785,12 +851,12 @@ function Profile() {
                     ) : (
                       <button
                         onClick={handleFollowToggle}
-                        className={`follow-profile-btn ${isFollowing ? 'following' : ''} ${isFollowing && isHoveringFollow ? 'unfollow-hover' : ''}`}
+                        className={`follow-profile-btn ${isFollowing ? 'following' : ''} ${followRequestStatus === 'pending' ? 'requested' : ''} ${isFollowing && isHoveringFollow ? 'unfollow-hover' : ''}`}
                         disabled={isLoadingFollow}
                         onMouseEnter={() => setIsHoveringFollow(true)}
                         onMouseLeave={() => setIsHoveringFollow(false)}
                       >
-                        {isFollowing && isHoveringFollow ? '✗ Unfollow' : isFollowing ? '✓ Following' : '+ Follow'}
+                        {followRequestStatus === 'pending' && isHoveringFollow ? '✗ Cancel Request' : followRequestStatus === 'pending' ? '⏳ Requested' : isFollowing && isHoveringFollow ? '✗ Unfollow' : isFollowing ? '✓ Following' : '+ Follow'}
                       </button>
                     )}
                   </div>
