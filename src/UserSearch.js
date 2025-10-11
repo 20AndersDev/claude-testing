@@ -73,6 +73,31 @@ function UserSearch() {
     return locations;
   };
 
+  const getExploreCountries = () => {
+    return [
+      { name: 'United States', flag: '🇺🇸', code: 'US' },
+      { name: 'France', flag: '🇫🇷', code: 'FR' },
+      { name: 'Italy', flag: '🇮🇹', code: 'IT' },
+      { name: 'Spain', flag: '🇪🇸', code: 'ES' },
+      { name: 'Japan', flag: '🇯🇵', code: 'JP' },
+      { name: 'United Kingdom', flag: '🇬🇧', code: 'GB' },
+      { name: 'Germany', flag: '🇩🇪', code: 'DE' },
+      { name: 'Australia', flag: '🇦🇺', code: 'AU' },
+      { name: 'Thailand', flag: '🇹🇭', code: 'TH' },
+      { name: 'Greece', flag: '🇬🇷', code: 'GR' },
+      { name: 'Brazil', flag: '🇧🇷', code: 'BR' },
+      { name: 'Mexico', flag: '🇲🇽', code: 'MX' },
+      { name: 'Canada', flag: '🇨🇦', code: 'CA' },
+      { name: 'Portugal', flag: '🇵🇹', code: 'PT' },
+      { name: 'Netherlands', flag: '🇳🇱', code: 'NL' },
+      { name: 'Switzerland', flag: '🇨🇭', code: 'CH' },
+      { name: 'Turkey', flag: '🇹🇷', code: 'TR' },
+      { name: 'South Korea', flag: '🇰🇷', code: 'KR' },
+      { name: 'Egypt', flag: '🇪🇬', code: 'EG' },
+      { name: 'Iceland', flag: '🇮🇸', code: 'IS' },
+    ];
+  };
+
   useEffect(() => {
     const searchUsers = async () => {
       if (searchQuery.trim().length < 2) {
@@ -215,6 +240,22 @@ function UserSearch() {
                         <span className="destination-name">{dest.location}</span>
                         <span className="destination-likes">❤️ {dest.likes}</span>
                       </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="trending-subsection">
+                  <h3 className="trending-title">🌍 Explore Countries</h3>
+                  <div className="explore-countries-grid">
+                    {getExploreCountries().map((country) => (
+                      <button
+                        key={country.code}
+                        className="country-chip"
+                        onClick={() => setSearchQuery(country.name)}
+                      >
+                        <span className="country-flag">{country.flag}</span>
+                        <span className="country-name">{country.name}</span>
+                      </button>
                     ))}
                   </div>
                 </div>

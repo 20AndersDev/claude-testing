@@ -29,7 +29,8 @@ function Profile() {
     bio: 'Welcome to my profile! I love sharing thoughts and connecting with others.',
     location: '',
     joinDate: 'Recently',
-    profilePicture: null
+    profilePicture: null,
+    isPrivate: false
   });
 
   const [editedProfile, setEditedProfile] = useState(profile);
@@ -190,7 +191,7 @@ function Profile() {
       // Fetch profile data from database
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('full_name, username, bio, location, avatar_url')
+        .select('full_name, username, bio, location, avatar_url, is_private')
         .eq('id', profileUserId)
         .single();
 
@@ -215,7 +216,8 @@ function Profile() {
           bio: profileData.bio || 'Welcome to my profile! I love sharing thoughts and connecting with others.',
           location: profileData.location || '',
           joinDate: joinDate,
-          profilePicture: profileData.avatar_url || user?.user_metadata?.avatar_url
+          profilePicture: profileData.avatar_url || user?.user_metadata?.avatar_url,
+          isPrivate: profileData.is_private || false
         };
 
         setProfile(profileObject);
@@ -413,7 +415,8 @@ function Profile() {
         .from('profiles')
         .update({
           bio: updatedProfile.bio,
-          avatar_url: updatedProfile.profilePicture
+          avatar_url: updatedProfile.profilePicture,
+          is_private: updatedProfile.isPrivate
         })
         .eq('id', user.id);
 
@@ -618,6 +621,80 @@ function Profile() {
     localStorage.setItem('visitedCountries', JSON.stringify(newVisitedCountries));
   };
 
+  // Show sign-in prompt when not authenticated
+  if (!loading && !user) {
+    return (
+      <>
+        <Navbar />
+        <div className="profile page-transition-container">
+          <div className="profile-container">
+            <div className="sign-in-prompt">
+              <div className="sign-in-icon">🔒</div>
+              <h2>Sign in to view your profile</h2>
+              <p>You need to be signed in to access your profile and view your trips.</p>
+              <button
+                onClick={() => navigate('/login')}
+                className="sign-in-btn"
+              >
+                Sign In
+              </button>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  // Show private profile view for non-followers
+  const isPrivateProfile = profile.isPrivate && !isOwnProfile && !isFollowing;
+
+  if (isPrivateProfile) {
+    return (
+      <>
+        <Navbar />
+        <div className="profile page-transition-container">
+          <div className="profile-container">
+            <div className="profile-header">
+              <div className="profile-header-top">
+                <div className="profile-avatar-section">
+                  <div className="profile-avatar">
+                    {profile.profilePicture ? (
+                      <img src={profile.profilePicture} alt="Profile" className="avatar-image" />
+                    ) : (
+                      <div className="avatar-placeholder">👤</div>
+                    )}
+                  </div>
+                  <button
+                    onClick={handleFollowToggle}
+                    className={`follow-profile-btn ${isFollowing ? 'following' : ''}`}
+                    disabled={isLoadingFollow}
+                  >
+                    {isFollowing ? '✓ Following' : '+ Follow'}
+                  </button>
+                </div>
+                <div className="profile-info">
+                  <div className="display-info">
+                    <div className="profile-name-row">
+                      <div className="profile-name-section">
+                        <h1 className="profile-name">{profile.name}</h1>
+                        {profile.username && <p className="profile-username">@{profile.username}</p>}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="private-profile-notice">
+              <div className="private-icon">🔒</div>
+              <h3>This Account is Private</h3>
+              <p>Follow this account to see their posts and stats.</p>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       <Navbar />
@@ -662,6 +739,30 @@ function Profile() {
                     placeholder="Tell us about yourself..."
                     rows="6"
                   />
+                </div>
+                <div className="profile-privacy-edit">
+                  <div className="privacy-toggle-container">
+                    <div className="privacy-toggle-info">
+                      <label htmlFor="isPrivate" className="privacy-label">
+                        🔒 Private Profile
+                      </label>
+                      <p className="privacy-description">
+                        When enabled, only your followers can see your posts and stats
+                      </p>
+                    </div>
+                    <label className="toggle-switch">
+                      <input
+                        type="checkbox"
+                        id="isPrivate"
+                        checked={editedProfile.isPrivate}
+                        onChange={(e) => setEditedProfile(prev => ({
+                          ...prev,
+                          isPrivate: e.target.checked
+                        }))}
+                      />
+                      <span className="toggle-slider"></span>
+                    </label>
+                  </div>
                 </div>
                 <div className="edit-buttons">
                   <button onClick={handleSave} className="save-btn">💾 Save Changes</button>
