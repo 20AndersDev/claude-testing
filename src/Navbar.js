@@ -22,6 +22,7 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [followRequestCount, setFollowRequestCount] = useState(0);
 
   const { isLoaded } = useLoadScript({
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_PLACES_API_KEY,
@@ -142,6 +143,7 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
   useEffect(() => {
     if (currentUserId) {
       fetchNotifications();
+      fetchFollowRequestCount();
 
       // Set up real-time subscription for notifications
       const notificationsSubscription = supabase
@@ -154,14 +156,34 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
             filter: `user_id=eq.${currentUserId}`
           },
           (payload) => {
-            setNotifications(prev => [payload.new, ...prev]);
-            setUnreadCount(prev => prev + 1);
+            // Don't add follow_request notifications to the main notifications list
+            if (payload.new.type !== 'follow_request') {
+              setNotifications(prev => [payload.new, ...prev]);
+              setUnreadCount(prev => prev + 1);
+            }
+          }
+        )
+        .subscribe();
+
+      // Set up real-time subscription for follow requests
+      const followRequestsSubscription = supabase
+        .channel('follow_requests_count')
+        .on('postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'follow_requests',
+            filter: `requested_id=eq.${currentUserId}`
+          },
+          () => {
+            fetchFollowRequestCount();
           }
         )
         .subscribe();
 
       return () => {
         supabase.removeChannel(notificationsSubscription);
+        supabase.removeChannel(followRequestsSubscription);
       };
     }
   }, [currentUserId]);
@@ -277,6 +299,7 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
         .from('notifications')
         .select('*')
         .eq('user_id', currentUserId)
+        .neq('type', 'follow_request') // Exclude follow_request notifications
         .order('created_at', { ascending: false })
         .limit(20);
 
@@ -287,6 +310,22 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
       setUnreadCount(unread);
     } catch (error) {
       console.error('Error fetching notifications:', error);
+    }
+  };
+
+  const fetchFollowRequestCount = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('follow_requests')
+        .select('id', { count: 'exact', head: true })
+        .eq('requested_id', currentUserId)
+        .eq('status', 'pending');
+
+      if (error) throw error;
+
+      setFollowRequestCount(data?.length || 0);
+    } catch (error) {
+      console.error('Error fetching follow request count:', error);
     }
   };
 
@@ -306,9 +345,11 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
       }
 
       // Navigate based on notification type
-      if (notification.post_id) {
+      if (notification.type === 'follow_request') {
+        navigate('/follow-requests');
+      } else if (notification.post_id) {
         navigate(`/post/${notification.post_id}`);
-      } else if (notification.type === 'follow' && notification.actor_id) {
+      } else if ((notification.type === 'follow' || notification.type === 'follow_accept') && notification.actor_id) {
         navigate(`/profile/${notification.actor_id}`);
       }
 
@@ -341,6 +382,10 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
         return `${notification.actor_name} commented on your post`;
       case 'follow':
         return `${notification.actor_name} started following you`;
+      case 'follow_request':
+        return `${notification.actor_name} wants to follow you`;
+      case 'follow_accept':
+        return `${notification.actor_name} accepted your follow request`;
       case 'tag':
         return `${notification.actor_name} tagged you in a post`;
       default:
@@ -356,6 +401,10 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
         return '💬';
       case 'follow':
         return '👤';
+      case 'follow_request':
+        return '👥';
+      case 'follow_accept':
+        return '✓';
       case 'tag':
         return '🏷️';
       default:
@@ -499,6 +548,16 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
 
           {!loading && user ? (
             <>
+              <button
+                className="nav-action-btn follow-requests-btn"
+                onClick={() => navigate('/follow-requests')}
+                title="Follow Requests"
+              >
+                <span className="action-icon">👥</span>
+                {followRequestCount > 0 && (
+                  <span className="notification-badge">{followRequestCount > 9 ? '9+' : followRequestCount}</span>
+                )}
+              </button>
               <div className="notifications-container">
                 <button
                   className="nav-action-btn notifications-btn"
