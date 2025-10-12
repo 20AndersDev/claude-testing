@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useTheme } from './ThemeContext';
 import { useAuth } from './AuthContext';
 import { supabase } from './supabaseClient';
 import { useLoadScript } from '@react-google-maps/api';
@@ -10,7 +9,6 @@ const libraries = ['places'];
 
 function Navbar({ onSearchChange, onSidebarToggle }) {
   const navigate = useNavigate();
-  const { isDark, toggleTheme } = useTheme();
   const { user, loading } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -19,8 +17,6 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
   const [showQuickResults, setShowQuickResults] = useState(false);
   const [currentUserId, setCurrentUserId] = useState(null);
   const [placeResults, setPlaceResults] = useState([]);
-  const [notifications, setNotifications] = useState([]);
-  const [showNotifications, setShowNotifications] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [followRequestCount, setFollowRequestCount] = useState(0);
 
@@ -142,7 +138,7 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
 
   useEffect(() => {
     if (currentUserId) {
-      fetchNotifications();
+      fetchNotificationCount();
       fetchFollowRequestCount();
 
       // Set up real-time subscription for notifications
@@ -156,9 +152,8 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
             filter: `user_id=eq.${currentUserId}`
           },
           (payload) => {
-            // Don't add follow_request notifications to the main notifications list
+            // Don't count follow_request notifications
             if (payload.new.type !== 'follow_request') {
-              setNotifications(prev => [payload.new, ...prev]);
               setUnreadCount(prev => prev + 1);
             }
           }
@@ -187,30 +182,6 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
       };
     }
   }, [currentUserId]);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (showNotifications) {
-        const notificationsContainer = event.target.closest('.notifications-container');
-        if (!notificationsContainer) {
-          setShowNotifications(false);
-        }
-      }
-    };
-
-    if (showNotifications) {
-      document.addEventListener('mousedown', handleClickOutside);
-      // Prevent body scroll when notifications are open
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.body.style.overflow = 'unset';
-    };
-  }, [showNotifications]);
 
   useEffect(() => {
     const searchUsers = async () => {
@@ -293,23 +264,20 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
     }
   };
 
-  const fetchNotifications = async () => {
+  const fetchNotificationCount = async () => {
     try {
       const { data, error } = await supabase
         .from('notifications')
-        .select('*')
+        .select('id', { count: 'exact', head: true })
         .eq('user_id', currentUserId)
-        .neq('type', 'follow_request') // Exclude follow_request notifications
-        .order('created_at', { ascending: false })
-        .limit(20);
+        .eq('read', false)
+        .neq('type', 'follow_request'); // Exclude follow_request notifications
 
       if (error) throw error;
 
-      setNotifications(data || []);
-      const unread = (data || []).filter(n => !n.read).length;
-      setUnreadCount(unread);
+      setUnreadCount(data?.length || 0);
     } catch (error) {
-      console.error('Error fetching notifications:', error);
+      console.error('Error fetching notification count:', error);
     }
   };
 
@@ -327,104 +295,6 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
     } catch (error) {
       console.error('Error fetching follow request count:', error);
     }
-  };
-
-  const handleNotificationClick = async (notification) => {
-    try {
-      // Mark as read
-      if (!notification.read) {
-        await supabase
-          .from('notifications')
-          .update({ read: true })
-          .eq('id', notification.id);
-
-        setNotifications(prev =>
-          prev.map(n => n.id === notification.id ? { ...n, read: true } : n)
-        );
-        setUnreadCount(prev => Math.max(0, prev - 1));
-      }
-
-      // Navigate based on notification type
-      if (notification.type === 'follow_request') {
-        navigate('/follow-requests');
-      } else if (notification.post_id) {
-        navigate(`/post/${notification.post_id}`);
-      } else if ((notification.type === 'follow' || notification.type === 'follow_accept') && notification.actor_id) {
-        navigate(`/profile/${notification.actor_id}`);
-      }
-
-      setShowNotifications(false);
-    } catch (error) {
-      console.error('Error handling notification click:', error);
-    }
-  };
-
-  const markAllAsRead = async () => {
-    try {
-      await supabase
-        .from('notifications')
-        .update({ read: true })
-        .eq('user_id', currentUserId)
-        .eq('read', false);
-
-      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-      setUnreadCount(0);
-    } catch (error) {
-      console.error('Error marking all as read:', error);
-    }
-  };
-
-  const getNotificationText = (notification) => {
-    switch (notification.type) {
-      case 'like':
-        return `${notification.actor_name} liked your post`;
-      case 'comment':
-        return `${notification.actor_name} commented on your post`;
-      case 'follow':
-        return `${notification.actor_name} started following you`;
-      case 'follow_request':
-        return `${notification.actor_name} wants to follow you`;
-      case 'follow_accept':
-        return `${notification.actor_name} accepted your follow request`;
-      case 'tag':
-        return `${notification.actor_name} tagged you in a post`;
-      default:
-        return 'New notification';
-    }
-  };
-
-  const getNotificationIcon = (type) => {
-    switch (type) {
-      case 'like':
-        return '❤️';
-      case 'comment':
-        return '💬';
-      case 'follow':
-        return '👤';
-      case 'follow_request':
-        return '👥';
-      case 'follow_accept':
-        return '✓';
-      case 'tag':
-        return '🏷️';
-      default:
-        return '🔔';
-    }
-  };
-
-  const formatNotificationTime = (timestamp) => {
-    const now = new Date();
-    const notifTime = new Date(timestamp);
-    const diffMs = now - notifTime;
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMins / 60);
-    const diffDays = Math.floor(diffHours / 24);
-
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-    return notifTime.toLocaleDateString();
   };
 
   return (
@@ -542,75 +412,18 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
         </div>
 
         <div className="navbar-right">
-          <button className="nav-action-btn theme-toggle" onClick={toggleTheme}>
-            <span className="action-icon">{isDark ? '☀️' : '🌙'}</span>
-          </button>
-
           {!loading && user ? (
             <>
               <button
-                className="nav-action-btn follow-requests-btn"
+                className="nav-action-btn notifications-btn"
                 onClick={() => navigate('/follow-requests')}
-                title="Follow Requests"
+                title="Notifications"
               >
-                <span className="action-icon">👥</span>
-                {followRequestCount > 0 && (
-                  <span className="notification-badge">{followRequestCount > 9 ? '9+' : followRequestCount}</span>
+                <span className="action-icon">🔔</span>
+                {(unreadCount + followRequestCount) > 0 && (
+                  <span className="notification-badge">{(unreadCount + followRequestCount) > 9 ? '9+' : (unreadCount + followRequestCount)}</span>
                 )}
               </button>
-              <div className="notifications-container">
-                <button
-                  className="nav-action-btn notifications-btn"
-                  onClick={() => setShowNotifications(!showNotifications)}
-                >
-                  <span className="action-icon">🔔</span>
-                  {unreadCount > 0 && (
-                    <span className="notification-badge">{unreadCount > 9 ? '9+' : unreadCount}</span>
-                  )}
-                </button>
-
-                {showNotifications && (
-                  <div className="notifications-dropdown">
-                    <div className="notifications-header">
-                      <h3>Notifications</h3>
-                      {unreadCount > 0 && (
-                        <button className="mark-read-btn" onClick={markAllAsRead}>
-                          Mark all as read
-                        </button>
-                      )}
-                    </div>
-                    <div className="notifications-list">
-                      {notifications.length > 0 ? (
-                        notifications.map(notification => (
-                          <div
-                            key={notification.id}
-                            className={`notification-item ${!notification.read ? 'unread' : ''}`}
-                            onClick={() => handleNotificationClick(notification)}
-                          >
-                            <div className="notification-icon">
-                              {getNotificationIcon(notification.type)}
-                            </div>
-                            <div className="notification-content">
-                              <p className="notification-text">
-                                {getNotificationText(notification)}
-                              </p>
-                              <span className="notification-time">
-                                {formatNotificationTime(notification.created_at)}
-                              </span>
-                            </div>
-                            {!notification.read && <div className="unread-dot"></div>}
-                          </div>
-                        ))
-                      ) : (
-                        <div className="notifications-empty">
-                          <span className="empty-icon">🔔</span>
-                          <p>No notifications yet</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
               <div className="user-menu">
                 <div className="user-avatar" onClick={handleProfileClick}>
                   {avatarUrl ? (

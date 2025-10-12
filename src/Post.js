@@ -491,29 +491,31 @@ function Post({ post, onLike, onComment, onDelete, onDeleteComment, onBookmarkRe
             <div className="post-time">{formatTime(post.timestamp)}</div>
           </div>
         </div>
-        {currentUserId && post.user_id !== currentUserId && (
-          <button
-            className={`follow-btn ${isFollowing ? 'following' : ''}`}
-            onClick={handleFollowToggle}
-            disabled={isLoadingFollow}
-          >
-            {isFollowing ? 'Following' : 'Follow'}
-          </button>
-        )}
-        {currentUserId && post.user_id === currentUserId && (
-          <div className="post-menu-container">
-            <button className="post-menu-btn" onClick={toggleMenu} title="More options">
-              ⋮
+        <div className="post-header-actions">
+          {currentUserId && post.user_id !== currentUserId && (
+            <button
+              className={`follow-btn ${isFollowing ? 'following' : ''}`}
+              onClick={handleFollowToggle}
+              disabled={isLoadingFollow}
+            >
+              {isFollowing ? 'Following' : 'Follow'}
             </button>
-            {showMenu && (
-              <div className="post-menu-dropdown">
-                <button className="menu-item delete-item" onClick={handleDelete}>
-                  🗑️ Delete Post
-                </button>
-              </div>
-            )}
-          </div>
-        )}
+          )}
+          {currentUserId && post.user_id === currentUserId && (
+            <div className="post-menu-container">
+              <button className="post-menu-btn" onClick={toggleMenu} title="More options">
+                ⋮
+              </button>
+              {showMenu && (
+                <div className="post-menu-dropdown">
+                  <button className="menu-item delete-item" onClick={handleDelete}>
+                    🗑️ Delete Post
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {post.tripTitle ? (

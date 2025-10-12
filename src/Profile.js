@@ -42,6 +42,7 @@ function Profile() {
   const [isLoadingFollow, setIsLoadingFollow] = useState(false);
   const [isHoveringFollow, setIsHoveringFollow] = useState(false);
   const [followRequestStatus, setFollowRequestStatus] = useState(null); // 'pending', 'accepted', 'rejected', or null
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [followRequestId, setFollowRequestId] = useState(null);
 
   // Load user data from Supabase
@@ -60,16 +61,25 @@ function Profile() {
 
   useEffect(() => {
     if (currentUserId !== null) {
-      const profileUserId = userId || currentUserId;
-      fetchUserProfile(profileUserId);
-      fetchUserPosts(profileUserId);
-      fetchFollowers(profileUserId);
-      fetchFollowing(profileUserId);
-      if (!isOwnProfile) {
-        checkFollowStatus(profileUserId);
-        checkFollowRequestStatus(profileUserId);
-      }
+      const loadProfileData = async () => {
+        setIsLoadingProfile(true);
+        const profileUserId = userId || currentUserId;
 
+        await Promise.all([
+          fetchUserProfile(profileUserId),
+          fetchUserPosts(profileUserId),
+          fetchFollowers(profileUserId),
+          fetchFollowing(profileUserId),
+          !isOwnProfile && checkFollowStatus(profileUserId),
+          !isOwnProfile && checkFollowRequestStatus(profileUserId)
+        ]);
+
+        setIsLoadingProfile(false);
+      };
+
+      loadProfileData();
+
+      const profileUserId = userId || currentUserId;
       // Set up real-time subscription for post updates
       const postsSubscription = supabase
         .channel(`profile-posts-${profileUserId}`)
@@ -687,8 +697,25 @@ function Profile() {
     localStorage.setItem('visitedCountries', JSON.stringify(newVisitedCountries));
   };
 
+  // Show loading state
+  if (loading || isLoadingProfile) {
+    return (
+      <>
+        <Navbar />
+        <div className="profile page-transition-container">
+          <div className="profile-container">
+            <div className="loading-state">
+              <div className="loading-spinner"></div>
+              <p>Loading profile...</p>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
   // Show sign-in prompt when not authenticated
-  if (!loading && !user) {
+  if (!user) {
     return (
       <>
         <Navbar />

@@ -9,13 +9,32 @@ import './FollowRequests.css';
 function FollowRequests() {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
+  const [notifications, setNotifications] = useState([]);
   const [followRequests, setFollowRequests] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [processingRequests, setProcessingRequests] = useState(new Set());
+  const [activeTab, setActiveTab] = useState('all'); // 'all' or 'requests'
 
   useEffect(() => {
     if (user && !loading) {
+      fetchNotifications();
       fetchFollowRequests();
+
+      // Set up real-time subscription for notifications
+      const notificationsSubscription = supabase
+        .channel('notifications')
+        .on('postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'notifications',
+            filter: `user_id=eq.${user.id}`
+          },
+          (payload) => {
+            setNotifications(prev => [payload.new, ...prev]);
+          }
+        )
+        .subscribe();
 
       // Set up real-time subscription for follow requests
       const requestsSubscription = supabase
@@ -38,14 +57,34 @@ function FollowRequests() {
         .subscribe();
 
       return () => {
+        supabase.removeChannel(notificationsSubscription);
         supabase.removeChannel(requestsSubscription);
       };
     }
   }, [user, loading]);
 
-  const fetchFollowRequests = async () => {
+  const fetchNotifications = async () => {
     try {
       setIsLoading(true);
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      if (error) throw error;
+
+      setNotifications(data || []);
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchFollowRequests = async () => {
+    try {
       const { data: requests, error } = await supabase
         .from('follow_requests')
         .select('*')
@@ -82,8 +121,6 @@ function FollowRequests() {
       }
     } catch (error) {
       console.error('Error fetching follow requests:', error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -173,8 +210,88 @@ function FollowRequests() {
     }
   };
 
+  const handleNotificationClick = async (notification) => {
+    try {
+      // Mark as read
+      if (!notification.read) {
+        await supabase
+          .from('notifications')
+          .update({ read: true })
+          .eq('id', notification.id);
+
+        setNotifications(prev =>
+          prev.map(n => n.id === notification.id ? { ...n, read: true } : n)
+        );
+      }
+
+      // Navigate based on notification type
+      if (notification.type === 'follow_request') {
+        // Switch to requests tab
+        setActiveTab('requests');
+      } else if (notification.post_id) {
+        navigate(`/post/${notification.post_id}`);
+      } else if ((notification.type === 'follow' || notification.type === 'follow_accept') && notification.actor_id) {
+        navigate(`/profile/${notification.actor_id}`);
+      }
+    } catch (error) {
+      console.error('Error handling notification click:', error);
+    }
+  };
+
+  const markAllAsRead = async () => {
+    try {
+      await supabase
+        .from('notifications')
+        .update({ read: true })
+        .eq('user_id', user.id)
+        .eq('read', false);
+
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    } catch (error) {
+      console.error('Error marking all as read:', error);
+    }
+  };
+
   const handleProfileClick = (userId) => {
     navigate(`/profile/${userId}`);
+  };
+
+  const getNotificationText = (notification) => {
+    switch (notification.type) {
+      case 'like':
+        return `${notification.actor_name} liked your post`;
+      case 'comment':
+        return `${notification.actor_name} commented on your post`;
+      case 'follow':
+        return `${notification.actor_name} started following you`;
+      case 'follow_request':
+        return `${notification.actor_name} wants to follow you`;
+      case 'follow_accept':
+        return `${notification.actor_name} accepted your follow request`;
+      case 'tag':
+        return `${notification.actor_name} tagged you in a post`;
+      default:
+        return 'New notification';
+    }
+  };
+
+  const getNotificationIcon = (type) => {
+    switch (type) {
+      case 'like':
+        return '❤️';
+      case 'comment':
+        return '💬';
+      case 'follow':
+        return '👤';
+      case 'follow_request':
+        return '👥';
+      case 'follow_accept':
+        return '✓';
+      case 'tag':
+        return '🏷️';
+      default:
+        return '🔔';
+    }
   };
 
   const formatRequestTime = (timestamp) => {
@@ -200,8 +317,8 @@ function FollowRequests() {
           <div className="follow-requests-container">
             <div className="sign-in-prompt">
               <div className="sign-in-icon">🔒</div>
-              <h2>Sign in to view follow requests</h2>
-              <p>You need to be signed in to manage follow requests.</p>
+              <h2>Sign in to view notifications</h2>
+              <p>You need to be signed in to view your notifications.</p>
               <button
                 onClick={() => navigate('/login')}
                 className="sign-in-btn"
@@ -220,61 +337,130 @@ function FollowRequests() {
       <Navbar />
       <div className="follow-requests-page">
         <div className="follow-requests-container">
-          <h1 className="page-title">Follow Requests</h1>
+          <div className="notifications-header">
+            <h1 className="page-title">Notifications</h1>
+            {activeTab === 'all' && notifications.filter(n => !n.read).length > 0 && (
+              <button className="mark-all-read-btn" onClick={markAllAsRead}>
+                Mark all as read
+              </button>
+            )}
+          </div>
+
+          {/* Tabs */}
+          <div className="tabs">
+            <button
+              className={`tab ${activeTab === 'all' ? 'active' : ''}`}
+              onClick={() => setActiveTab('all')}
+            >
+              All
+            </button>
+            <button
+              className={`tab ${activeTab === 'requests' ? 'active' : ''}`}
+              onClick={() => setActiveTab('requests')}
+            >
+              Requests
+              {followRequests.length > 0 && (
+                <span className="tab-badge">{followRequests.length}</span>
+              )}
+            </button>
+          </div>
 
           {isLoading ? (
             <div className="loading-state">
-              <div className="loading-spinner">⏳</div>
-              <p>Loading requests...</p>
-            </div>
-          ) : followRequests.length > 0 ? (
-            <div className="requests-list">
-              {followRequests.map(request => (
-                <div key={request.id} className="request-item">
-                  <div
-                    className="request-user-info"
-                    onClick={() => handleProfileClick(request.requester_id)}
-                  >
-                    <div className="request-avatar">
-                      {request.requester_avatar ? (
-                        <img src={request.requester_avatar} alt={request.requester_name} />
-                      ) : (
-                        <div className="avatar-placeholder">👤</div>
-                      )}
-                    </div>
-                    <div className="request-details">
-                      <div className="request-name">{request.requester_name}</div>
-                      {request.requester_username && (
-                        <div className="request-username">@{request.requester_username}</div>
-                      )}
-                      <div className="request-time">{formatRequestTime(request.created_at)}</div>
-                    </div>
-                  </div>
-                  <div className="request-actions">
-                    <button
-                      className="accept-btn"
-                      onClick={() => handleAccept(request)}
-                      disabled={processingRequests.has(request.id)}
-                    >
-                      ✓ Accept
-                    </button>
-                    <button
-                      className="reject-btn"
-                      onClick={() => handleReject(request)}
-                      disabled={processingRequests.has(request.id)}
-                    >
-                      ✗ Reject
-                    </button>
-                  </div>
-                </div>
-              ))}
+              <div className="loading-spinner"></div>
+              <p>Loading...</p>
             </div>
           ) : (
-            <div className="empty-state">
-              <div className="empty-icon">📭</div>
-              <h3>No follow requests</h3>
-              <p>When someone requests to follow you, they will appear here.</p>
-            </div>
+            <>
+              {/* All Notifications Tab */}
+              {activeTab === 'all' && (
+                <div className="section">
+                  {notifications.length > 0 ? (
+                    <div className="requests-list">
+                      {notifications.map(notification => (
+                        <div
+                          key={notification.id}
+                          className={`request-item notification-item ${!notification.read ? 'unread' : ''}`}
+                          onClick={() => handleNotificationClick(notification)}
+                        >
+                          <div className="request-user-info">
+                            <div className="notification-icon-circle">
+                              {getNotificationIcon(notification.type)}
+                            </div>
+                            <div className="request-details">
+                              <div className="request-name">{getNotificationText(notification)}</div>
+                              <div className="request-time">{formatRequestTime(notification.created_at)}</div>
+                            </div>
+                          </div>
+                          {!notification.read && <div className="unread-indicator">•</div>}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="empty-state">
+                      <div className="empty-icon">🔔</div>
+                      <h3>No notifications</h3>
+                      <p>When you get notifications, they will appear here.</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Requests Tab */}
+              {activeTab === 'requests' && (
+                <div className="section">
+                  {followRequests.length > 0 ? (
+                    <div className="requests-list">
+                      {followRequests.map(request => (
+                        <div key={request.id} className="request-item">
+                          <div
+                            className="request-user-info"
+                            onClick={() => handleProfileClick(request.requester_id)}
+                          >
+                            <div className="request-avatar">
+                              {request.requester_avatar ? (
+                                <img src={request.requester_avatar} alt={request.requester_name} />
+                              ) : (
+                                <div className="avatar-placeholder">👤</div>
+                              )}
+                            </div>
+                            <div className="request-details">
+                              <div className="request-name">{request.requester_name}</div>
+                              {request.requester_username && (
+                                <div className="request-username">@{request.requester_username}</div>
+                              )}
+                              <div className="request-time">{formatRequestTime(request.created_at)}</div>
+                            </div>
+                          </div>
+                          <div className="request-actions">
+                            <button
+                              className="accept-btn"
+                              onClick={() => handleAccept(request)}
+                              disabled={processingRequests.has(request.id)}
+                            >
+                              ✓ Accept
+                            </button>
+                            <button
+                              className="reject-btn"
+                              onClick={() => handleReject(request)}
+                              disabled={processingRequests.has(request.id)}
+                            >
+                              ✗ Reject
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="empty-state">
+                      <div className="empty-icon">📭</div>
+                      <h3>No follow requests</h3>
+                      <p>When someone requests to follow you, they will appear here.</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
