@@ -905,7 +905,7 @@ function Profile() {
               className={`tab-btn ${activeTab === 'posts' ? 'active' : ''}`}
               onClick={() => setActiveTab('posts')}
             >
-              📝 My Posts ({posts.length})
+              📝 {isOwnProfile ? 'My Posts' : 'Posts'} ({posts.length})
             </button>
             <button
               className={`tab-btn ${activeTab === 'liked' ? 'active' : ''}`}

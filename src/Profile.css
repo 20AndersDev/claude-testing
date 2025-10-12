@@ -270,10 +270,16 @@
   transition: all 0.2s ease;
 }
 
-.edit-btn:hover,
+.edit-btn:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+  color: white;
+}
+
 .follow-profile-btn:hover {
   background: var(--primary-hover);
   transform: translateY(-1px);
+  color: white;
 }
 
 .follow-profile-btn.following {
