@@ -26,3 +26,4 @@ yarn-error.log*
 .env
 *.sql
 *.md
+claude-testing/
