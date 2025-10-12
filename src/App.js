@@ -14,6 +14,7 @@ import UserSearch from './UserSearch';
 import PlaceDetail from './PlaceDetail';
 import Settings from './Settings';
 import Bookmarks from './Bookmarks';
+import FollowRequests from './FollowRequests';
 import BottomNav from './BottomNav';
 import './App.css';
 import './themes.css';
@@ -38,6 +39,7 @@ function App() {
             <Route path="/place/:placeId" element={<PlaceDetail />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/bookmarks" element={<Bookmarks />} />
+            <Route path="/follow-requests" element={<FollowRequests />} />
             <Route path="/" element={<Navigate to="/login" replace />} />
           </Routes>
           <BottomNav />
