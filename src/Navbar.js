@@ -311,109 +311,18 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
         </div>
 
         <div className="navbar-center">
-          <div className="navbar-search">
-            <button
-              className="mobile-search-button"
-              onClick={() => navigate('/search')}
-              aria-label="Open search"
-            >
-              🔍
-            </button>
-            <input
-              type="search"
-              name="query"
-              id="query"
-              inputMode="search"
-              role="searchbox"
-              placeholder="Search users & places"
-              value={searchTerm}
-              onChange={handleSearchChange}
-              onFocus={handleSearchFocus}
-              onKeyDown={handleSearchKeyDown}
-              onBlur={() => setTimeout(() => setShowQuickResults(false), 200)}
-              className="navbar-search-input"
-              autoComplete="off"
-            />
-            <span className="navbar-search-icon">🔍</span>
-
-            {showQuickResults && (quickResults.length > 0 || placeResults.length > 0) && (
-              <div className="quick-results-dropdown">
-                {quickResults.length > 0 && (
-                  <>
-                    <div className="results-group-header">👤 Users</div>
-                    {quickResults.map((user) => (
-                      <div
-                        key={user.id}
-                        className="quick-result-item"
-                        onClick={() => handleQuickResultClick(user.id)}
-                      >
-                        <div className="quick-result-avatar">
-                          {user.avatar_url ? (
-                            <img src={user.avatar_url} alt={user.full_name || user.username} />
-                          ) : (
-                            <div className="quick-avatar-placeholder">
-                              {(user.full_name || user.username || 'U').charAt(0).toUpperCase()}
-                            </div>
-                          )}
-                        </div>
-                        <div className="quick-result-info">
-                          <div className="quick-result-name">
-                            {user.full_name || user.username || 'User'}
-                          </div>
-                          {user.username && (
-                            <div className="quick-result-username">@{user.username}</div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </>
-                )}
-
-                {placeResults.length > 0 && (
-                  <>
-                    {quickResults.length > 0 && <div className="results-divider"></div>}
-                    <div className="results-group-header">📍 Places</div>
-                    {placeResults.map((place) => (
-                      <div
-                        key={place.place_id}
-                        className="quick-result-item"
-                        onClick={() => {
-                          setShowQuickResults(false);
-                          navigate(`/place/${place.place_id}`);
-                        }}
-                      >
-                        <div className="quick-result-avatar place-icon">
-                          📍
-                        </div>
-                        <div className="quick-result-info">
-                          <div className="quick-result-name">
-                            {place.structured_formatting.main_text}
-                          </div>
-                          <div className="quick-result-username">
-                            {place.structured_formatting.secondary_text}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </>
-                )}
-
-                {(quickResults.length > 0 || placeResults.length > 0) && (
-                  <div className="quick-results-footer" onClick={() => {
-                    navigate('/search', { state: { query: searchTerm } });
-                    setShowQuickResults(false);
-                  }}>
-                    Show all results →
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
         </div>
 
         <div className="navbar-right">
           {!loading && user ? (
             <>
+              <button
+                className="desktop-search-button"
+                onClick={() => navigate('/search')}
+                aria-label="Open search"
+              >
+                🔍 Search
+              </button>
               <button
                 className="nav-action-btn notifications-btn"
                 onClick={() => navigate('/follow-requests')}

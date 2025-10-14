@@ -10,6 +10,7 @@ import TripDetails from './TripDetails';
 import CreateTrip from './CreateTrip';
 import PostDetail from './PostDetail';
 import HashtagFeed from './HashtagFeed';
+import CountryFeed from './CountryFeed';
 import UserSearch from './UserSearch';
 import PlaceDetail from './PlaceDetail';
 import Settings from './Settings';
@@ -35,6 +36,7 @@ function App() {
             <Route path="/trip/:tripId" element={<TripDetails />} />
             <Route path="/post/:postId" element={<PostDetail />} />
             <Route path="/hashtag/:hashtag" element={<HashtagFeed />} />
+            <Route path="/country/:countryName" element={<CountryFeed />} />
             <Route path="/search" element={<UserSearch />} />
             <Route path="/place/:placeId" element={<PlaceDetail />} />
             <Route path="/settings" element={<Settings />} />
