@@ -57,11 +57,19 @@
   .post-header {
     padding: 16px 18px 12px;
   }
+
+  .post-header-actions {
+    min-width: 80px;
+  }
 }
 
 @media (max-width: 480px) {
   .post-header {
     padding: 14px 16px 10px;
+  }
+
+  .post-header-actions {
+    min-width: 70px;
   }
 }
 
@@ -70,6 +78,13 @@
   align-items: center;
   gap: 12px;
   flex: 1;
+}
+
+.post-header-actions {
+  min-width: 90px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
 }
 
 .follow-btn {

@@ -16,6 +16,7 @@ function CreateTrip() {
     country: '',
     startDate: '',
     endDate: '',
+    priceRange: '1000',
     images: []
   });
 
@@ -306,6 +307,7 @@ function CreateTrip() {
         country: tripData.country,
         start_date: tripData.startDate || null,
         end_date: tripData.endDate || null,
+        price_range: parseInt(tripData.priceRange) || 1,
         images: tripData.images || [],
         activities: activities.filter(activity => activity.name.trim()),
         accommodations: accommodations.filter(acc => acc.name.trim()),
@@ -519,6 +521,31 @@ function CreateTrip() {
               </div>
             </div>
             <div className="form-group">
+              <label>Price Range <span className="optional">(optional)</span></label>
+              <div className="price-range-slider">
+                <input
+                  type="range"
+                  min="1"
+                  max="4"
+                  value={tripData.priceRange}
+                  onChange={(e) => handleTripDataChange('priceRange', e.target.value)}
+                  className="range-input"
+                />
+                <div className="price-range-labels">
+                  <span className={tripData.priceRange == 1 ? 'active' : ''}>$</span>
+                  <span className={tripData.priceRange == 2 ? 'active' : ''}>$$</span>
+                  <span className={tripData.priceRange == 3 ? 'active' : ''}>$$$</span>
+                  <span className={tripData.priceRange == 4 ? 'active' : ''}>$$$$</span>
+                </div>
+                <div className="price-range-description">
+                  {tripData.priceRange == 1 && 'Budget (Under $500)'}
+                  {tripData.priceRange == 2 && 'Moderate ($500-$1500)'}
+                  {tripData.priceRange == 3 && 'Expensive ($1500-$3000)'}
+                  {tripData.priceRange == 4 && 'Luxury (Over $3000)'}
+                </div>
+              </div>
+            </div>
+            <div className="form-group">
               <label>Trip Story <span className="optional">(optional)</span></label>
               <textarea
                 value={tripData.content}
@@ -538,110 +565,6 @@ function CreateTrip() {
         );
 
       case 2:
-        return (
-          <div className="step-content">
-            <h2>🎯 Activities & Attractions <span className="optional-step">(optional)</span></h2>
-            {activities.map((activity, index) => (
-              <div key={index} className="activity-card">
-                {activities.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => removeActivity(index)}
-                    className="remove-btn-top"
-                  >
-                    ✕
-                  </button>
-                )}
-                <div className="form-group">
-                  <label>Type</label>
-                  <select
-                    value={activity.type}
-                    onChange={(e) => updateActivity(index, 'type', e.target.value)}
-                    className="form-input"
-                  >
-                    <option value="restaurant">🍽️ Restaurant</option>
-                    <option value="bar">🍺 Bar/Pub</option>
-                    <option value="monument">🏛️ Monument</option>
-                    <option value="attraction">🎢 Attraction</option>
-                    <option value="museum">🖼️ Museum</option>
-                    <option value="park">🌳 Park</option>
-                    <option value="beach">🏖️ Beach</option>
-                    <option value="shopping">🛍️ Shopping</option>
-                    <option value="nightlife">🌃 Nightlife</option>
-                  </select>
-                </div>
-                <div className="form-group activity-name-field">
-                  <label>Place</label>
-                  <div className="autocomplete-wrapper">
-                    <input
-                      type="search"
-                      name={`activity-place-${index}`}
-                      value={activity.name}
-                      onChange={(e) => updateActivity(index, 'name', e.target.value)}
-                      onFocus={() => activity.name.trim().length > 0 && setShowActivitySuggestions(index)}
-                      onBlur={() => setTimeout(() => setShowActivitySuggestions(null), 200)}
-                      placeholder="Search for a place..."
-                      className="form-input"
-                      autoComplete="off"
-                      data-lpignore="true"
-                    />
-                    {showActivitySuggestions === index && activityPlaceSuggestions.length > 0 && (
-                      <div className="place-suggestions-dropdown">
-                        {activityPlaceSuggestions.map((place) => (
-                          <div
-                            key={place.place_id}
-                            className="place-suggestion-item"
-                            onClick={() => selectPlaceForActivity(index, place)}
-                          >
-                            <div className="place-suggestion-icon">📍</div>
-                            <div className="place-suggestion-info">
-                              <div className="place-suggestion-name">{place.name}</div>
-                              {place.address && (
-                                <div className="place-suggestion-address">{place.address}</div>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div className="form-group">
-                  <label>Description</label>
-                  <textarea
-                    value={activity.description}
-                    onChange={(e) => updateActivity(index, 'description', e.target.value)}
-                    placeholder="What made this place special?"
-                    className="form-textarea"
-                    rows="4"
-                  />
-                </div>
-                <div className="activity-extras">
-                  <div className="activity-extras-row">
-                    <div className="form-group">
-                      <label>Rating</label>
-                      <StarRating
-                        rating={activity.rating}
-                        onRatingChange={(rating) => updateActivity(index, 'rating', rating)}
-                      />
-                    </div>
-                    <ImageUploader
-                      images={activity.images}
-                      onImageUpload={(file) => handleImageUpload(file, 'activities', index)}
-                      onImageRemove={(imageId) => removeImage('activities', imageId, index)}
-                      label="Photos"
-                    />
-                  </div>
-                </div>
-              </div>
-            ))}
-            <button type="button" onClick={addActivity} className="add-btn">
-              + Add Another Activity
-            </button>
-          </div>
-        );
-
-      case 3:
         return (
           <div className="step-content">
             <h2>🏨 Accommodations <span className="optional-step">(optional)</span></h2>
@@ -754,6 +677,110 @@ function CreateTrip() {
           </div>
         );
 
+      case 3:
+        return (
+          <div className="step-content">
+            <h2>🎯 Activities & Attractions <span className="optional-step">(optional)</span></h2>
+            {activities.map((activity, index) => (
+              <div key={index} className="activity-card">
+                {activities.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => removeActivity(index)}
+                    className="remove-btn-top"
+                  >
+                    ✕
+                  </button>
+                )}
+                <div className="form-group">
+                  <label>Type</label>
+                  <select
+                    value={activity.type}
+                    onChange={(e) => updateActivity(index, 'type', e.target.value)}
+                    className="form-input"
+                  >
+                    <option value="restaurant">🍽️ Restaurant</option>
+                    <option value="bar">🍺 Bar/Pub</option>
+                    <option value="monument">🏛️ Monument</option>
+                    <option value="attraction">🎢 Attraction</option>
+                    <option value="museum">🖼️ Museum</option>
+                    <option value="park">🌳 Park</option>
+                    <option value="beach">🏖️ Beach</option>
+                    <option value="shopping">🛍️ Shopping</option>
+                    <option value="nightlife">🌃 Nightlife</option>
+                  </select>
+                </div>
+                <div className="form-group activity-name-field">
+                  <label>Place</label>
+                  <div className="autocomplete-wrapper">
+                    <input
+                      type="search"
+                      name={`activity-place-${index}`}
+                      value={activity.name}
+                      onChange={(e) => updateActivity(index, 'name', e.target.value)}
+                      onFocus={() => activity.name.trim().length > 0 && setShowActivitySuggestions(index)}
+                      onBlur={() => setTimeout(() => setShowActivitySuggestions(null), 200)}
+                      placeholder="Search for a place..."
+                      className="form-input"
+                      autoComplete="off"
+                      data-lpignore="true"
+                    />
+                    {showActivitySuggestions === index && activityPlaceSuggestions.length > 0 && (
+                      <div className="place-suggestions-dropdown">
+                        {activityPlaceSuggestions.map((place) => (
+                          <div
+                            key={place.place_id}
+                            className="place-suggestion-item"
+                            onClick={() => selectPlaceForActivity(index, place)}
+                          >
+                            <div className="place-suggestion-icon">📍</div>
+                            <div className="place-suggestion-info">
+                              <div className="place-suggestion-name">{place.name}</div>
+                              {place.address && (
+                                <div className="place-suggestion-address">{place.address}</div>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="form-group">
+                  <label>Description</label>
+                  <textarea
+                    value={activity.description}
+                    onChange={(e) => updateActivity(index, 'description', e.target.value)}
+                    placeholder="What made this place special?"
+                    className="form-textarea"
+                    rows="4"
+                  />
+                </div>
+                <div className="activity-extras">
+                  <div className="activity-extras-row">
+                    <div className="form-group">
+                      <label>Rating</label>
+                      <StarRating
+                        rating={activity.rating}
+                        onRatingChange={(rating) => updateActivity(index, 'rating', rating)}
+                      />
+                    </div>
+                    <ImageUploader
+                      images={activity.images}
+                      onImageUpload={(file) => handleImageUpload(file, 'activities', index)}
+                      onImageRemove={(imageId) => removeImage('activities', imageId, index)}
+                      label="Photos"
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+            <button type="button" onClick={addActivity} className="add-btn">
+              + Add Another Activity
+            </button>
+          </div>
+        );
+
 
       default:
         return null;
@@ -775,8 +802,8 @@ function CreateTrip() {
                   <span className="step-number">{step}</span>
                   <span className="step-label">
                     {step === 1 && 'Trip Info'}
-                    {step === 2 && 'Activities'}
-                    {step === 3 && 'Stay'}
+                    {step === 2 && 'Stay'}
+                    {step === 3 && 'Activities'}
                   </span>
                 </div>
               ))}
