@@ -149,6 +149,13 @@
   font-weight: 500;
 }
 
+.country-flag-inline {
+  font-size: 20px;
+  margin-right: 8px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
 .info-link {
   color: var(--primary);
   text-decoration: none;

@@ -6,6 +6,62 @@ import './PlaceDetail.css';
 
 const libraries = ['places'];
 
+// Country to flag emoji mapping
+const countryFlags = {
+  'United States': '🇺🇸',
+  'USA': '🇺🇸',
+  'France': '🇫🇷',
+  'Italy': '🇮🇹',
+  'Spain': '🇪🇸',
+  'Japan': '🇯🇵',
+  'United Kingdom': '🇬🇧',
+  'UK': '🇬🇧',
+  'Germany': '🇩🇪',
+  'Australia': '🇦🇺',
+  'Thailand': '🇹🇭',
+  'Greece': '🇬🇷',
+  'Brazil': '🇧🇷',
+  'Mexico': '🇲🇽',
+  'Canada': '🇨🇦',
+  'Portugal': '🇵🇹',
+  'Netherlands': '🇳🇱',
+  'Switzerland': '🇨🇭',
+  'Turkey': '🇹🇷',
+  'South Korea': '🇰🇷',
+  'Egypt': '🇪🇬',
+  'Iceland': '🇮🇸',
+  'Ireland': '🇮🇪',
+  'Austria': '🇦🇹',
+  'Poland': '🇵🇱',
+  'Czech Republic': '🇨🇿',
+  'Hungary': '🇭🇺',
+  'Croatia': '🇭🇷',
+  'Norway': '🇳🇴',
+  'Sweden': '🇸🇪',
+  'Finland': '🇫🇮',
+  'Denmark': '🇩🇰',
+  'Belgium': '🇧🇪',
+  'India': '🇮🇳',
+  'China': '🇨🇳',
+  'Russia': '🇷🇺',
+  'Argentina': '🇦🇷',
+  'Chile': '🇨🇱',
+  'Peru': '🇵🇪',
+  'Colombia': '🇨🇴',
+  'Morocco': '🇲🇦',
+  'South Africa': '🇿🇦',
+  'New Zealand': '🇳🇿',
+  'Singapore': '🇸🇬',
+  'Malaysia': '🇲🇾',
+  'Indonesia': '🇮🇩',
+  'Philippines': '🇵🇭',
+  'Vietnam': '🇻🇳',
+  'United Arab Emirates': '🇦🇪',
+  'UAE': '🇦🇪',
+  'Saudi Arabia': '🇸🇦',
+  'Israel': '🇮🇱',
+};
+
 function PlaceDetail() {
   const { placeId } = useParams();
   const navigate = useNavigate();
@@ -33,7 +89,7 @@ function PlaceDetail() {
       service.getDetails(
         {
           placeId: placeId,
-          fields: ['name', 'formatted_address', 'formatted_phone_number', 'website', 'rating', 'photos', 'opening_hours', 'geometry', 'types', 'reviews'],
+          fields: ['name', 'formatted_address', 'formatted_phone_number', 'website', 'rating', 'photos', 'opening_hours', 'geometry', 'types', 'reviews', 'address_components'],
         },
         (place, status) => {
           if (status === window.google.maps.places.PlacesServiceStatus.OK) {
@@ -48,6 +104,20 @@ function PlaceDetail() {
       console.error('Error:', error);
       setLoading(false);
     }
+  };
+
+  const getCountryFlag = () => {
+    if (!placeDetails?.address_components) return null;
+
+    // Find the country from address components
+    const countryComponent = placeDetails.address_components.find(
+      component => component.types.includes('country')
+    );
+
+    if (!countryComponent) return null;
+
+    const countryName = countryComponent.long_name;
+    return countryFlags[countryName] || null;
   };
 
   if (loading) {
@@ -101,7 +171,10 @@ function PlaceDetail() {
                   <span className="info-icon">📍</span>
                   <div className="info-content">
                     <div className="info-label">Address</div>
-                    <div className="info-value">{placeDetails.formatted_address}</div>
+                    <div className="info-value">
+                      {getCountryFlag() && <span className="country-flag-inline">{getCountryFlag()}</span>}
+                      {placeDetails.formatted_address}
+                    </div>
                   </div>
                 </div>
               )}

@@ -187,14 +187,14 @@ function WorldMap({ userPosts, visitedCountries: propVisitedCountries, onCountry
       <div className="map-wrapper">
         <ComposableMap
           projectionConfig={{
-            scale: isModal ? 250 : 180,
-            center: isModal ? [10, 15] : [10, 10]
+            scale: isModal ? 250 : 220,
+            center: isModal ? [10, 0] : [10, 20]
           }}
           width={800}
           height={400}
           style={{ width: "100%", height: "100%" }}
         >
-          <ZoomableGroup zoom={isModal ? 1.3 : 1}>
+          <ZoomableGroup zoom={isModal ? 1.3 : 1.2}>
             <Geographies geography={geoUrl}>
               {({ geographies }) =>
                 geographies.map((geo) => (

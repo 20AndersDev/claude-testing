@@ -8,6 +8,62 @@ import './UserSearch.css';
 
 const libraries = ['places'];
 
+// Country to flag emoji mapping
+const countryFlags = {
+  'United States': '🇺🇸',
+  'USA': '🇺🇸',
+  'France': '🇫🇷',
+  'Italy': '🇮🇹',
+  'Spain': '🇪🇸',
+  'Japan': '🇯🇵',
+  'United Kingdom': '🇬🇧',
+  'UK': '🇬🇧',
+  'Germany': '🇩🇪',
+  'Australia': '🇦🇺',
+  'Thailand': '🇹🇭',
+  'Greece': '🇬🇷',
+  'Brazil': '🇧🇷',
+  'Mexico': '🇲🇽',
+  'Canada': '🇨🇦',
+  'Portugal': '🇵🇹',
+  'Netherlands': '🇳🇱',
+  'Switzerland': '🇨🇭',
+  'Turkey': '🇹🇷',
+  'South Korea': '🇰🇷',
+  'Egypt': '🇪🇬',
+  'Iceland': '🇮🇸',
+  'Ireland': '🇮🇪',
+  'Austria': '🇦🇹',
+  'Poland': '🇵🇱',
+  'Czech Republic': '🇨🇿',
+  'Hungary': '🇭🇺',
+  'Croatia': '🇭🇷',
+  'Norway': '🇳🇴',
+  'Sweden': '🇸🇪',
+  'Finland': '🇫🇮',
+  'Denmark': '🇩🇰',
+  'Belgium': '🇧🇪',
+  'India': '🇮🇳',
+  'China': '🇨🇳',
+  'Russia': '🇷🇺',
+  'Argentina': '🇦🇷',
+  'Chile': '🇨🇱',
+  'Peru': '🇵🇪',
+  'Colombia': '🇨🇴',
+  'Morocco': '🇲🇦',
+  'South Africa': '🇿🇦',
+  'New Zealand': '🇳🇿',
+  'Singapore': '🇸🇬',
+  'Malaysia': '🇲🇾',
+  'Indonesia': '🇮🇩',
+  'Philippines': '🇵🇭',
+  'Vietnam': '🇻🇳',
+  'United Arab Emirates': '🇦🇪',
+  'UAE': '🇦🇪',
+  'Saudi Arabia': '🇸🇦',
+  'Israel': '🇮🇱',
+};
+
 function UserSearch() {
   const location = useLocation();
   useSwipeNavigation();
@@ -158,9 +214,53 @@ function UserSearch() {
         {
           input: query,
         },
-        (predictions, status) => {
+        async (predictions, status) => {
           if (status === window.google.maps.places.PlacesServiceStatus.OK && predictions) {
-            setPlaceResults(predictions.slice(0, 10));
+            // Get place details for each prediction to fetch photos
+            const placesWithDetails = await Promise.all(
+              predictions.slice(0, 10).map(async (place) => {
+                return new Promise((resolve) => {
+                  // Create a temporary div for PlacesService
+                  const div = document.createElement('div');
+                  const placesService = new window.google.maps.places.PlacesService(div);
+
+                  placesService.getDetails(
+                    {
+                      placeId: place.place_id,
+                      fields: ['photos', 'icon', 'types', 'name', 'address_components']
+                    },
+                    (placeDetails, detailsStatus) => {
+                      if (detailsStatus === window.google.maps.places.PlacesServiceStatus.OK && placeDetails) {
+                        // Get the first photo if available
+                        const photoUrl = placeDetails.photos && placeDetails.photos.length > 0
+                          ? placeDetails.photos[0].getUrl({ maxWidth: 100, maxHeight: 100 })
+                          : placeDetails.icon;
+
+                        // Extract country from address components
+                        const countryComponent = placeDetails.address_components?.find(
+                          component => component.types.includes('country')
+                        );
+                        const countryName = countryComponent?.long_name;
+                        const countryFlag = countryName ? countryFlags[countryName] : null;
+
+                        resolve({
+                          ...place,
+                          photoUrl: photoUrl,
+                          types: placeDetails.types || [],
+                          countryFlag: countryFlag,
+                          countryName: countryName
+                        });
+                      } else {
+                        // Fallback to just the place without photo
+                        resolve({ ...place, photoUrl: null, types: [], countryFlag: null, countryName: null });
+                      }
+                    }
+                  );
+                });
+              })
+            );
+
+            setPlaceResults(placesWithDetails);
           } else {
             setPlaceResults([]);
           }
@@ -316,12 +416,21 @@ function UserSearch() {
                     onClick={() => navigate(`/place/${place.place_id}`)}
                   >
                     <div className="user-result-avatar">
-                      <div className="avatar-placeholder place-icon">
-                        📍
-                      </div>
+                      {place.photoUrl ? (
+                        <img
+                          src={place.photoUrl}
+                          alt={place.structured_formatting.main_text}
+                          className="place-photo"
+                        />
+                      ) : (
+                        <div className="avatar-placeholder place-icon">
+                          📍
+                        </div>
+                      )}
                     </div>
                     <div className="user-result-info">
                       <div className="user-result-name">
+                        {place.countryFlag && <span className="place-country-flag">{place.countryFlag}</span>}
                         {place.structured_formatting.main_text}
                       </div>
                       <div className="user-result-username">

@@ -117,7 +117,7 @@ function VisitedCountriesMap({ userId, isOwnProfile }) {
       >
         <ComposableMap
           projectionConfig={{
-            scale: 180,
+            scale: 220,
             center: [10, 30]
           }}
           width={800}
