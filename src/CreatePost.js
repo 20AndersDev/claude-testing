@@ -12,6 +12,7 @@ function CreatePost({ onAddPost }) {
   const [transport, setTransport] = useState([{ type: 'plane', from: '', to: '', time: '', cost: '' }]);
   const [hashtagInput, setHashtagInput] = useState('');
   const [hashtags, setHashtags] = useState([]);
+  const [bookingLink, setBookingLink] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -24,7 +25,8 @@ function CreatePost({ onAddPost }) {
         endDate,
         activities: activities.filter(activity => activity.name.trim()),
         transport: transport.filter(t => t.from.trim() && t.to.trim()),
-        hashtags: hashtags
+        hashtags: hashtags,
+        bookingLink: bookingLink.trim()
       };
       onAddPost(tripPost);
       setContent('');
@@ -36,6 +38,7 @@ function CreatePost({ onAddPost }) {
       setTransport([{ type: 'plane', from: '', to: '', time: '', cost: '' }]);
       setHashtags([]);
       setHashtagInput('');
+      setBookingLink('');
       setIsExpanded(false);
     }
   };
@@ -54,6 +57,7 @@ function CreatePost({ onAddPost }) {
     setTransport([{ type: 'plane', from: '', to: '', time: '', cost: '' }]);
     setHashtags([]);
     setHashtagInput('');
+    setBookingLink('');
     setIsExpanded(false);
   };
 
@@ -329,6 +333,18 @@ function CreatePost({ onAddPost }) {
                     ))}
                   </div>
                 )}
+              </div>
+
+              <div className="booking-link-section">
+                <h4>🔗 Booking Link (Optional)</h4>
+                <input
+                  type="url"
+                  value={bookingLink}
+                  onChange={(e) => setBookingLink(e.target.value)}
+                  placeholder="e.g., https://booking.com/hotel-name or https://airbnb.com/listing"
+                  className="booking-link-input"
+                />
+                <p className="booking-hint">Share where you booked your accommodation, flights, or activities</p>
               </div>
 
               <div className="post-actions">

@@ -312,6 +312,69 @@
   text-decoration: underline;
 }
 
+/* Booking Link Styles */
+.booking-link-container {
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+  background: var(--background);
+}
+
+.booking-link-button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 14px 20px;
+  background: linear-gradient(135deg, var(--primary) 0%, #059669 100%);
+  border: none;
+  border-radius: 12px;
+  color: white;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 12px rgba(5, 150, 105, 0.2);
+  gap: 12px;
+}
+
+.booking-link-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(5, 150, 105, 0.3);
+}
+
+.booking-link-icon {
+  font-size: 20px;
+}
+
+.booking-link-text {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 600;
+  text-align: left;
+}
+
+.booking-link-arrow {
+  font-size: 18px;
+  transition: transform 0.3s ease;
+}
+
+.booking-link-button:hover .booking-link-arrow {
+  transform: translateX(4px);
+}
+
+@media (max-width: 768px) {
+  .booking-link-container {
+    padding: 12px 18px;
+  }
+
+  .booking-link-button {
+    padding: 12px 16px;
+  }
+
+  .booking-link-text {
+    font-size: 14px;
+  }
+}
+
 .post-actions {
   display: flex;
   justify-content: space-around;
@@ -1570,5 +1633,212 @@
   .login-prompt-btn {
     padding: 11px 18px;
     font-size: 0.9rem;
+  }
+}
+
+/* Trip Plan Button and Modal */
+.action-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.trip-plan-btn {
+  background: rgba(5, 150, 105, 0.1);
+}
+
+.trip-plan-btn:hover {
+  background: rgba(5, 150, 105, 0.2);
+}
+
+.trip-plan-btn .action-icon {
+  color: var(--primary);
+}
+
+.trip-plan-modal {
+  max-width: 500px;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.trip-plans-loading {
+  padding: 20px;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.no-trip-plans {
+  padding: 20px;
+  text-align: center;
+}
+
+.no-trip-plans p {
+  margin-bottom: 16px;
+  color: var(--text-secondary);
+}
+
+.trip-plans-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 0;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.trip-plan-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: var(--background);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+  width: 100%;
+}
+
+.trip-plan-item:hover {
+  background: var(--surface-hover);
+  border-color: var(--primary);
+  transform: translateX(4px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.trip-plan-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.trip-plan-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.trip-plan-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.trip-plan-destination {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.trip-plan-arrow {
+  font-size: 20px;
+  color: var(--primary);
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: all 0.3s ease;
+}
+
+.trip-plan-item:hover .trip-plan-arrow {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+@media (max-width: 768px) {
+  .action-text {
+    display: none;
+  }
+}
+
+/* Item Selection Modal */
+.item-selection-modal {
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.items-selection-list {
+  padding: 20px 0;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+.selection-category {
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.selection-category:last-child {
+  border-bottom: none;
+}
+
+.selection-category h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 12px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.item-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  margin-bottom: 8px;
+  background: var(--background);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.item-checkbox:hover {
+  background: var(--surface-hover);
+  border-color: var(--primary);
+}
+
+.item-checkbox input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: var(--primary);
+}
+
+.checkbox-label {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.item-type {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+
+.item-checkbox input[type="checkbox"]:checked + .checkbox-label {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .item-selection-modal {
+    max-height: 90vh;
+  }
+
+  .items-selection-list {
+    max-height: 60vh;
+  }
+
+  .selection-category h4 {
+    font-size: 15px;
+  }
+
+  .checkbox-label {
+    font-size: 13px;
   }
 }

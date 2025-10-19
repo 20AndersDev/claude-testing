@@ -21,11 +21,11 @@ function CreateTrip() {
   });
 
   const [activities, setActivities] = useState([
-    { type: 'restaurant', name: '', description: '', time: '', rating: 0, cost: '', images: [] }
+    { type: 'restaurant', name: '', description: '', time: '', rating: 0, cost: '', images: [], link: '' }
   ]);
 
   const [accommodations, setAccommodations] = useState([
-    { type: 'hotel', name: '', address: '', description: '', checkIn: '', checkOut: '', cost: '', rating: 0, images: [] }
+    { type: 'hotel', name: '', address: '', description: '', checkIn: '', checkOut: '', cost: '', rating: 0, images: [], link: '' }
   ]);
 
   const [currentStep, setCurrentStep] = useState(1);
@@ -171,7 +171,8 @@ function CreateTrip() {
       time: '',
       rating: 0,
       cost: '',
-      images: []
+      images: [],
+      link: ''
     }]);
   };
 
@@ -269,7 +270,8 @@ function CreateTrip() {
       checkOut: '',
       cost: '',
       rating: 0,
-      images: []
+      images: [],
+      link: ''
     }]);
   };
 
@@ -367,7 +369,7 @@ function CreateTrip() {
   const isStepValid = () => {
     switch (currentStep) {
       case 1:
-        return tripData.tripTitle && tripData.tripTitle.trim().length > 0 && tripData.country && tripData.country.trim().length > 0;
+        return tripData.tripTitle && tripData.tripTitle.trim().length > 0;
       case 2:
       case 3:
         return true; // All other steps are optional
@@ -651,6 +653,17 @@ function CreateTrip() {
                     rows="4"
                   />
                 </div>
+                <div className="form-group">
+                  <label>Booking Link (Optional)</label>
+                  <input
+                    type="url"
+                    value={acc.link}
+                    onChange={(e) => updateAccommodation(index, 'link', e.target.value)}
+                    placeholder="https://booking.com/... or https://airbnb.com/..."
+                    className="form-input"
+                  />
+                  <p className="field-hint">Share where you booked this accommodation</p>
+                </div>
                 <div className="activity-extras">
                   <div className="activity-extras-row">
                     <div className="form-group">
@@ -754,6 +767,17 @@ function CreateTrip() {
                     className="form-textarea"
                     rows="4"
                   />
+                </div>
+                <div className="form-group">
+                  <label>Booking Link (Optional)</label>
+                  <input
+                    type="url"
+                    value={activity.link}
+                    onChange={(e) => updateActivity(index, 'link', e.target.value)}
+                    placeholder="https://example.com/... or reservation link"
+                    className="form-input"
+                  />
+                  <p className="field-hint">Share booking or website link for this activity</p>
                 </div>
                 <div className="activity-extras">
                   <div className="activity-extras-row">

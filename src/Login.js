@@ -69,9 +69,10 @@ function Login() {
       </div>
       <div className="login-form">
         <div className="login-header">
-          <div className="login-icon">🧳</div>
+          <div className="login-icon">🗺️</div>
+          <h1>TripTrail</h1>
+          <p className="login-subtitle">Explore, Experience</p>
           <h2>Welcome Back</h2>
-          <p className="login-subtitle">Sign in to continue your journey</p>
         </div>
         <form onSubmit={handleSubmit}>
           <div className="form-group">

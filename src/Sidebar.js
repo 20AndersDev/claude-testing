@@ -211,6 +211,16 @@ function Sidebar({ posts, onFilterChange, onCreatePost, isOpen, onClose }) {
         >
           + New Trip
         </button>
+        <button
+          className="trip-planner-sidebar-btn"
+          onClick={() => navigate('/planner')}
+        >
+          <span className="planner-icon">🗓️</span>
+          <div className="planner-text">
+            <span className="planner-title">Trip Planner</span>
+            <span className="planner-subtitle">Plan future trips</span>
+          </div>
+        </button>
       </div>
 
       <div className="sidebar-section">

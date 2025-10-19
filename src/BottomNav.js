@@ -36,6 +36,14 @@ function BottomNav() {
       </Link>
 
       <Link
+        to="/planner"
+        className={`bottom-nav-item ${isActive('/planner') ? 'active' : ''}`}
+      >
+        <span className="bottom-nav-icon">🗓️</span>
+        <span className="bottom-nav-label">Planner</span>
+      </Link>
+
+      <Link
         to="/profile"
         className={`bottom-nav-item ${isActive('/profile') ? 'active' : ''}`}
       >

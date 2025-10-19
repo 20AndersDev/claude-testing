@@ -84,9 +84,10 @@ function Register() {
       </div>
       <div className="register-form">
         <div className="register-header">
-          <div className="register-icon">✈️</div>
+          <div className="register-icon">🗺️</div>
+          <h1>TripTrail</h1>
+          <p className="register-subtitle">Explore, Experience</p>
           <h2>Join the Journey</h2>
-          <p className="register-subtitle">Create your account to start exploring</p>
         </div>
         <form onSubmit={handleSubmit}>
           <div className="form-group">

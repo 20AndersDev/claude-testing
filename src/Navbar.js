@@ -306,7 +306,7 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
           </button>
           <Link to="/feed" className="navbar-logo">
             <span className="logo-icon">🗺️</span>
-            <span className="logo-text">TripLogger</span>
+            <span className="logo-text">TripTrail</span>
           </Link>
         </div>
 
@@ -372,6 +372,9 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
 
             <Link to="/bookmarks" className="mobile-menu-item" onClick={() => setShowMobileMenu(false)}>
               🔖 Bookmarks
+            </Link>
+            <Link to="/planner" className="mobile-menu-item" onClick={() => setShowMobileMenu(false)}>
+              🗓️ Trip Planner
             </Link>
             <Link to="/settings" className="mobile-menu-item" onClick={() => setShowMobileMenu(false)}>
               ⚙️ Settings

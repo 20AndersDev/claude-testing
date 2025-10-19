@@ -250,6 +250,16 @@ function TripDetails() {
                       {activity.description && (
                         <p className="activity-description">{activity.description}</p>
                       )}
+                      {activity.link && (
+                        <a
+                          href={activity.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="activity-link-btn"
+                        >
+                          🔗 View Booking/Website
+                        </a>
+                      )}
                     </div>
                   </div>
                 ))}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "./supabaseClient";
 import Navbar from "./Navbar";
 import CreatePost from "./CreatePost";
@@ -8,6 +9,7 @@ import useSwipeNavigation from "./useSwipeNavigation";
 import "./Feed.css";
 
 function Feed() {
+  const navigate = useNavigate();
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   useSwipeNavigation();
@@ -242,6 +244,7 @@ function Feed() {
             activities: tripData.activities,
             transport: tripData.transport,
             hashtags: tripData.hashtags,
+            booking_link: tripData.bookingLink,
             likes_count: 0,
           },
         ])
@@ -457,6 +460,14 @@ function Feed() {
               Discover
             </button>
           </div>
+          <button className="planner-cta-button" onClick={() => navigate('/planner')}>
+            <span className="planner-cta-icon">🗓️</span>
+            <div className="planner-cta-content">
+              <span className="planner-cta-title">Trip Planner</span>
+              <span className="planner-cta-subtitle">Save attractions for future trips</span>
+            </div>
+            <span className="planner-cta-arrow">→</span>
+          </button>
           {showCreatePost && <CreatePost onAddPost={addPost} />}
           <div className="posts-container">
             {isLoading ? (
@@ -484,6 +495,15 @@ function Feed() {
             )}
           </div>
         </div>
+
+        {/* Floating Action Button for mobile */}
+        <button
+          className="create-post-fab"
+          onClick={() => navigate('/create-trip')}
+          aria-label="Create new trip"
+        >
+          <span className="fab-icon">+</span>
+        </button>
       </div>
     </>
   );

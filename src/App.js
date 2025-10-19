@@ -16,6 +16,8 @@ import PlaceDetail from './PlaceDetail';
 import Settings from './Settings';
 import Bookmarks from './Bookmarks';
 import FollowRequests from './FollowRequests';
+import Planner from './Planner';
+import TripPlanDetails from './TripPlanDetails';
 import BottomNav from './BottomNav';
 import './App.css';
 import './themes.css';
@@ -42,6 +44,8 @@ function App() {
             <Route path="/settings" element={<Settings />} />
             <Route path="/bookmarks" element={<Bookmarks />} />
             <Route path="/follow-requests" element={<FollowRequests />} />
+            <Route path="/planner" element={<Planner />} />
+            <Route path="/planner/:planId" element={<TripPlanDetails />} />
             <Route path="/" element={<Navigate to="/login" replace />} />
           </Routes>
           <BottomNav />
