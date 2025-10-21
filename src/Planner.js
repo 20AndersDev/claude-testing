@@ -29,10 +29,58 @@ function Planner() {
   const [newTripPlan, setNewTripPlan] = useState({
     name: '',
     description: '',
-    destination: '',
+    country: '',
     start_date: '',
     end_date: ''
   });
+
+  const countryFlags = {
+    "Afghanistan": "🇦🇫", "Albania": "🇦🇱", "Algeria": "🇩🇿", "Andorra": "🇦🇩", "Angola": "🇦🇴",
+    "Antigua and Barbuda": "🇦🇬", "Argentina": "🇦🇷", "Armenia": "🇦🇲", "Australia": "🇦🇺",
+    "Austria": "🇦🇹", "Azerbaijan": "🇦🇿", "Bahamas": "🇧🇸", "Bahrain": "🇧🇭", "Bangladesh": "🇧🇩",
+    "Barbados": "🇧🇧", "Belarus": "🇧🇾", "Belgium": "🇧🇪", "Belize": "🇧🇿", "Benin": "🇧🇯",
+    "Bhutan": "🇧🇹", "Bolivia": "🇧🇴", "Bosnia and Herzegovina": "🇧🇦", "Botswana": "🇧🇼",
+    "Brazil": "🇧🇷", "Brunei": "🇧🇳", "Bulgaria": "🇧🇬", "Burkina Faso": "🇧🇫", "Burundi": "🇧🇮",
+    "Cabo Verde": "🇨🇻", "Cambodia": "🇰🇭", "Cameroon": "🇨🇲", "Canada": "🇨🇦",
+    "Central African Republic": "🇨🇫", "Chad": "🇹🇩", "Chile": "🇨🇱", "China": "🇨🇳",
+    "Colombia": "🇨🇴", "Comoros": "🇰🇲", "Congo": "🇨🇬", "Costa Rica": "🇨🇷", "Croatia": "🇭🇷",
+    "Cuba": "🇨🇺", "Cyprus": "🇨🇾", "Czech Republic": "🇨🇿", "Denmark": "🇩🇰", "Djibouti": "🇩🇯",
+    "Dominica": "🇩🇲", "Dominican Republic": "🇩🇴", "Ecuador": "🇪🇨", "Egypt": "🇪🇬",
+    "El Salvador": "🇸🇻", "Equatorial Guinea": "🇬🇶", "Eritrea": "🇪🇷", "Estonia": "🇪🇪",
+    "Eswatini": "🇸🇿", "Ethiopia": "🇪🇹", "Fiji": "🇫🇯", "Finland": "🇫🇮", "France": "🇫🇷",
+    "Gabon": "🇬🇦", "Gambia": "🇬🇲", "Georgia": "🇬🇪", "Germany": "🇩🇪", "Ghana": "🇬🇭",
+    "Greece": "🇬🇷", "Grenada": "🇬🇩", "Guatemala": "🇬🇹", "Guinea": "🇬🇳", "Guinea-Bissau": "🇬🇼",
+    "Guyana": "🇬🇾", "Haiti": "🇭🇹", "Honduras": "🇭🇳", "Hungary": "🇭🇺", "Iceland": "🇮🇸",
+    "India": "🇮🇳", "Indonesia": "🇮🇩", "Iran": "🇮🇷", "Iraq": "🇮🇶", "Ireland": "🇮🇪",
+    "Israel": "🇮🇱", "Italy": "🇮🇹", "Jamaica": "🇯🇲", "Japan": "🇯🇵", "Jordan": "🇯🇴",
+    "Kazakhstan": "🇰🇿", "Kenya": "🇰🇪", "Kiribati": "🇰🇮", "Kosovo": "🇽🇰", "Kuwait": "🇰🇼",
+    "Kyrgyzstan": "🇰🇬", "Laos": "🇱🇦", "Latvia": "🇱🇻", "Lebanon": "🇱🇧", "Lesotho": "🇱🇸",
+    "Liberia": "🇱🇷", "Libya": "🇱🇾", "Liechtenstein": "🇱🇮", "Lithuania": "🇱🇹", "Luxembourg": "🇱🇺",
+    "Madagascar": "🇲🇬", "Malawi": "🇲🇼", "Malaysia": "🇲🇾", "Maldives": "🇲🇻", "Mali": "🇲🇱",
+    "Malta": "🇲🇹", "Marshall Islands": "🇲🇭", "Mauritania": "🇲🇷", "Mauritius": "🇲🇺",
+    "Mexico": "🇲🇽", "Micronesia": "🇫🇲", "Moldova": "🇲🇩", "Monaco": "🇲🇨", "Mongolia": "🇲🇳",
+    "Montenegro": "🇲🇪", "Morocco": "🇲🇦", "Mozambique": "🇲🇿", "Myanmar": "🇲🇲", "Namibia": "🇳🇦",
+    "Nauru": "🇳🇷", "Nepal": "🇳🇵", "Netherlands": "🇳🇱", "New Zealand": "🇳🇿", "Nicaragua": "🇳🇮",
+    "Niger": "🇳🇪", "Nigeria": "🇳🇬", "North Korea": "🇰🇵", "North Macedonia": "🇲🇰", "Norway": "🇳🇴",
+    "Oman": "🇴🇲", "Pakistan": "🇵🇰", "Palau": "🇵🇼", "Palestine": "🇵🇸", "Panama": "🇵🇦",
+    "Papua New Guinea": "🇵🇬", "Paraguay": "🇵🇾", "Peru": "🇵🇪", "Philippines": "🇵🇭",
+    "Poland": "🇵🇱", "Portugal": "🇵🇹", "Qatar": "🇶🇦", "Romania": "🇷🇴", "Russia": "🇷🇺",
+    "Rwanda": "🇷🇼", "Saint Kitts and Nevis": "🇰🇳", "Saint Lucia": "🇱🇨",
+    "Saint Vincent and the Grenadines": "🇻🇨", "Samoa": "🇼🇸", "San Marino": "🇸🇲",
+    "Sao Tome and Principe": "🇸🇹", "Saudi Arabia": "🇸🇦", "Senegal": "🇸🇳", "Serbia": "🇷🇸",
+    "Seychelles": "🇸🇨", "Sierra Leone": "🇸🇱", "Singapore": "🇸🇬", "Slovakia": "🇸🇰",
+    "Slovenia": "🇸🇮", "Solomon Islands": "🇸🇧", "Somalia": "🇸🇴", "South Africa": "🇿🇦",
+    "South Korea": "🇰🇷", "South Sudan": "🇸🇸", "Spain": "🇪🇸", "Sri Lanka": "🇱🇰", "Sudan": "🇸🇩",
+    "Suriname": "🇸🇷", "Sweden": "🇸🇪", "Switzerland": "🇨🇭", "Syria": "🇸🇾", "Taiwan": "🇹🇼",
+    "Tajikistan": "🇹🇯", "Tanzania": "🇹🇿", "Thailand": "🇹🇭", "Timor-Leste": "🇹🇱", "Togo": "🇹🇬",
+    "Tonga": "🇹🇴", "Trinidad and Tobago": "🇹🇹", "Tunisia": "🇹🇳", "Turkey": "🇹🇷",
+    "Turkmenistan": "🇹🇲", "Tuvalu": "🇹🇻", "Uganda": "🇺🇬", "Ukraine": "🇺🇦",
+    "United Arab Emirates": "🇦🇪", "United Kingdom": "🇬🇧", "United States": "🇺🇸",
+    "Uruguay": "🇺🇾", "Uzbekistan": "🇺🇿", "Vanuatu": "🇻🇺", "Vatican City": "🇻🇦",
+    "Venezuela": "🇻🇪", "Vietnam": "🇻🇳", "Yemen": "🇾🇪", "Zambia": "🇿🇲", "Zimbabwe": "🇿🇼"
+  };
+
+  const countries = Object.keys(countryFlags);
   const [newAttraction, setNewAttraction] = useState({
     place_id: '',
     place_name: '',
@@ -110,6 +158,43 @@ function Planner() {
       if (attractionsError) throw attractionsError;
 
       setAttractions(attractionsData || []);
+
+      // Fetch collaborators with profiles for each trip plan
+      const collaboratorsMap = {};
+      for (const plan of allPlans) {
+        // Get owner profile
+        const { data: ownerProfile } = await supabase
+          .from('profiles')
+          .select('id, username, full_name, avatar_url')
+          .eq('id', plan.user_id)
+          .single();
+
+        // Get collaborators
+        const { data: collabData } = await supabase
+          .from('trip_collaborators')
+          .select('user_id')
+          .eq('trip_plan_id', plan.id);
+
+        // Fetch profiles for collaborators
+        const members = [ownerProfile];
+        if (collabData && collabData.length > 0) {
+          const collabIds = collabData.map(c => c.user_id);
+          const { data: collabProfiles } = await supabase
+            .from('profiles')
+            .select('id, username, full_name, avatar_url')
+            .in('id', collabIds);
+
+          if (collabProfiles) {
+            // Filter out the owner to prevent duplicates
+            const filteredProfiles = collabProfiles.filter(p => p.id !== plan.user_id);
+            members.push(...filteredProfiles);
+          }
+        }
+
+        collaboratorsMap[plan.id] = members;
+      }
+
+      setCollaborators(collaboratorsMap);
     } catch (error) {
       console.error('Error fetching trip plans:', error);
     } finally {
@@ -207,13 +292,18 @@ function Planner() {
       return;
     }
 
+    if (!newTripPlan.country) {
+      alert('Please select a country');
+      return;
+    }
+
     try {
       // Convert empty date strings to null for database insertion
       const tripPlanData = {
         user_id: user.id,
         name: newTripPlan.name,
         description: newTripPlan.description || null,
-        destination: newTripPlan.destination || null,
+        country: newTripPlan.country,
         start_date: newTripPlan.start_date || null,
         end_date: newTripPlan.end_date || null
       };
@@ -229,7 +319,7 @@ function Planner() {
       setNewTripPlan({
         name: '',
         description: '',
-        destination: '',
+        country: '',
         start_date: '',
         end_date: ''
       });
@@ -597,8 +687,10 @@ function Planner() {
                               <span className="shared-badge">👥 Shared</span>
                             )}
                           </div>
-                        {tripPlan.destination && (
-                          <p className="trip-plan-destination">📍 {tripPlan.destination}</p>
+                        {tripPlan.country && (
+                          <p className="trip-plan-country">
+                            {countryFlags[tripPlan.country] || '🌍'} {tripPlan.country}
+                          </p>
                         )}
                         {tripPlan.description && (
                           <p className="trip-plan-description">{tripPlan.description}</p>
@@ -618,86 +710,34 @@ function Planner() {
                           📍 {tripAttractions.length} {tripAttractions.length === 1 ? 'attraction' : 'attractions'}
                         </span>
                       </div>
-                    </div>
 
-                    <div className="trip-plan-actions">
-                      <button
-                        className="add-attraction-to-trip-btn"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openAddAttractionModal(tripPlan.id);
-                        }}
-                      >
-                        ➕ Add Attraction
-                      </button>
-                      {tripPlan.user_id === user.id ? (
-                        <button
-                          className="invite-collaborator-btn"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            openInviteModal(tripPlan.id);
-                          }}
-                        >
-                          👥 Invite
-                        </button>
-                      ) : (
-                        <button
-                          className="leave-trip-btn"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleLeaveGroup(tripPlan.id);
-                          }}
-                        >
-                          🚪 Leave
-                        </button>
+                      {/* Member Avatars */}
+                      {collaborators[tripPlan.id] && collaborators[tripPlan.id].length > 0 && (
+                        <div className="trip-members">
+                          <div className="trip-members-avatars">
+                            {collaborators[tripPlan.id].slice(0, 4).map((member, index) => (
+                              <div key={member.id} className="trip-member-avatar" style={{ zIndex: 4 - index }}>
+                                {member.avatar_url ? (
+                                  <img src={member.avatar_url} alt={member.username} title={member.username} />
+                                ) : (
+                                  <div className="trip-avatar-placeholder" title={member.username}>
+                                    {member.username?.charAt(0).toUpperCase() || '?'}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                            {collaborators[tripPlan.id].length > 4 && (
+                              <div className="trip-member-avatar trip-member-more">
+                                +{collaborators[tripPlan.id].length - 4}
+                              </div>
+                            )}
+                          </div>
+                          <span className="trip-members-count">
+                            {collaborators[tripPlan.id].length} {collaborators[tripPlan.id].length === 1 ? 'member' : 'members'}
+                          </span>
+                        </div>
                       )}
                     </div>
-
-                    {tripAttractions.length > 0 && (
-                      <div className="attractions-list">
-                        {tripAttractions.map((attraction) => (
-                          <div key={attraction.id} className="attraction-item">
-                            {attraction.place_photo_url && (
-                              <img
-                                src={attraction.place_photo_url}
-                                alt={attraction.place_name}
-                                className="attraction-thumbnail"
-                              />
-                            )}
-                            <div className="attraction-item-content">
-                              <h4 className="attraction-item-name">{attraction.place_name}</h4>
-                              {attraction.place_address && (
-                                <p className="attraction-item-address">{attraction.place_address}</p>
-                              )}
-                              {attraction.planned_date && (
-                                <p className="attraction-item-date">
-                                  📅 {new Date(attraction.planned_date).toLocaleDateString()}
-                                </p>
-                              )}
-                              {attraction.notes && (
-                                <p className="attraction-item-notes">💭 {attraction.notes}</p>
-                              )}
-                            </div>
-                            <div className="attraction-item-actions">
-                              <button
-                                className="view-attraction-btn"
-                                onClick={() => navigate(`/place/${attraction.place_id}`)}
-                                title="View details"
-                              >
-                                👁️
-                              </button>
-                              <button
-                                className="delete-attraction-btn"
-                                onClick={() => handleDeleteAttraction(attraction.id)}
-                                title="Remove attraction"
-                              >
-                                ✕
-                              </button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
                   </div>
                 );
               })}
@@ -727,13 +767,19 @@ function Planner() {
                 </div>
 
                 <div className="form-group">
-                  <label>Destination</label>
-                  <input
-                    type="text"
-                    value={newTripPlan.destination}
-                    onChange={(e) => setNewTripPlan({...newTripPlan, destination: e.target.value})}
-                    placeholder="e.g., Paris, France"
-                  />
+                  <label>Country *</label>
+                  <select
+                    value={newTripPlan.country}
+                    onChange={(e) => setNewTripPlan({...newTripPlan, country: e.target.value})}
+                    required
+                  >
+                    <option value="">Select a country</option>
+                    {countries.map((country) => (
+                      <option key={country} value={country}>
+                        {country}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div className="form-group">

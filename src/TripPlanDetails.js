@@ -7,8 +7,53 @@ import './TripPlanDetails.css';
 function TripPlanDetails() {
   const { planId } = useParams();
   const navigate = useNavigate();
+
+  const countryFlags = {
+    "Afghanistan": "🇦🇫", "Albania": "🇦🇱", "Algeria": "🇩🇿", "Andorra": "🇦🇩", "Angola": "🇦🇴",
+    "Antigua and Barbuda": "🇦🇬", "Argentina": "🇦🇷", "Armenia": "🇦🇲", "Australia": "🇦🇺",
+    "Austria": "🇦🇹", "Azerbaijan": "🇦🇿", "Bahamas": "🇧🇸", "Bahrain": "🇧🇭", "Bangladesh": "🇧🇩",
+    "Barbados": "🇧🇧", "Belarus": "🇧🇾", "Belgium": "🇧🇪", "Belize": "🇧🇿", "Benin": "🇧🇯",
+    "Bhutan": "🇧🇹", "Bolivia": "🇧🇴", "Bosnia and Herzegovina": "🇧🇦", "Botswana": "🇧🇼",
+    "Brazil": "🇧🇷", "Brunei": "🇧🇳", "Bulgaria": "🇧🇬", "Burkina Faso": "🇧🇫", "Burundi": "🇧🇮",
+    "Cabo Verde": "🇨🇻", "Cambodia": "🇰🇭", "Cameroon": "🇨🇲", "Canada": "🇨🇦",
+    "Central African Republic": "🇨🇫", "Chad": "🇹🇩", "Chile": "🇨🇱", "China": "🇨🇳",
+    "Colombia": "🇨🇴", "Comoros": "🇰🇲", "Congo": "🇨🇬", "Costa Rica": "🇨🇷", "Croatia": "🇭🇷",
+    "Cuba": "🇨🇺", "Cyprus": "🇨🇾", "Czech Republic": "🇨🇿", "Denmark": "🇩🇰", "Djibouti": "🇩🇯",
+    "Dominica": "🇩🇲", "Dominican Republic": "🇩🇴", "Ecuador": "🇪🇨", "Egypt": "🇪🇬",
+    "El Salvador": "🇸🇻", "Equatorial Guinea": "🇬🇶", "Eritrea": "🇪🇷", "Estonia": "🇪🇪",
+    "Eswatini": "🇸🇿", "Ethiopia": "🇪🇹", "Fiji": "🇫🇯", "Finland": "🇫🇮", "France": "🇫🇷",
+    "Gabon": "🇬🇦", "Gambia": "🇬🇲", "Georgia": "🇬🇪", "Germany": "🇩🇪", "Ghana": "🇬🇭",
+    "Greece": "🇬🇷", "Grenada": "🇬🇩", "Guatemala": "🇬🇹", "Guinea": "🇬🇳", "Guinea-Bissau": "🇬🇼",
+    "Guyana": "🇬🇾", "Haiti": "🇭🇹", "Honduras": "🇭🇳", "Hungary": "🇭🇺", "Iceland": "🇮🇸",
+    "India": "🇮🇳", "Indonesia": "🇮🇩", "Iran": "🇮🇷", "Iraq": "🇮🇶", "Ireland": "🇮🇪",
+    "Israel": "🇮🇱", "Italy": "🇮🇹", "Jamaica": "🇯🇲", "Japan": "🇯🇵", "Jordan": "🇯🇴",
+    "Kazakhstan": "🇰🇿", "Kenya": "🇰🇪", "Kiribati": "🇰🇮", "Kosovo": "🇽🇰", "Kuwait": "🇰🇼",
+    "Kyrgyzstan": "🇰🇬", "Laos": "🇱🇦", "Latvia": "🇱🇻", "Lebanon": "🇱🇧", "Lesotho": "🇱🇸",
+    "Liberia": "🇱🇷", "Libya": "🇱🇾", "Liechtenstein": "🇱🇮", "Lithuania": "🇱🇹", "Luxembourg": "🇱🇺",
+    "Madagascar": "🇲🇬", "Malawi": "🇲🇼", "Malaysia": "🇲🇾", "Maldives": "🇲🇻", "Mali": "🇲🇱",
+    "Malta": "🇲🇹", "Marshall Islands": "🇲🇭", "Mauritania": "🇲🇷", "Mauritius": "🇲🇺",
+    "Mexico": "🇲🇽", "Micronesia": "🇫🇲", "Moldova": "🇲🇩", "Monaco": "🇲🇨", "Mongolia": "🇲🇳",
+    "Montenegro": "🇲🇪", "Morocco": "🇲🇦", "Mozambique": "🇲🇿", "Myanmar": "🇲🇲", "Namibia": "🇳🇦",
+    "Nauru": "🇳🇷", "Nepal": "🇳🇵", "Netherlands": "🇳🇱", "New Zealand": "🇳🇿", "Nicaragua": "🇳🇮",
+    "Niger": "🇳🇪", "Nigeria": "🇳🇬", "North Korea": "🇰🇵", "North Macedonia": "🇲🇰", "Norway": "🇳🇴",
+    "Oman": "🇴🇲", "Pakistan": "🇵🇰", "Palau": "🇵🇼", "Palestine": "🇵🇸", "Panama": "🇵🇦",
+    "Papua New Guinea": "🇵🇬", "Paraguay": "🇵🇾", "Peru": "🇵🇪", "Philippines": "🇵🇭",
+    "Poland": "🇵🇱", "Portugal": "🇵🇹", "Qatar": "🇶🇦", "Romania": "🇷🇴", "Russia": "🇷🇺",
+    "Rwanda": "🇷🇼", "Saint Kitts and Nevis": "🇰🇳", "Saint Lucia": "🇱🇨",
+    "Saint Vincent and the Grenadines": "🇻🇨", "Samoa": "🇼🇸", "San Marino": "🇸🇲",
+    "Sao Tome and Principe": "🇸🇹", "Saudi Arabia": "🇸🇦", "Senegal": "🇸🇳", "Serbia": "🇷🇸",
+    "Seychelles": "🇸🇨", "Sierra Leone": "🇸🇱", "Singapore": "🇸🇬", "Slovakia": "🇸🇰",
+    "Slovenia": "🇸🇮", "Solomon Islands": "🇸🇧", "Somalia": "🇸🇴", "South Africa": "🇿🇦",
+    "South Korea": "🇰🇷", "South Sudan": "🇸🇸", "Spain": "🇪🇸", "Sri Lanka": "🇱🇰", "Sudan": "🇸🇩",
+    "Suriname": "🇸🇷", "Sweden": "🇸🇪", "Switzerland": "🇨🇭", "Syria": "🇸🇾", "Taiwan": "🇹🇼",
+    "Tajikistan": "🇹🇯", "Tanzania": "🇹🇿", "Thailand": "🇹🇭", "Timor-Leste": "🇹🇱", "Togo": "🇹🇬",
+    "Tonga": "🇹🇴", "Trinidad and Tobago": "🇹🇹", "Tunisia": "🇹🇳", "Turkey": "🇹🇷",
+    "Turkmenistan": "🇹🇲", "Tuvalu": "🇹🇻", "Uganda": "🇺🇬", "Ukraine": "🇺🇦",
+    "United Arab Emirates": "🇦🇪", "United Kingdom": "🇬🇧", "United States": "🇺🇸",
+    "Uruguay": "🇺🇾", "Uzbekistan": "🇺🇿", "Vanuatu": "🇻🇺", "Vatican City": "🇻🇦",
+    "Venezuela": "🇻🇪", "Vietnam": "🇻🇳", "Yemen": "🇾🇪", "Zambia": "🇿🇲", "Zimbabwe": "🇿🇼"
+  };
   const [tripPlan, setTripPlan] = useState(null);
-  const [attractions, setAttractions] = useState([]);
   const [collaborators, setCollaborators] = useState([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
@@ -75,9 +120,9 @@ function TripPlanDetails() {
       fetchStays();
       fetchActivities();
 
-      // Set up real-time subscription
+      // Set up real-time subscription for messages and collaborators
       const channel = supabase
-        .channel(`trip_plan_messages:${planId}`)
+        .channel(`trip_plan_${planId}`)
         .on(
           'postgres_changes',
           {
@@ -117,12 +162,57 @@ function TripPlanDetails() {
             setMessages((prevMessages) => prevMessages.filter(msg => msg.id !== payload.old.id));
           }
         )
-        .subscribe((status) => {
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'trip_collaborators',
+            filter: `trip_plan_id=eq.${planId}`
+          },
+          async (payload) => {
+            console.log('New collaborator added:', payload);
+            // Fetch the user profile for the new collaborator
+            const { data: profileData } = await supabase
+              .from('profiles')
+              .select('username, full_name, avatar_url')
+              .eq('id', payload.new.user_id)
+              .single();
+
+            const collaboratorWithProfile = {
+              ...payload.new,
+              profiles: profileData
+            };
+
+            setCollaborators((prevCollaborators) => [...prevCollaborators, collaboratorWithProfile]);
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'DELETE',
+            schema: 'public',
+            table: 'trip_collaborators',
+            filter: `trip_plan_id=eq.${planId}`
+          },
+          (payload) => {
+            console.log('Collaborator removed:', payload);
+            // Remove the deleted collaborator from state
+            setCollaborators((prevCollaborators) =>
+              prevCollaborators.filter(collab => collab.id !== payload.old.id)
+            );
+          }
+        )
+        .subscribe((status, err) => {
           console.log('Subscription status:', status);
+          if (err) {
+            console.error('Subscription error:', err);
+          }
         });
 
       // Cleanup subscription on unmount
       return () => {
+        console.log('Cleaning up realtime subscription');
         supabase.removeChannel(channel);
       };
     }
@@ -151,15 +241,20 @@ function TripPlanDetails() {
       if (planError) throw planError;
       setTripPlan(planData);
 
-      // Fetch attractions
-      const { data: attractionsData, error: attractionsError } = await supabase
-        .from('planned_attractions')
-        .select('*')
-        .eq('trip_plan_id', planId)
-        .order('created_at', { ascending: false });
+      // Fetch the owner's profile first
+      const { data: ownerProfile } = await supabase
+        .from('profiles')
+        .select('username, full_name, avatar_url')
+        .eq('id', planData.user_id)
+        .single();
 
-      if (attractionsError) throw attractionsError;
-      setAttractions(attractionsData || []);
+      // Create owner collaborator object
+      const ownerCollab = {
+        id: 'owner',
+        role: 'owner',
+        user_id: planData.user_id,
+        profiles: ownerProfile
+      };
 
       // Fetch collaborators with profile data
       const { data: collabData, error: collabError } = await supabase
@@ -189,14 +284,15 @@ function TripPlanDetails() {
         })
       );
 
-      // Sort collaborators so owner appears first
-      const sortedCollaborators = collabsWithProfiles.sort((a, b) => {
-        if (a.role === 'owner') return -1;
-        if (b.role === 'owner') return 1;
-        return 0;
-      });
+      // Filter out owner from collaborators to prevent duplicates
+      const filteredCollabs = collabsWithProfiles.filter(
+        collab => collab.user_id !== planData.user_id
+      );
 
-      setCollaborators(sortedCollaborators);
+      // Combine owner with other collaborators, ensuring owner is first
+      const allCollaborators = [ownerCollab, ...filteredCollabs];
+
+      setCollaborators(allCollaborators);
 
     } catch (error) {
       console.error('Error fetching trip plan details:', error);
@@ -274,13 +370,23 @@ function TripPlanDetails() {
       return;
     }
 
-    // Check if trying to add yourself
-    if (selectedUser.id === user.id) {
-      alert('You cannot add yourself as a collaborator. You are already the owner!');
-      return;
-    }
+    console.log('Attempting to add collaborator:', selectedUser);
+    console.log('Trip plan:', tripPlan);
+    console.log('Current user:', user);
 
     try {
+      // Check if trying to add the owner
+      if (selectedUser.id === tripPlan.user_id) {
+        alert(`${selectedUser.username} is the owner of this trip plan and is already a member!`);
+        return;
+      }
+
+      // Check if trying to add yourself (if you're the owner)
+      if (selectedUser.id === user.id) {
+        alert('You cannot add yourself as a collaborator!');
+        return;
+      }
+
       // Check if user is already a collaborator by querying the database
       const { data: existingCollab, error: checkError } = await supabase
         .from('trip_collaborators')
@@ -293,19 +399,27 @@ function TripPlanDetails() {
         console.error('Error checking collaborator:', checkError);
       }
 
+      console.log('Existing collaborator check:', existingCollab);
+
       if (existingCollab) {
         alert(`${selectedUser.username} is already a member of this trip plan!`);
         return;
       }
+
+      console.log('Inserting new collaborator...');
+
       // Add directly to collaborators with default 'editor' role
-      const { error: collabError } = await supabase
+      const { data: insertData, error: collabError } = await supabase
         .from('trip_collaborators')
         .insert([{
           trip_plan_id: planId,
           user_id: selectedUser.id,
           role: 'editor',
           invited_by: user.id
-        }]);
+        }])
+        .select();
+
+      console.log('Insert result:', { data: insertData, error: collabError });
 
       if (collabError) throw collabError;
 
@@ -422,13 +536,15 @@ function TripPlanDetails() {
     if (!newMessage.trim()) return;
 
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('trip_plan_messages')
         .insert([{
           trip_plan_id: planId,
           user_id: user.id,
           message: newMessage.trim()
-        }]);
+        }])
+        .select()
+        .single();
 
       if (error) {
         // If table doesn't exist yet, show helpful message
@@ -439,6 +555,20 @@ function TripPlanDetails() {
         throw error;
       }
 
+      // Fetch the user profile for the new message
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('username, full_name, avatar_url')
+        .eq('id', user.id)
+        .single();
+
+      // Manually add the message to state
+      const messageWithProfile = {
+        ...data,
+        profiles: profileData
+      };
+
+      setMessages((prevMessages) => [...prevMessages, messageWithProfile]);
       setNewMessage('');
     } catch (error) {
       console.error('Error sending message:', error);
@@ -501,10 +631,19 @@ function TripPlanDetails() {
         .eq('trip_plan_id', planId)
         .order('departure_date', { ascending: true });
 
-      if (error) throw error;
+      if (error) {
+        // If table doesn't exist, silently set empty array
+        if (error.code === 'PGRST204' || error.code === 'PGRST205' || error.code === 'PGRST200') {
+          console.log('trip_travels table not found - itinerary feature not enabled');
+          setTravels([]);
+          return;
+        }
+        throw error;
+      }
       setTravels(data || []);
     } catch (error) {
       console.error('Error fetching travels:', error);
+      setTravels([]);
     }
   };
 
@@ -516,10 +655,19 @@ function TripPlanDetails() {
         .eq('trip_plan_id', planId)
         .order('check_in_date', { ascending: true });
 
-      if (error) throw error;
+      if (error) {
+        // If table doesn't exist, silently set empty array
+        if (error.code === 'PGRST204' || error.code === 'PGRST205' || error.code === 'PGRST200') {
+          console.log('trip_stays table not found - itinerary feature not enabled');
+          setStays([]);
+          return;
+        }
+        throw error;
+      }
       setStays(data || []);
     } catch (error) {
       console.error('Error fetching stays:', error);
+      setStays([]);
     }
   };
 
@@ -531,10 +679,19 @@ function TripPlanDetails() {
         .eq('trip_plan_id', planId)
         .order('scheduled_date', { ascending: true });
 
-      if (error) throw error;
+      if (error) {
+        // If table doesn't exist, silently set empty array
+        if (error.code === 'PGRST204' || error.code === 'PGRST205' || error.code === 'PGRST200') {
+          console.log('trip_activities table not found - itinerary feature not enabled');
+          setActivities([]);
+          return;
+        }
+        throw error;
+      }
       setActivities(data || []);
     } catch (error) {
       console.error('Error fetching activities:', error);
+      setActivities([]);
     }
   };
 
@@ -761,8 +918,10 @@ function TripPlanDetails() {
             <div className="trip-plan-hero-content">
               <h1 className="trip-plan-hero-title">🗺️ {tripPlan.name}</h1>
               <div className="trip-plan-hero-info">
-                {tripPlan.destination && (
-                  <div className="trip-plan-hero-location">📍 {tripPlan.destination}</div>
+                {tripPlan.country && (
+                  <div className="trip-plan-hero-location">
+                    {countryFlags[tripPlan.country] || '🌍'} {tripPlan.country}
+                  </div>
                 )}
                 {(tripPlan.start_date || tripPlan.end_date) && (
                   <div className="trip-plan-hero-dates">
@@ -797,30 +956,210 @@ function TripPlanDetails() {
             </div>
           )}
 
-          {/* Attractions Section */}
+          {/* Travel Section */}
           <div className="trip-plan-section">
-            <h2>📍 Planned Attractions ({attractions.length})</h2>
-            {attractions.length === 0 ? (
+            <div className="section-header">
+              <h2>✈️ Travel ({travels.length})</h2>
+              <button className="add-item-btn" onClick={() => setShowTravelModal(true)}>
+                ➕ Add Travel
+              </button>
+            </div>
+            {travels.length === 0 ? (
               <div className="empty-state">
-                <p>No attractions added yet. Go back to the planner to add some!</p>
+                <p>No travel bookings yet. Add flights, trains, buses, etc.</p>
               </div>
             ) : (
-              <div className="attractions-grid">
-                {attractions.map((attraction) => (
-                  <div key={attraction.id} className="attraction-card">
-                    {attraction.place_photo_url && (
-                      <div className="attraction-image">
-                        <img src={attraction.place_photo_url} alt={attraction.name} />
-                      </div>
-                    )}
-                    <div className="attraction-content">
-                      <h3 className="attraction-name">{attraction.name}</h3>
-                      {attraction.place_address && (
-                        <p className="attraction-address">📍 {attraction.place_address}</p>
+              <div className="itinerary-list">
+                {travels.map((travel) => (
+                  <div key={travel.id} className="itinerary-item">
+                    <div className="itinerary-icon">
+                      {travel.travel_type === 'flight' && '✈️'}
+                      {travel.travel_type === 'train' && '🚆'}
+                      {travel.travel_type === 'bus' && '🚌'}
+                      {travel.travel_type === 'car' && '🚗'}
+                      {travel.travel_type === 'other' && '🚚'}
+                    </div>
+                    <div className="itinerary-content">
+                      <h4>{travel.from_location} → {travel.to_location}</h4>
+                      <p className="itinerary-type">{travel.travel_type.charAt(0).toUpperCase() + travel.travel_type.slice(1)}</p>
+                      {travel.departure_date && (
+                        <p className="itinerary-date">
+                          📅 Depart: {new Date(travel.departure_date).toLocaleString()}
+                        </p>
                       )}
-                      {attraction.notes && (
-                        <p className="attraction-notes">{attraction.notes}</p>
+                      {travel.arrival_date && (
+                        <p className="itinerary-date">
+                          📅 Arrive: {new Date(travel.arrival_date).toLocaleString()}
+                        </p>
                       )}
+                      {travel.confirmation_number && (
+                        <p className="itinerary-confirmation">🎫 {travel.confirmation_number}</p>
+                      )}
+                      {travel.notes && (
+                        <p className="itinerary-notes">💭 {travel.notes}</p>
+                      )}
+                    </div>
+                    <div className="itinerary-actions">
+                      <button
+                        className="edit-btn"
+                        onClick={() => {
+                          setEditingItem(travel);
+                          setTravelForm(travel);
+                          setShowTravelModal(true);
+                        }}
+                        title="Edit"
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        className="delete-btn"
+                        onClick={() => handleDeleteTravel(travel.id)}
+                        title="Delete"
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Stays Section */}
+          <div className="trip-plan-section">
+            <div className="section-header">
+              <h2>🏨 Stays ({stays.length})</h2>
+              <button className="add-item-btn" onClick={() => setShowStayModal(true)}>
+                ➕ Add Stay
+              </button>
+            </div>
+            {stays.length === 0 ? (
+              <div className="empty-state">
+                <p>No accommodations yet. Add hotels, hostels, rentals, etc.</p>
+              </div>
+            ) : (
+              <div className="itinerary-list">
+                {stays.map((stay) => (
+                  <div key={stay.id} className="itinerary-item">
+                    <div className="itinerary-icon">
+                      {stay.stay_type === 'hotel' && '🏨'}
+                      {stay.stay_type === 'hostel' && '🏠'}
+                      {stay.stay_type === 'rental' && '🏡'}
+                      {stay.stay_type === 'resort' && '🏖️'}
+                      {stay.stay_type === 'other' && '🛏️'}
+                    </div>
+                    <div className="itinerary-content">
+                      <h4>{stay.name}</h4>
+                      <p className="itinerary-type">{stay.stay_type.charAt(0).toUpperCase() + stay.stay_type.slice(1)}</p>
+                      {stay.location && (
+                        <p className="itinerary-location">📍 {stay.location}</p>
+                      )}
+                      {stay.check_in_date && (
+                        <p className="itinerary-date">
+                          📅 Check-in: {new Date(stay.check_in_date).toLocaleDateString()}
+                        </p>
+                      )}
+                      {stay.check_out_date && (
+                        <p className="itinerary-date">
+                          📅 Check-out: {new Date(stay.check_out_date).toLocaleDateString()}
+                        </p>
+                      )}
+                      {stay.confirmation_number && (
+                        <p className="itinerary-confirmation">🎫 {stay.confirmation_number}</p>
+                      )}
+                      {stay.notes && (
+                        <p className="itinerary-notes">💭 {stay.notes}</p>
+                      )}
+                    </div>
+                    <div className="itinerary-actions">
+                      <button
+                        className="edit-btn"
+                        onClick={() => {
+                          setEditingItem(stay);
+                          setStayForm(stay);
+                          setShowStayModal(true);
+                        }}
+                        title="Edit"
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        className="delete-btn"
+                        onClick={() => handleDeleteStay(stay.id)}
+                        title="Delete"
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Activities Section */}
+          <div className="trip-plan-section">
+            <div className="section-header">
+              <h2>🎯 Activities ({activities.length})</h2>
+              <button className="add-item-btn" onClick={() => setShowActivityModal(true)}>
+                ➕ Add Activity
+              </button>
+            </div>
+            {activities.length === 0 ? (
+              <div className="empty-state">
+                <p>No activities planned yet. Add tours, events, reservations, etc.</p>
+              </div>
+            ) : (
+              <div className="itinerary-list">
+                {activities.map((activity) => (
+                  <div key={activity.id} className="itinerary-item">
+                    <div className="itinerary-icon">
+                      {activity.activity_type === 'tour' && '🗺️'}
+                      {activity.activity_type === 'event' && '🎭'}
+                      {activity.activity_type === 'restaurant' && '🍽️'}
+                      {activity.activity_type === 'adventure' && '🏔️'}
+                      {activity.activity_type === 'other' && '🎯'}
+                    </div>
+                    <div className="itinerary-content">
+                      <h4>{activity.name}</h4>
+                      <p className="itinerary-type">{activity.activity_type.charAt(0).toUpperCase() + activity.activity_type.slice(1)}</p>
+                      {activity.location && (
+                        <p className="itinerary-location">📍 {activity.location}</p>
+                      )}
+                      {activity.scheduled_date && (
+                        <p className="itinerary-date">
+                          📅 {new Date(activity.scheduled_date).toLocaleString()}
+                        </p>
+                      )}
+                      {activity.duration_minutes && (
+                        <p className="itinerary-duration">⏱️ {activity.duration_minutes} minutes</p>
+                      )}
+                      {activity.confirmation_number && (
+                        <p className="itinerary-confirmation">🎫 {activity.confirmation_number}</p>
+                      )}
+                      {activity.notes && (
+                        <p className="itinerary-notes">💭 {activity.notes}</p>
+                      )}
+                    </div>
+                    <div className="itinerary-actions">
+                      <button
+                        className="edit-btn"
+                        onClick={() => {
+                          setEditingItem(activity);
+                          setActivityForm(activity);
+                          setShowActivityModal(true);
+                        }}
+                        title="Edit"
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        className="delete-btn"
+                        onClick={() => handleDeleteActivity(activity.id)}
+                        title="Delete"
+                      >
+                        🗑️
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -865,35 +1204,6 @@ function TripPlanDetails() {
                 </div>
               ))}
             </div>
-          </div>
-
-          {/* Stats Section */}
-          <div className="trip-plan-stats">
-            <div className="stat-card">
-              <div className="stat-icon">📍</div>
-              <div className="stat-info">
-                <div className="stat-number">{attractions.length}</div>
-                <div className="stat-label">Attractions</div>
-              </div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-icon">👥</div>
-              <div className="stat-info">
-                <div className="stat-number">{collaborators.length}</div>
-                <div className="stat-label">Members</div>
-              </div>
-            </div>
-            {tripPlan.start_date && tripPlan.end_date && (
-              <div className="stat-card">
-                <div className="stat-icon">📅</div>
-                <div className="stat-info">
-                  <div className="stat-number">
-                    {getDurationText(tripPlan.start_date, tripPlan.end_date).split(' ')[0]}
-                  </div>
-                  <div className="stat-label">Days</div>
-                </div>
-              </div>
-            )}
           </div>
         </div>
 
@@ -1034,6 +1344,333 @@ function TripPlanDetails() {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* Add/Edit Travel Modal */}
+        {showTravelModal && (
+          <div className="modal-overlay" onClick={() => {
+            setShowTravelModal(false);
+            setEditingItem(null);
+          }}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h2>{editingItem ? '✏️ Edit Travel' : '✈️ Add Travel'}</h2>
+                <button className="modal-close" onClick={() => {
+                  setShowTravelModal(false);
+                  setEditingItem(null);
+                }}>✕</button>
+              </div>
+
+              <div className="modal-form">
+                <div className="form-group">
+                  <label>Travel Type *</label>
+                  <select
+                    value={travelForm.travel_type}
+                    onChange={(e) => setTravelForm({...travelForm, travel_type: e.target.value})}
+                    required
+                  >
+                    <option value="flight">✈️ Flight</option>
+                    <option value="train">🚆 Train</option>
+                    <option value="bus">🚌 Bus</option>
+                    <option value="car">🚗 Car</option>
+                    <option value="other">🚚 Other</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>From Location *</label>
+                  <input
+                    type="text"
+                    value={travelForm.from_location}
+                    onChange={(e) => setTravelForm({...travelForm, from_location: e.target.value})}
+                    placeholder="e.g., Paris CDG Airport"
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>To Location *</label>
+                  <input
+                    type="text"
+                    value={travelForm.to_location}
+                    onChange={(e) => setTravelForm({...travelForm, to_location: e.target.value})}
+                    placeholder="e.g., London Heathrow Airport"
+                    required
+                  />
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Departure Date & Time</label>
+                    <input
+                      type="datetime-local"
+                      value={travelForm.departure_date}
+                      onChange={(e) => setTravelForm({...travelForm, departure_date: e.target.value})}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Arrival Date & Time</label>
+                    <input
+                      type="datetime-local"
+                      value={travelForm.arrival_date}
+                      onChange={(e) => setTravelForm({...travelForm, arrival_date: e.target.value})}
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>Confirmation Number</label>
+                  <input
+                    type="text"
+                    value={travelForm.confirmation_number}
+                    onChange={(e) => setTravelForm({...travelForm, confirmation_number: e.target.value})}
+                    placeholder="e.g., AB1234"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Notes</label>
+                  <textarea
+                    value={travelForm.notes}
+                    onChange={(e) => setTravelForm({...travelForm, notes: e.target.value})}
+                    placeholder="Add any additional notes..."
+                    rows="3"
+                  />
+                </div>
+
+                <div className="modal-actions">
+                  <button type="button" className="cancel-btn" onClick={() => {
+                    setShowTravelModal(false);
+                    setEditingItem(null);
+                  }}>
+                    Cancel
+                  </button>
+                  <button type="button" className="save-btn" onClick={handleSaveTravel}>
+                    {editingItem ? 'Update' : 'Add'} Travel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Add/Edit Stay Modal */}
+        {showStayModal && (
+          <div className="modal-overlay" onClick={() => {
+            setShowStayModal(false);
+            setEditingItem(null);
+          }}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h2>{editingItem ? '✏️ Edit Stay' : '🏨 Add Stay'}</h2>
+                <button className="modal-close" onClick={() => {
+                  setShowStayModal(false);
+                  setEditingItem(null);
+                }}>✕</button>
+              </div>
+
+              <div className="modal-form">
+                <div className="form-group">
+                  <label>Stay Type *</label>
+                  <select
+                    value={stayForm.stay_type}
+                    onChange={(e) => setStayForm({...stayForm, stay_type: e.target.value})}
+                    required
+                  >
+                    <option value="hotel">🏨 Hotel</option>
+                    <option value="hostel">🏠 Hostel</option>
+                    <option value="rental">🏡 Rental</option>
+                    <option value="resort">🏖️ Resort</option>
+                    <option value="other">🛏️ Other</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Name *</label>
+                  <input
+                    type="text"
+                    value={stayForm.name}
+                    onChange={(e) => setStayForm({...stayForm, name: e.target.value})}
+                    placeholder="e.g., Hilton Paris Opera"
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Location *</label>
+                  <input
+                    type="text"
+                    value={stayForm.location}
+                    onChange={(e) => setStayForm({...stayForm, location: e.target.value})}
+                    placeholder="e.g., 108 Rue Saint-Lazare, Paris"
+                    required
+                  />
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Check-in Date</label>
+                    <input
+                      type="date"
+                      value={stayForm.check_in_date}
+                      onChange={(e) => setStayForm({...stayForm, check_in_date: e.target.value})}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Check-out Date</label>
+                    <input
+                      type="date"
+                      value={stayForm.check_out_date}
+                      onChange={(e) => setStayForm({...stayForm, check_out_date: e.target.value})}
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>Confirmation Number</label>
+                  <input
+                    type="text"
+                    value={stayForm.confirmation_number}
+                    onChange={(e) => setStayForm({...stayForm, confirmation_number: e.target.value})}
+                    placeholder="e.g., RES123456"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Notes</label>
+                  <textarea
+                    value={stayForm.notes}
+                    onChange={(e) => setStayForm({...stayForm, notes: e.target.value})}
+                    placeholder="Add any additional notes..."
+                    rows="3"
+                  />
+                </div>
+
+                <div className="modal-actions">
+                  <button type="button" className="cancel-btn" onClick={() => {
+                    setShowStayModal(false);
+                    setEditingItem(null);
+                  }}>
+                    Cancel
+                  </button>
+                  <button type="button" className="save-btn" onClick={handleSaveStay}>
+                    {editingItem ? 'Update' : 'Add'} Stay
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Add/Edit Activity Modal */}
+        {showActivityModal && (
+          <div className="modal-overlay" onClick={() => {
+            setShowActivityModal(false);
+            setEditingItem(null);
+          }}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h2>{editingItem ? '✏️ Edit Activity' : '🎯 Add Activity'}</h2>
+                <button className="modal-close" onClick={() => {
+                  setShowActivityModal(false);
+                  setEditingItem(null);
+                }}>✕</button>
+              </div>
+
+              <div className="modal-form">
+                <div className="form-group">
+                  <label>Activity Type *</label>
+                  <select
+                    value={activityForm.activity_type}
+                    onChange={(e) => setActivityForm({...activityForm, activity_type: e.target.value})}
+                    required
+                  >
+                    <option value="tour">🗺️ Tour</option>
+                    <option value="event">🎭 Event</option>
+                    <option value="restaurant">🍽️ Restaurant</option>
+                    <option value="adventure">🏔️ Adventure</option>
+                    <option value="other">🎯 Other</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Name *</label>
+                  <input
+                    type="text"
+                    value={activityForm.name}
+                    onChange={(e) => setActivityForm({...activityForm, name: e.target.value})}
+                    placeholder="e.g., Eiffel Tower Guided Tour"
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Location</label>
+                  <input
+                    type="text"
+                    value={activityForm.location}
+                    onChange={(e) => setActivityForm({...activityForm, location: e.target.value})}
+                    placeholder="e.g., Champ de Mars, Paris"
+                  />
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Scheduled Date & Time</label>
+                    <input
+                      type="datetime-local"
+                      value={activityForm.scheduled_date}
+                      onChange={(e) => setActivityForm({...activityForm, scheduled_date: e.target.value})}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Duration (minutes)</label>
+                    <input
+                      type="number"
+                      value={activityForm.duration_minutes}
+                      onChange={(e) => setActivityForm({...activityForm, duration_minutes: e.target.value})}
+                      placeholder="e.g., 120"
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>Confirmation Number</label>
+                  <input
+                    type="text"
+                    value={activityForm.confirmation_number}
+                    onChange={(e) => setActivityForm({...activityForm, confirmation_number: e.target.value})}
+                    placeholder="e.g., TOUR789"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Notes</label>
+                  <textarea
+                    value={activityForm.notes}
+                    onChange={(e) => setActivityForm({...activityForm, notes: e.target.value})}
+                    placeholder="Add any additional notes..."
+                    rows="3"
+                  />
+                </div>
+
+                <div className="modal-actions">
+                  <button type="button" className="cancel-btn" onClick={() => {
+                    setShowActivityModal(false);
+                    setEditingItem(null);
+                  }}>
+                    Cancel
+                  </button>
+                  <button type="button" className="save-btn" onClick={handleSaveActivity}>
+                    {editingItem ? 'Update' : 'Add'} Activity
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         )}
