@@ -1,8 +1,8 @@
 .trip-plan-details {
   max-width: 1600px;
-  margin: 20px auto;
-  padding: 0 20px;
-  height: calc(100vh - 100px);
+  margin: 0 auto;
+  padding: 84px 20px 20px 20px;
+  height: calc(100vh - 84px);
   overflow: hidden;
 }
 
@@ -79,24 +79,26 @@
 }
 
 .toggle-chat-btn {
-  position: fixed;
-  top: 74px;
-  right: 30px;
-  padding: 10px 18px;
-  background: rgba(255, 255, 255, 0.95);
+  position: absolute;
+  top: -16px;
+  right: 20px;
+  padding: 8px 12px;
+  background: white;
   color: var(--primary);
   border: 2px solid var(--primary);
-  border-radius: 25px;
+  border-radius: 20px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  z-index: 1001;
+  z-index: 10;
   display: flex;
   align-items: center;
   gap: 6px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  min-width: 36px;
+  height: 36px;
+  justify-content: center;
 }
 
 .toggle-chat-btn:hover {
@@ -104,6 +106,13 @@
   color: white;
   transform: translateY(-2px);
   box-shadow: 0 4px 16px rgba(5, 150, 105, 0.3);
+}
+
+.show-chat-btn {
+  position: static;
+  margin: 20px auto;
+  display: flex;
+  width: fit-content;
 }
 
 /* Hero Section */
@@ -131,12 +140,27 @@
 .trip-plan-hero-location {
   font-size: 1.2rem;
   opacity: 0.95;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.trip-plan-hero-location .fi {
+  font-size: 1.5rem;
+  border-radius: 3px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .trip-plan-hero-dates {
   font-size: 1.1rem;
   opacity: 0.9;
   font-weight: 500;
+}
+
+.no-dates-set {
+  opacity: 0.7;
+  font-style: italic;
 }
 
 .shared-indicator {
@@ -149,8 +173,16 @@
   margin-top: 10px;
 }
 
-.invite-btn-hero {
+.hero-action-buttons {
   margin-top: 20px;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.invite-btn-hero,
+.edit-plan-btn-hero {
   padding: 12px 24px;
   background: rgba(255, 255, 255, 0.95);
   color: #667eea;
@@ -163,11 +195,151 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.invite-btn-hero:hover {
+.invite-btn-hero:hover,
+.edit-plan-btn-hero:hover {
   background: white;
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
   color: #764ba2;
+}
+
+.edit-plan-btn-hero {
+  color: #059669;
+}
+
+.edit-plan-btn-hero:hover {
+  color: #047857;
+}
+
+/* Hero Members Section */
+.hero-members-section {
+  margin-top: 30px;
+  padding-top: 25px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.hero-members-title {
+  font-size: 1.2rem;
+  margin: 0 0 20px 0;
+  font-weight: 600;
+  color: white;
+  text-align: left;
+}
+
+.hero-collaborators-grid {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.hero-collaborator-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.hero-collaborator-card:hover {
+  transform: translateY(-3px);
+}
+
+.hero-collaborator-card:active {
+  transform: translateY(-1px);
+}
+
+.hero-collaborator-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+  position: relative;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.hero-collaborator-card:hover .hero-collaborator-avatar {
+  border-color: rgba(255, 255, 255, 0.8);
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+.hero-collaborator-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero-collaborator-avatar .avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.3);
+  font-size: 32px;
+}
+
+.hero-owner-badge {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  background: rgba(255, 215, 0, 0.95);
+  border: 2px solid white;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.hero-collaborator-name {
+  font-weight: 600;
+  font-size: 13px;
+  color: white;
+  text-align: center;
+  max-width: 80px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.hero-remove-collab-btn {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: rgba(220, 38, 38, 0.95);
+  color: white;
+  border: 2px solid white;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  opacity: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.hero-collaborator-card:hover .hero-remove-collab-btn {
+  opacity: 1;
+}
+
+.hero-remove-collab-btn:hover {
+  background: rgba(220, 38, 38, 1);
+  transform: scale(1.15);
 }
 
 /* Sections */
@@ -415,6 +587,7 @@
 /* Mobile Responsive */
 @media (max-width: 1024px) {
   .trip-plan-details {
+    padding-top: 80px;
     height: auto;
     overflow: visible;
   }
@@ -440,8 +613,11 @@
 
   .toggle-chat-btn {
     right: 15px;
-    padding: 8px 14px;
+    top: -14px;
+    padding: 6px 10px;
     font-size: 13px;
+    min-width: 32px;
+    height: 32px;
   }
 }
 
@@ -455,7 +631,7 @@
 
   .trip-plan-details {
     margin: 10px;
-    padding: 0 10px;
+    padding: 85px 10px 10px 10px;
   }
 
   .trip-plan-hero {
@@ -469,6 +645,25 @@
   .trip-plan-hero-info {
     flex-direction: column;
     gap: 10px;
+  }
+
+  .hero-collaborators-grid {
+    gap: 15px;
+  }
+
+  .hero-collaborator-avatar {
+    width: 56px;
+    height: 56px;
+  }
+
+  .hero-collaborator-name {
+    font-size: 12px;
+    max-width: 70px;
+  }
+
+  .hero-members-title {
+    font-size: 1.1rem;
+    text-align: center;
   }
 
   .trip-plan-section {
@@ -511,8 +706,28 @@
 
   .toggle-chat-btn {
     right: 10px;
-    padding: 6px 12px;
+    top: -12px;
+    padding: 6px 10px;
     font-size: 12px;
+    min-width: 28px;
+    height: 28px;
+  }
+}
+
+@media (max-width: 480px) {
+  .trip-plan-details {
+    padding-top: 75px;
+  }
+
+  .trip-plan-hero-title {
+    font-size: 1.5rem;
+  }
+
+  .back-btn {
+    left: 10px;
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
   }
 }
 
@@ -592,7 +807,9 @@
   margin-bottom: 8px;
 }
 
-.form-group input {
+.form-group input,
+.form-group select,
+.form-group textarea {
   width: 100%;
   padding: 12px 16px;
   background: white;
@@ -602,12 +819,65 @@
   font-size: 14px;
   transition: all 0.2s ease;
   box-sizing: border-box;
+  font-family: inherit;
 }
 
-.form-group input:focus {
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
   outline: none;
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* Place Search Suggestions */
+.place-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  margin-top: 4px;
+  max-height: 250px;
+  overflow-y: auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.place-suggestion-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.place-suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.place-suggestion-item:hover {
+  background: #f8f9fa;
+}
+
+.place-suggestion-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.place-suggestion-address {
+  font-size: 12px;
+  color: #666;
 }
 
 /* User Search Results */
@@ -764,6 +1034,7 @@
   flex-direction: column;
   height: 100%;
   flex-shrink: 0;
+  position: relative;
 }
 
 .chat-header {
@@ -782,12 +1053,53 @@
   font-weight: 600;
 }
 
+.chat-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .chat-members-count {
   font-size: 12px;
   background: rgba(255, 255, 255, 0.2);
   padding: 4px 12px;
   border-radius: 12px;
   font-weight: 500;
+}
+
+.chat-refresh-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.chat-refresh-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.3);
+  transform: rotate(180deg);
+}
+
+.chat-refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .chat-messages {
@@ -1081,15 +1393,40 @@
 .itinerary-date,
 .itinerary-duration,
 .itinerary-confirmation,
+.itinerary-url,
 .itinerary-notes {
   font-size: 14px;
   color: #666;
   margin: 0;
 }
 
+.itinerary-location .location-link {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.itinerary-location .location-link:hover {
+  color: #047857;
+  text-decoration: underline;
+}
+
 .itinerary-confirmation {
   font-family: 'Courier New', monospace;
   font-weight: 600;
+}
+
+.itinerary-url a {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.itinerary-url a:hover {
+  color: #047857;
+  text-decoration: underline;
 }
 
 .itinerary-actions {

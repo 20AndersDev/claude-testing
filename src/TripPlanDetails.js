@@ -1,58 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
+import { useLoadScript } from '@react-google-maps/api';
 import Navbar from './Navbar';
+import { getCountryCode } from './utils/countryHelpers';
 import './TripPlanDetails.css';
+
+// Define libraries outside component to prevent reloading
+const GOOGLE_MAPS_LIBRARIES = ['places'];
 
 function TripPlanDetails() {
   const { planId } = useParams();
   const navigate = useNavigate();
 
-  const countryFlags = {
-    "Afghanistan": "🇦🇫", "Albania": "🇦🇱", "Algeria": "🇩🇿", "Andorra": "🇦🇩", "Angola": "🇦🇴",
-    "Antigua and Barbuda": "🇦🇬", "Argentina": "🇦🇷", "Armenia": "🇦🇲", "Australia": "🇦🇺",
-    "Austria": "🇦🇹", "Azerbaijan": "🇦🇿", "Bahamas": "🇧🇸", "Bahrain": "🇧🇭", "Bangladesh": "🇧🇩",
-    "Barbados": "🇧🇧", "Belarus": "🇧🇾", "Belgium": "🇧🇪", "Belize": "🇧🇿", "Benin": "🇧🇯",
-    "Bhutan": "🇧🇹", "Bolivia": "🇧🇴", "Bosnia and Herzegovina": "🇧🇦", "Botswana": "🇧🇼",
-    "Brazil": "🇧🇷", "Brunei": "🇧🇳", "Bulgaria": "🇧🇬", "Burkina Faso": "🇧🇫", "Burundi": "🇧🇮",
-    "Cabo Verde": "🇨🇻", "Cambodia": "🇰🇭", "Cameroon": "🇨🇲", "Canada": "🇨🇦",
-    "Central African Republic": "🇨🇫", "Chad": "🇹🇩", "Chile": "🇨🇱", "China": "🇨🇳",
-    "Colombia": "🇨🇴", "Comoros": "🇰🇲", "Congo": "🇨🇬", "Costa Rica": "🇨🇷", "Croatia": "🇭🇷",
-    "Cuba": "🇨🇺", "Cyprus": "🇨🇾", "Czech Republic": "🇨🇿", "Denmark": "🇩🇰", "Djibouti": "🇩🇯",
-    "Dominica": "🇩🇲", "Dominican Republic": "🇩🇴", "Ecuador": "🇪🇨", "Egypt": "🇪🇬",
-    "El Salvador": "🇸🇻", "Equatorial Guinea": "🇬🇶", "Eritrea": "🇪🇷", "Estonia": "🇪🇪",
-    "Eswatini": "🇸🇿", "Ethiopia": "🇪🇹", "Fiji": "🇫🇯", "Finland": "🇫🇮", "France": "🇫🇷",
-    "Gabon": "🇬🇦", "Gambia": "🇬🇲", "Georgia": "🇬🇪", "Germany": "🇩🇪", "Ghana": "🇬🇭",
-    "Greece": "🇬🇷", "Grenada": "🇬🇩", "Guatemala": "🇬🇹", "Guinea": "🇬🇳", "Guinea-Bissau": "🇬🇼",
-    "Guyana": "🇬🇾", "Haiti": "🇭🇹", "Honduras": "🇭🇳", "Hungary": "🇭🇺", "Iceland": "🇮🇸",
-    "India": "🇮🇳", "Indonesia": "🇮🇩", "Iran": "🇮🇷", "Iraq": "🇮🇶", "Ireland": "🇮🇪",
-    "Israel": "🇮🇱", "Italy": "🇮🇹", "Jamaica": "🇯🇲", "Japan": "🇯🇵", "Jordan": "🇯🇴",
-    "Kazakhstan": "🇰🇿", "Kenya": "🇰🇪", "Kiribati": "🇰🇮", "Kosovo": "🇽🇰", "Kuwait": "🇰🇼",
-    "Kyrgyzstan": "🇰🇬", "Laos": "🇱🇦", "Latvia": "🇱🇻", "Lebanon": "🇱🇧", "Lesotho": "🇱🇸",
-    "Liberia": "🇱🇷", "Libya": "🇱🇾", "Liechtenstein": "🇱🇮", "Lithuania": "🇱🇹", "Luxembourg": "🇱🇺",
-    "Madagascar": "🇲🇬", "Malawi": "🇲🇼", "Malaysia": "🇲🇾", "Maldives": "🇲🇻", "Mali": "🇲🇱",
-    "Malta": "🇲🇹", "Marshall Islands": "🇲🇭", "Mauritania": "🇲🇷", "Mauritius": "🇲🇺",
-    "Mexico": "🇲🇽", "Micronesia": "🇫🇲", "Moldova": "🇲🇩", "Monaco": "🇲🇨", "Mongolia": "🇲🇳",
-    "Montenegro": "🇲🇪", "Morocco": "🇲🇦", "Mozambique": "🇲🇿", "Myanmar": "🇲🇲", "Namibia": "🇳🇦",
-    "Nauru": "🇳🇷", "Nepal": "🇳🇵", "Netherlands": "🇳🇱", "New Zealand": "🇳🇿", "Nicaragua": "🇳🇮",
-    "Niger": "🇳🇪", "Nigeria": "🇳🇬", "North Korea": "🇰🇵", "North Macedonia": "🇲🇰", "Norway": "🇳🇴",
-    "Oman": "🇴🇲", "Pakistan": "🇵🇰", "Palau": "🇵🇼", "Palestine": "🇵🇸", "Panama": "🇵🇦",
-    "Papua New Guinea": "🇵🇬", "Paraguay": "🇵🇾", "Peru": "🇵🇪", "Philippines": "🇵🇭",
-    "Poland": "🇵🇱", "Portugal": "🇵🇹", "Qatar": "🇶🇦", "Romania": "🇷🇴", "Russia": "🇷🇺",
-    "Rwanda": "🇷🇼", "Saint Kitts and Nevis": "🇰🇳", "Saint Lucia": "🇱🇨",
-    "Saint Vincent and the Grenadines": "🇻🇨", "Samoa": "🇼🇸", "San Marino": "🇸🇲",
-    "Sao Tome and Principe": "🇸🇹", "Saudi Arabia": "🇸🇦", "Senegal": "🇸🇳", "Serbia": "🇷🇸",
-    "Seychelles": "🇸🇨", "Sierra Leone": "🇸🇱", "Singapore": "🇸🇬", "Slovakia": "🇸🇰",
-    "Slovenia": "🇸🇮", "Solomon Islands": "🇸🇧", "Somalia": "🇸🇴", "South Africa": "🇿🇦",
-    "South Korea": "🇰🇷", "South Sudan": "🇸🇸", "Spain": "🇪🇸", "Sri Lanka": "🇱🇰", "Sudan": "🇸🇩",
-    "Suriname": "🇸🇷", "Sweden": "🇸🇪", "Switzerland": "🇨🇭", "Syria": "🇸🇾", "Taiwan": "🇹🇼",
-    "Tajikistan": "🇹🇯", "Tanzania": "🇹🇿", "Thailand": "🇹🇭", "Timor-Leste": "🇹🇱", "Togo": "🇹🇬",
-    "Tonga": "🇹🇴", "Trinidad and Tobago": "🇹🇹", "Tunisia": "🇹🇳", "Turkey": "🇹🇷",
-    "Turkmenistan": "🇹🇲", "Tuvalu": "🇹🇻", "Uganda": "🇺🇬", "Ukraine": "🇺🇦",
-    "United Arab Emirates": "🇦🇪", "United Kingdom": "🇬🇧", "United States": "🇺🇸",
-    "Uruguay": "🇺🇾", "Uzbekistan": "🇺🇿", "Vanuatu": "🇻🇺", "Vatican City": "🇻🇦",
-    "Venezuela": "🇻🇪", "Vietnam": "🇻🇳", "Yemen": "🇾🇪", "Zambia": "🇿🇲", "Zimbabwe": "🇿🇼"
-  };
+  const { isLoaded } = useLoadScript({
+    googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_PLACES_API_KEY,
+    libraries: GOOGLE_MAPS_LIBRARIES,
+  });
+
   const [tripPlan, setTripPlan] = useState(null);
   const [collaborators, setCollaborators] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -65,7 +30,40 @@ function TripPlanDetails() {
   const [newMessage, setNewMessage] = useState('');
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [showChat, setShowChat] = useState(true);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editForm, setEditForm] = useState({
+    name: '',
+    country: '',
+    start_date: '',
+    end_date: '',
+    description: ''
+  });
   const messagesEndRef = React.useRef(null);
+
+  const countries = [
+    "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Antigua and Barbuda", "Argentina", "Armenia",
+    "Australia", "Austria", "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium",
+    "Belize", "Benin", "Bhutan", "Bolivia", "Bosnia and Herzegovina", "Botswana", "Brazil", "Brunei", "Bulgaria",
+    "Burkina Faso", "Burundi", "Cabo Verde", "Cambodia", "Cameroon", "Canada", "Central African Republic", "Chad",
+    "Chile", "China", "Colombia", "Comoros", "Congo", "Costa Rica", "Croatia", "Cuba", "Cyprus", "Czech Republic",
+    "Denmark", "Djibouti", "Dominica", "Dominican Republic", "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea",
+    "Eritrea", "Estonia", "Eswatini", "Ethiopia", "Fiji", "Finland", "France", "Gabon", "Gambia", "Georgia",
+    "Germany", "Ghana", "Greece", "Grenada", "Guatemala", "Guinea", "Guinea-Bissau", "Guyana", "Haiti", "Honduras",
+    "Hungary", "Iceland", "India", "Indonesia", "Iran", "Iraq", "Ireland", "Israel", "Italy", "Jamaica", "Japan",
+    "Jordan", "Kazakhstan", "Kenya", "Kiribati", "Kosovo", "Kuwait", "Kyrgyzstan", "Laos", "Latvia", "Lebanon",
+    "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg", "Madagascar", "Malawi", "Malaysia",
+    "Maldives", "Mali", "Malta", "Marshall Islands", "Mauritania", "Mauritius", "Mexico", "Micronesia", "Moldova",
+    "Monaco", "Mongolia", "Montenegro", "Morocco", "Mozambique", "Myanmar", "Namibia", "Nauru", "Nepal", "Netherlands",
+    "New Zealand", "Nicaragua", "Niger", "Nigeria", "North Korea", "North Macedonia", "Norway", "Oman", "Pakistan",
+    "Palau", "Palestine", "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Poland", "Portugal",
+    "Qatar", "Romania", "Russia", "Rwanda", "Saint Kitts and Nevis", "Saint Lucia", "Saint Vincent and the Grenadines",
+    "Samoa", "San Marino", "Sao Tome and Principe", "Saudi Arabia", "Senegal", "Serbia", "Seychelles", "Sierra Leone",
+    "Singapore", "Slovakia", "Slovenia", "Solomon Islands", "Somalia", "South Africa", "South Korea", "South Sudan",
+    "Spain", "Sri Lanka", "Sudan", "Suriname", "Sweden", "Switzerland", "Syria", "Taiwan", "Tajikistan", "Tanzania",
+    "Thailand", "Timor-Leste", "Togo", "Tonga", "Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan", "Tuvalu",
+    "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom", "United States", "Uruguay", "Uzbekistan", "Vanuatu",
+    "Vatican City", "Venezuela", "Vietnam", "Yemen", "Zambia", "Zimbabwe"
+  ];
 
   // Itinerary states
   const [travels, setTravels] = useState([]);
@@ -85,7 +83,8 @@ function TripPlanDetails() {
     departure_date: '',
     arrival_date: '',
     confirmation_number: '',
-    notes: ''
+    notes: '',
+    url: ''
   });
 
   const [stayForm, setStayForm] = useState({
@@ -95,7 +94,8 @@ function TripPlanDetails() {
     check_in_date: '',
     check_out_date: '',
     confirmation_number: '',
-    notes: ''
+    notes: '',
+    url: ''
   });
 
   const [activityForm, setActivityForm] = useState({
@@ -105,8 +105,14 @@ function TripPlanDetails() {
     scheduled_date: '',
     duration_minutes: '',
     confirmation_number: '',
-    notes: ''
+    notes: '',
+    url: ''
   });
+
+  // Place search suggestions
+  const [placeSuggestions, setPlaceSuggestions] = useState([]);
+  const [showPlaceSuggestions, setShowPlaceSuggestions] = useState(false);
+  const [searchingPlace, setSearchingPlace] = useState(false);
 
   useEffect(() => {
     getUser();
@@ -132,20 +138,45 @@ function TripPlanDetails() {
             filter: `trip_plan_id=eq.${planId}`
           },
           async (payload) => {
-            console.log('New message received:', payload);
+            console.log('🔔 NEW MESSAGE EVENT RECEIVED!', payload);
+            console.log('Message details:', {
+              id: payload.new.id,
+              message: payload.new.message,
+              user_id: payload.new.user_id,
+              trip_plan_id: payload.new.trip_plan_id
+            });
+
             // Fetch the user profile for the new message
-            const { data: profileData } = await supabase
+            const { data: profileData, error: profileError } = await supabase
               .from('profiles')
               .select('username, full_name, avatar_url')
               .eq('id', payload.new.user_id)
               .single();
+
+            if (profileError) {
+              console.error('Error fetching profile:', profileError);
+            }
 
             const messageWithProfile = {
               ...payload.new,
               profiles: profileData
             };
 
-            setMessages((prevMessages) => [...prevMessages, messageWithProfile]);
+            console.log('Adding message to state:', messageWithProfile);
+            setMessages((prevMessages) => {
+              console.log('Previous messages count:', prevMessages.length);
+
+              // Check if message already exists (to prevent duplicates)
+              const messageExists = prevMessages.some(msg => msg.id === messageWithProfile.id);
+              if (messageExists) {
+                console.log('⚠️ Message already exists in state, skipping duplicate');
+                return prevMessages;
+              }
+
+              const newMessages = [...prevMessages, messageWithProfile];
+              console.log('New messages count:', newMessages.length);
+              return newMessages;
+            });
           }
         )
         .on(
@@ -203,10 +234,14 @@ function TripPlanDetails() {
             );
           }
         )
-        .subscribe((status, err) => {
-          console.log('Subscription status:', status);
-          if (err) {
-            console.error('Subscription error:', err);
+        .subscribe((status) => {
+          console.log('Real-time subscription status:', status);
+          if (status === 'SUBSCRIBED') {
+            console.log('✓ Successfully subscribed to real-time updates');
+          } else if (status === 'CHANNEL_ERROR') {
+            console.error('✗ Real-time subscription error');
+          } else if (status === 'TIMED_OUT') {
+            console.error('✗ Real-time subscription timed out');
           }
         });
 
@@ -535,6 +570,10 @@ function TripPlanDetails() {
     e.preventDefault();
     if (!newMessage.trim()) return;
 
+    console.log('📤 Sending message:', newMessage.trim());
+    console.log('Trip Plan ID:', planId);
+    console.log('User ID:', user.id);
+
     try {
       const { data, error } = await supabase
         .from('trip_plan_messages')
@@ -547,6 +586,7 @@ function TripPlanDetails() {
         .single();
 
       if (error) {
+        console.error('❌ Error inserting message:', error);
         // If table doesn't exist yet, show helpful message
         if (error.code === 'PGRST204' || error.code === 'PGRST205' || error.code === 'PGRST200') {
           alert('Chat feature not yet enabled. Please run the database migration in Supabase and reload the schema cache.');
@@ -555,6 +595,8 @@ function TripPlanDetails() {
         throw error;
       }
 
+      console.log('✅ Message inserted successfully:', data);
+
       // Fetch the user profile for the new message
       const { data: profileData } = await supabase
         .from('profiles')
@@ -562,14 +604,17 @@ function TripPlanDetails() {
         .eq('id', user.id)
         .single();
 
-      // Manually add the message to state
+      // Manually add the message to state (for immediate feedback)
       const messageWithProfile = {
         ...data,
         profiles: profileData
       };
 
+      console.log('Adding own message to UI');
       setMessages((prevMessages) => [...prevMessages, messageWithProfile]);
       setNewMessage('');
+
+      console.log('🔊 Real-time subscription should now broadcast this INSERT to other users');
     } catch (error) {
       console.error('Error sending message:', error);
       alert('Failed to send message. Please try again.');
@@ -726,12 +771,14 @@ function TripPlanDetails() {
         departure_date: '',
         arrival_date: '',
         confirmation_number: '',
-        notes: ''
+        notes: '',
+        url: ''
       });
       fetchTravels();
     } catch (error) {
       console.error('Error saving travel:', error);
-      alert('Failed to save travel entry');
+      console.error('Error details:', error.message, error.details, error.hint);
+      alert(`Failed to save travel entry: ${error.message || 'Unknown error'}`);
     }
   };
 
@@ -783,12 +830,14 @@ function TripPlanDetails() {
         check_in_date: '',
         check_out_date: '',
         confirmation_number: '',
-        notes: ''
+        notes: '',
+        url: ''
       });
       fetchStays();
     } catch (error) {
       console.error('Error saving stay:', error);
-      alert('Failed to save stay entry');
+      console.error('Error details:', error.message, error.details, error.hint);
+      alert(`Failed to save stay entry: ${error.message || 'Unknown error'}`);
     }
   };
 
@@ -840,12 +889,14 @@ function TripPlanDetails() {
         scheduled_date: '',
         duration_minutes: '',
         confirmation_number: '',
-        notes: ''
+        notes: '',
+        url: ''
       });
       fetchActivities();
     } catch (error) {
       console.error('Error saving activity:', error);
-      alert('Failed to save activity entry');
+      console.error('Error details:', error.message, error.details, error.hint);
+      alert(`Failed to save activity entry: ${error.message || 'Unknown error'}`);
     }
   };
 
@@ -863,6 +914,195 @@ function TripPlanDetails() {
     } catch (error) {
       console.error('Error deleting activity:', error);
       alert('Failed to delete activity entry');
+    }
+  };
+
+  // Trip Plan Edit handlers
+  const openEditModal = () => {
+    setEditForm({
+      name: tripPlan.name || '',
+      country: tripPlan.country || '',
+      start_date: tripPlan.start_date || '',
+      end_date: tripPlan.end_date || '',
+      description: tripPlan.description || ''
+    });
+    setShowEditModal(true);
+  };
+
+  const handleUpdateTripPlan = async () => {
+    try {
+      const { error } = await supabase
+        .from('trip_plans')
+        .update({
+          name: editForm.name,
+          country: editForm.country,
+          start_date: editForm.start_date || null,
+          end_date: editForm.end_date || null,
+          description: editForm.description,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', planId);
+
+      if (error) throw error;
+
+      // Update local state
+      setTripPlan({
+        ...tripPlan,
+        name: editForm.name,
+        country: editForm.country,
+        start_date: editForm.start_date || null,
+        end_date: editForm.end_date || null,
+        description: editForm.description
+      });
+
+      setShowEditModal(false);
+      alert('Trip plan updated successfully!');
+    } catch (error) {
+      console.error('Error updating trip plan:', error);
+      alert('Failed to update trip plan. Please try again.');
+    }
+  };
+
+  // Google Places search and details
+  const searchPlaces = async (query, types = []) => {
+    if (!isLoaded || !window.google || !window.google.maps || !window.google.maps.places) {
+      console.log('Google Maps not loaded yet');
+      return;
+    }
+
+    if (!query || query.trim().length < 2) {
+      setPlaceSuggestions([]);
+      setShowPlaceSuggestions(false);
+      return;
+    }
+
+    setSearchingPlace(true);
+
+    try {
+      const request = {
+        input: query,
+        ...(types.length > 0 && { includedPrimaryTypes: types }),
+        language: 'en',
+      };
+
+      const { suggestions } = await window.google.maps.places.AutocompleteSuggestion.fetchAutocompleteSuggestions(request);
+
+      if (suggestions && suggestions.length > 0) {
+        const formattedResults = suggestions.slice(0, 5).map(suggestion => {
+          const placePrediction = suggestion.placePrediction;
+          return {
+            place_id: placePrediction?.placeId || Math.random().toString(),
+            name: placePrediction?.structuredFormat?.mainText?.text || placePrediction?.text?.text || '',
+            address: placePrediction?.structuredFormat?.secondaryText?.text || ''
+          };
+        });
+        setPlaceSuggestions(formattedResults);
+        setShowPlaceSuggestions(true);
+      } else {
+        setPlaceSuggestions([]);
+      }
+    } catch (error) {
+      console.error('Error fetching place suggestions:', error);
+      // Fallback to old AutocompleteService
+      try {
+        const service = new window.google.maps.places.AutocompleteService();
+        service.getPlacePredictions(
+          {
+            input: query,
+            ...(types.length > 0 && { types: types })
+          },
+          (predictions, status) => {
+            if (status === window.google.maps.places.PlacesServiceStatus.OK && predictions) {
+              const formattedResults = predictions.slice(0, 5).map(prediction => ({
+                place_id: prediction.place_id,
+                name: prediction.structured_formatting?.main_text || prediction.description,
+                address: prediction.structured_formatting?.secondary_text || ''
+              }));
+              setPlaceSuggestions(formattedResults);
+              setShowPlaceSuggestions(true);
+            }
+          }
+        );
+      } catch (fallbackError) {
+        console.error('Fallback error:', fallbackError);
+      }
+    } finally {
+      setSearchingPlace(false);
+    }
+  };
+
+  const fetchPlaceDetails = async (placeId, formType) => {
+    if (!window.google || !window.google.maps || !window.google.maps.places) return;
+
+    return new Promise((resolve, reject) => {
+      const map = new window.google.maps.Map(document.createElement('div'));
+      const service = new window.google.maps.places.PlacesService(map);
+
+      service.getDetails(
+        {
+          placeId: placeId,
+          fields: ['name', 'formatted_address', 'website', 'formatted_phone_number', 'international_phone_number']
+        },
+        (place, status) => {
+          if (status === window.google.maps.places.PlacesServiceStatus.OK && place) {
+            resolve(place);
+          } else {
+            reject(new Error('Failed to fetch place details'));
+          }
+        }
+      );
+    });
+  };
+
+  const handlePlaceSelection = async (place, formType) => {
+    setShowPlaceSuggestions(false);
+    setPlaceSuggestions([]);
+
+    try {
+      const placeDetails = await fetchPlaceDetails(place.place_id, formType);
+
+      if (formType === 'travel') {
+        setTravelForm(prev => ({
+          ...prev,
+          to_location: placeDetails.name || place.name,
+          url: placeDetails.website || prev.url
+        }));
+      } else if (formType === 'stay') {
+        setStayForm(prev => ({
+          ...prev,
+          name: placeDetails.name || place.name,
+          location: placeDetails.formatted_address || place.address,
+          url: placeDetails.website || prev.url
+        }));
+      } else if (formType === 'activity') {
+        setActivityForm(prev => ({
+          ...prev,
+          name: placeDetails.name || place.name,
+          location: placeDetails.formatted_address || place.address,
+          url: placeDetails.website || prev.url
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching place details:', error);
+      // Fallback: use basic info from autocomplete
+      if (formType === 'travel') {
+        setTravelForm(prev => ({
+          ...prev,
+          to_location: place.name
+        }));
+      } else if (formType === 'stay') {
+        setStayForm(prev => ({
+          ...prev,
+          name: place.name,
+          location: place.address
+        }));
+      } else if (formType === 'activity') {
+        setActivityForm(prev => ({
+          ...prev,
+          name: place.name,
+          location: place.address
+        }));
+      }
     }
   };
 
@@ -903,14 +1143,6 @@ function TripPlanDetails() {
           ←
         </button>
 
-        <button
-          className="toggle-chat-btn"
-          onClick={() => setShowChat(!showChat)}
-          title={showChat ? "Hide chat" : "Show chat"}
-        >
-          {showChat ? '💬 Hide Chat' : '💬 Show Chat'}
-        </button>
-
         <div className="trip-plan-details-wrapper">
           <div className="trip-plan-details-container">
           {/* Hero Section */}
@@ -920,29 +1152,87 @@ function TripPlanDetails() {
               <div className="trip-plan-hero-info">
                 {tripPlan.country && (
                   <div className="trip-plan-hero-location">
-                    {countryFlags[tripPlan.country] || '🌍'} {tripPlan.country}
+                    <span className={`fi fi-${getCountryCode(tripPlan.country)}`}></span>
+                    {tripPlan.country}
                   </div>
                 )}
-                {(tripPlan.start_date || tripPlan.end_date) && (
-                  <div className="trip-plan-hero-dates">
-                    📅 {formatDate(tripPlan.start_date)}
-                    {tripPlan.start_date && tripPlan.end_date && ' - '}
-                    {formatDate(tripPlan.end_date)}
-                    {getDurationText(tripPlan.start_date, tripPlan.end_date) &&
-                      ` (${getDurationText(tripPlan.start_date, tripPlan.end_date)})`
-                    }
-                  </div>
-                )}
+                <div className="trip-plan-hero-dates">
+                  {tripPlan.start_date || tripPlan.end_date ? (
+                    <>
+                      📅 {formatDate(tripPlan.start_date)}
+                      {tripPlan.start_date && tripPlan.end_date && ' - '}
+                      {formatDate(tripPlan.end_date)}
+                      {getDurationText(tripPlan.start_date, tripPlan.end_date) &&
+                        ` (${getDurationText(tripPlan.start_date, tripPlan.end_date)})`
+                      }
+                    </>
+                  ) : (
+                    <span className="no-dates-set">📅 No dates set</span>
+                  )}
+                </div>
               </div>
               {isOwner ? (
-                <button className="invite-btn-hero" onClick={openInviteModal}>
-                  👥 Invite Collaborators
-                </button>
+                <div className="hero-action-buttons">
+                  <button className="edit-plan-btn-hero" onClick={openEditModal}>
+                    ✏️ Edit Details
+                  </button>
+                  <button className="invite-btn-hero" onClick={openInviteModal}>
+                    👥 Invite Collaborators
+                  </button>
+                </div>
               ) : (
                 <div className="shared-indicator">
                   👥 Shared trip plan
                 </div>
               )}
+            </div>
+
+            {/* Members Section in Header */}
+            <div className="hero-members-section">
+              <h3 className="hero-members-title">👥 Members ({collaborators.length})</h3>
+              <div className="hero-collaborators-grid">
+                {collaborators.map((collab) => (
+                  <div
+                    key={collab.id}
+                    className="hero-collaborator-card"
+                    onClick={() => {
+                      if (collab.user_id === user?.id) {
+                        navigate('/profile');
+                      } else {
+                        navigate(`/profile/${collab.user_id}`);
+                      }
+                    }}
+                    title={`View ${collab.profiles?.username || 'User'}'s profile`}
+                  >
+                    <div className="hero-collaborator-avatar">
+                      {collab.profiles?.avatar_url ? (
+                        <img src={collab.profiles.avatar_url} alt={collab.profiles.username} />
+                      ) : (
+                        <div className="avatar-placeholder">👤</div>
+                      )}
+                      {collab.role === 'owner' && (
+                        <div className="hero-owner-badge">👑</div>
+                      )}
+                    </div>
+                    <div className="hero-collaborator-name">
+                      {collab.profiles?.username || 'User'}
+                      {collab.user_id === user?.id && ' (You)'}
+                    </div>
+                    {isOwner && collab.role !== 'owner' && (
+                      <button
+                        className="hero-remove-collab-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRemoveCollaborator(collab.id);
+                        }}
+                        title="Remove collaborator"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -994,6 +1284,11 @@ function TripPlanDetails() {
                       )}
                       {travel.confirmation_number && (
                         <p className="itinerary-confirmation">🎫 {travel.confirmation_number}</p>
+                      )}
+                      {travel.url && (
+                        <p className="itinerary-url">
+                          🔗 <a href={travel.url} target="_blank" rel="noopener noreferrer">View Details</a>
+                        </p>
                       )}
                       {travel.notes && (
                         <p className="itinerary-notes">💭 {travel.notes}</p>
@@ -1052,7 +1347,16 @@ function TripPlanDetails() {
                       <h4>{stay.name}</h4>
                       <p className="itinerary-type">{stay.stay_type.charAt(0).toUpperCase() + stay.stay_type.slice(1)}</p>
                       {stay.location && (
-                        <p className="itinerary-location">📍 {stay.location}</p>
+                        <p className="itinerary-location">
+                          📍 <a
+                            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(stay.location)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="location-link"
+                          >
+                            {stay.location}
+                          </a>
+                        </p>
                       )}
                       {stay.check_in_date && (
                         <p className="itinerary-date">
@@ -1066,6 +1370,11 @@ function TripPlanDetails() {
                       )}
                       {stay.confirmation_number && (
                         <p className="itinerary-confirmation">🎫 {stay.confirmation_number}</p>
+                      )}
+                      {stay.url && (
+                        <p className="itinerary-url">
+                          🔗 <a href={stay.url} target="_blank" rel="noopener noreferrer">View Details</a>
+                        </p>
                       )}
                       {stay.notes && (
                         <p className="itinerary-notes">💭 {stay.notes}</p>
@@ -1124,7 +1433,16 @@ function TripPlanDetails() {
                       <h4>{activity.name}</h4>
                       <p className="itinerary-type">{activity.activity_type.charAt(0).toUpperCase() + activity.activity_type.slice(1)}</p>
                       {activity.location && (
-                        <p className="itinerary-location">📍 {activity.location}</p>
+                        <p className="itinerary-location">
+                          📍 <a
+                            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(activity.location)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="location-link"
+                          >
+                            {activity.location}
+                          </a>
+                        </p>
                       )}
                       {activity.scheduled_date && (
                         <p className="itinerary-date">
@@ -1136,6 +1454,11 @@ function TripPlanDetails() {
                       )}
                       {activity.confirmation_number && (
                         <p className="itinerary-confirmation">🎫 {activity.confirmation_number}</p>
+                      )}
+                      {activity.url && (
+                        <p className="itinerary-url">
+                          🔗 <a href={activity.url} target="_blank" rel="noopener noreferrer">View Details</a>
+                        </p>
                       )}
                       {activity.notes && (
                         <p className="itinerary-notes">💭 {activity.notes}</p>
@@ -1167,53 +1490,33 @@ function TripPlanDetails() {
             )}
           </div>
 
-          {/* Members Section */}
-          <div className="trip-plan-section">
-            <h2>👥 Members ({collaborators.length})</h2>
-            <div className="collaborators-grid">
-              {collaborators.map((collab) => (
-                <div key={collab.id} className="collaborator-card">
-                  <div className="collaborator-avatar">
-                    {collab.profiles?.avatar_url ? (
-                      <img src={collab.profiles.avatar_url} alt={collab.profiles.username} />
-                    ) : (
-                      <div className="avatar-placeholder">👤</div>
-                    )}
-                  </div>
-                  <div className="collaborator-details">
-                    <div className="collaborator-username">
-                      @{collab.profiles?.username || 'User'}
-                      {collab.user_id === user?.id && ' (You)'}
-                    </div>
-                    {collab.profiles?.full_name && (
-                      <div className="collaborator-fullname">{collab.profiles.full_name}</div>
-                    )}
-                    <div className="collaborator-badge">
-                      {collab.role === 'owner' ? '👑 Owner' : '✏️ Collaborator'}
-                    </div>
-                  </div>
-                  {isOwner && collab.role !== 'owner' && (
-                    <button
-                      className="remove-collab-btn"
-                      onClick={() => handleRemoveCollaborator(collab.id)}
-                      title="Remove collaborator"
-                    >
-                      ✕
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
 
         {/* Chat Panel */}
-        {showChat && (
         <div className="chat-panel">
+          {showChat && (
+          <>
+          <button
+            className="toggle-chat-btn"
+            onClick={() => setShowChat(false)}
+            title="Hide chat"
+          >
+            ✕
+          </button>
           <div className="chat-header">
             <h3>Team Chat</h3>
-            <div className="chat-members-count">
-              {collaborators.length} member{collaborators.length !== 1 ? 's' : ''}
+            <div className="chat-header-actions">
+              <div className="chat-members-count">
+                {collaborators.length} member{collaborators.length !== 1 ? 's' : ''}
+              </div>
+              <button
+                className="chat-refresh-btn"
+                onClick={fetchMessages}
+                disabled={loadingMessages}
+                title="Refresh messages"
+              >
+                {loadingMessages ? '⟳' : '↻'}
+              </button>
             </div>
           </div>
 
@@ -1276,8 +1579,18 @@ function TripPlanDetails() {
               Send
             </button>
           </form>
+          </>
+          )}
+          {!showChat && (
+            <button
+              className="toggle-chat-btn show-chat-btn"
+              onClick={() => setShowChat(true)}
+              title="Show chat"
+            >
+              💬 Show Chat
+            </button>
+          )}
         </div>
-        )}
       </div>
 
         {/* Invite Collaborators Modal */}
@@ -1395,10 +1708,30 @@ function TripPlanDetails() {
                   <input
                     type="text"
                     value={travelForm.to_location}
-                    onChange={(e) => setTravelForm({...travelForm, to_location: e.target.value})}
-                    placeholder="e.g., London Heathrow Airport"
+                    onChange={(e) => {
+                      setTravelForm({...travelForm, to_location: e.target.value});
+                      searchPlaces(e.target.value, ['airport', 'train_station', 'bus_station', 'transit_station']);
+                    }}
+                    placeholder="e.g., London Heathrow Airport (type to search)"
                     required
+                    autoComplete="off"
                   />
+                  {showPlaceSuggestions && placeSuggestions.length > 0 && (
+                    <div className="place-suggestions">
+                      {placeSuggestions.map((place) => (
+                        <div
+                          key={place.place_id}
+                          className="place-suggestion-item"
+                          onClick={() => handlePlaceSelection(place, 'travel')}
+                        >
+                          <div className="place-suggestion-name">{place.name}</div>
+                          {place.address && (
+                            <div className="place-suggestion-address">{place.address}</div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div className="form-row">
@@ -1428,6 +1761,16 @@ function TripPlanDetails() {
                     value={travelForm.confirmation_number}
                     onChange={(e) => setTravelForm({...travelForm, confirmation_number: e.target.value})}
                     placeholder="e.g., AB1234"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Website URL</label>
+                  <input
+                    type="url"
+                    value={travelForm.url}
+                    onChange={(e) => setTravelForm({...travelForm, url: e.target.value})}
+                    placeholder="e.g., https://www.airline.com/booking"
                   />
                 </div>
 
@@ -1493,10 +1836,30 @@ function TripPlanDetails() {
                   <input
                     type="text"
                     value={stayForm.name}
-                    onChange={(e) => setStayForm({...stayForm, name: e.target.value})}
-                    placeholder="e.g., Hilton Paris Opera"
+                    onChange={(e) => {
+                      setStayForm({...stayForm, name: e.target.value});
+                      searchPlaces(e.target.value, ['lodging', 'hotel', 'hostel', 'guest_house', 'resort_hotel']);
+                    }}
+                    placeholder="e.g., Hilton Paris Opera (type to search)"
                     required
+                    autoComplete="off"
                   />
+                  {showPlaceSuggestions && placeSuggestions.length > 0 && (
+                    <div className="place-suggestions">
+                      {placeSuggestions.map((place) => (
+                        <div
+                          key={place.place_id}
+                          className="place-suggestion-item"
+                          onClick={() => handlePlaceSelection(place, 'stay')}
+                        >
+                          <div className="place-suggestion-name">{place.name}</div>
+                          {place.address && (
+                            <div className="place-suggestion-address">{place.address}</div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div className="form-group">
@@ -1537,6 +1900,16 @@ function TripPlanDetails() {
                     value={stayForm.confirmation_number}
                     onChange={(e) => setStayForm({...stayForm, confirmation_number: e.target.value})}
                     placeholder="e.g., RES123456"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Website URL</label>
+                  <input
+                    type="url"
+                    value={stayForm.url}
+                    onChange={(e) => setStayForm({...stayForm, url: e.target.value})}
+                    placeholder="e.g., https://www.hotel.com/reservation"
                   />
                 </div>
 
@@ -1602,10 +1975,30 @@ function TripPlanDetails() {
                   <input
                     type="text"
                     value={activityForm.name}
-                    onChange={(e) => setActivityForm({...activityForm, name: e.target.value})}
-                    placeholder="e.g., Eiffel Tower Guided Tour"
+                    onChange={(e) => {
+                      setActivityForm({...activityForm, name: e.target.value});
+                      searchPlaces(e.target.value, ['tourist_attraction', 'restaurant', 'museum', 'park', 'amusement_park']);
+                    }}
+                    placeholder="e.g., Eiffel Tower Guided Tour (type to search)"
                     required
+                    autoComplete="off"
                   />
+                  {showPlaceSuggestions && placeSuggestions.length > 0 && (
+                    <div className="place-suggestions">
+                      {placeSuggestions.map((place) => (
+                        <div
+                          key={place.place_id}
+                          className="place-suggestion-item"
+                          onClick={() => handlePlaceSelection(place, 'activity')}
+                        >
+                          <div className="place-suggestion-name">{place.name}</div>
+                          {place.address && (
+                            <div className="place-suggestion-address">{place.address}</div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div className="form-group">
@@ -1650,6 +2043,16 @@ function TripPlanDetails() {
                 </div>
 
                 <div className="form-group">
+                  <label>Website URL</label>
+                  <input
+                    type="url"
+                    value={activityForm.url}
+                    onChange={(e) => setActivityForm({...activityForm, url: e.target.value})}
+                    placeholder="e.g., https://www.tours.com/booking"
+                  />
+                </div>
+
+                <div className="form-group">
                   <label>Notes</label>
                   <textarea
                     value={activityForm.notes}
@@ -1668,6 +2071,90 @@ function TripPlanDetails() {
                   </button>
                   <button type="button" className="save-btn" onClick={handleSaveActivity}>
                     {editingItem ? 'Update' : 'Add'} Activity
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Edit Trip Plan Modal */}
+        {showEditModal && (
+          <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h2>✏️ Edit Trip Plan</h2>
+                <button className="modal-close" onClick={() => setShowEditModal(false)}>✕</button>
+              </div>
+
+              <div className="modal-form">
+                <div className="form-group">
+                  <label>Trip Name *</label>
+                  <input
+                    type="text"
+                    value={editForm.name}
+                    onChange={(e) => setEditForm({...editForm, name: e.target.value})}
+                    placeholder="e.g., Summer Europe Trip"
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Country</label>
+                  <select
+                    value={editForm.country}
+                    onChange={(e) => setEditForm({...editForm, country: e.target.value})}
+                  >
+                    <option value="">Select a country</option>
+                    {countries.map((country) => (
+                      <option key={country} value={country}>
+                        {country}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Start Date</label>
+                    <input
+                      type="date"
+                      value={editForm.start_date}
+                      onChange={(e) => setEditForm({...editForm, start_date: e.target.value})}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>End Date</label>
+                    <input
+                      type="date"
+                      value={editForm.end_date}
+                      onChange={(e) => setEditForm({...editForm, end_date: e.target.value})}
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>Description</label>
+                  <textarea
+                    value={editForm.description}
+                    onChange={(e) => setEditForm({...editForm, description: e.target.value})}
+                    placeholder="Add a description for your trip..."
+                    rows="4"
+                  />
+                </div>
+
+                <div className="modal-actions">
+                  <button type="button" className="cancel-btn" onClick={() => setShowEditModal(false)}>
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="save-btn"
+                    onClick={handleUpdateTripPlan}
+                    disabled={!editForm.name.trim()}
+                  >
+                    Update Trip Plan
                   </button>
                 </div>
               </div>

@@ -193,6 +193,15 @@
   color: var(--primary);
   font-weight: 700;
   margin: 0 0 6px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.trip-plan-country .fi {
+  font-size: 1.2rem;
+  border-radius: 2px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
 
 .trip-plan-destination {
@@ -1008,6 +1017,7 @@
 
 @media (max-width: 1088px) {
   .planner-page {
+    padding-top: 80px;
     padding-bottom: 120px;
   }
 
@@ -1018,7 +1028,7 @@
 
 @media (max-width: 768px) {
   .planner-page {
-    padding-top: 70px;
+    padding-top: 85px;
   }
 
   .planner-header h1 {
@@ -1053,5 +1063,19 @@
 
   .form-row {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .planner-page {
+    padding-top: 75px;
+  }
+
+  .planner-header h1 {
+    font-size: 24px;
+  }
+
+  .planner-subtitle {
+    font-size: 13px;
   }
 }
