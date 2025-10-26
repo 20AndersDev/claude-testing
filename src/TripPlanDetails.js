@@ -1250,9 +1250,11 @@ function TripPlanDetails() {
           <div className="trip-plan-section">
             <div className="section-header">
               <h2>✈️ Travel ({travels.length})</h2>
-              <button className="add-item-btn" onClick={() => setShowTravelModal(true)}>
-                ➕ Add Travel
-              </button>
+              {isOwner && (
+                <button className="add-item-btn" onClick={() => setShowTravelModal(true)}>
+                  ➕ Add Travel
+                </button>
+              )}
             </div>
             {travels.length === 0 ? (
               <div className="empty-state">
@@ -1294,26 +1296,28 @@ function TripPlanDetails() {
                         <p className="itinerary-notes">💭 {travel.notes}</p>
                       )}
                     </div>
-                    <div className="itinerary-actions">
-                      <button
-                        className="edit-btn"
-                        onClick={() => {
-                          setEditingItem(travel);
-                          setTravelForm(travel);
-                          setShowTravelModal(true);
-                        }}
-                        title="Edit"
-                      >
-                        ✏️
-                      </button>
-                      <button
-                        className="delete-btn"
-                        onClick={() => handleDeleteTravel(travel.id)}
-                        title="Delete"
-                      >
-                        🗑️
-                      </button>
-                    </div>
+                    {isOwner && (
+                      <div className="itinerary-actions">
+                        <button
+                          className="edit-btn"
+                          onClick={() => {
+                            setEditingItem(travel);
+                            setTravelForm(travel);
+                            setShowTravelModal(true);
+                          }}
+                          title="Edit"
+                        >
+                          ✏️
+                        </button>
+                        <button
+                          className="delete-btn"
+                          onClick={() => handleDeleteTravel(travel.id)}
+                          title="Delete"
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -1324,9 +1328,11 @@ function TripPlanDetails() {
           <div className="trip-plan-section">
             <div className="section-header">
               <h2>🏨 Stays ({stays.length})</h2>
-              <button className="add-item-btn" onClick={() => setShowStayModal(true)}>
-                ➕ Add Stay
-              </button>
+              {isOwner && (
+                <button className="add-item-btn" onClick={() => setShowStayModal(true)}>
+                  ➕ Add Stay
+                </button>
+              )}
             </div>
             {stays.length === 0 ? (
               <div className="empty-state">
@@ -1380,26 +1386,28 @@ function TripPlanDetails() {
                         <p className="itinerary-notes">💭 {stay.notes}</p>
                       )}
                     </div>
-                    <div className="itinerary-actions">
-                      <button
-                        className="edit-btn"
-                        onClick={() => {
-                          setEditingItem(stay);
-                          setStayForm(stay);
-                          setShowStayModal(true);
-                        }}
-                        title="Edit"
-                      >
-                        ✏️
-                      </button>
-                      <button
-                        className="delete-btn"
-                        onClick={() => handleDeleteStay(stay.id)}
-                        title="Delete"
-                      >
-                        🗑️
-                      </button>
-                    </div>
+                    {isOwner && (
+                      <div className="itinerary-actions">
+                        <button
+                          className="edit-btn"
+                          onClick={() => {
+                            setEditingItem(stay);
+                            setStayForm(stay);
+                            setShowStayModal(true);
+                          }}
+                          title="Edit"
+                        >
+                          ✏️
+                        </button>
+                        <button
+                          className="delete-btn"
+                          onClick={() => handleDeleteStay(stay.id)}
+                          title="Delete"
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -1410,9 +1418,11 @@ function TripPlanDetails() {
           <div className="trip-plan-section">
             <div className="section-header">
               <h2>🎯 Activities ({activities.length})</h2>
-              <button className="add-item-btn" onClick={() => setShowActivityModal(true)}>
-                ➕ Add Activity
-              </button>
+              {isOwner && (
+                <button className="add-item-btn" onClick={() => setShowActivityModal(true)}>
+                  ➕ Add Activity
+                </button>
+              )}
             </div>
             {activities.length === 0 ? (
               <div className="empty-state">
@@ -1464,26 +1474,28 @@ function TripPlanDetails() {
                         <p className="itinerary-notes">💭 {activity.notes}</p>
                       )}
                     </div>
-                    <div className="itinerary-actions">
-                      <button
-                        className="edit-btn"
-                        onClick={() => {
-                          setEditingItem(activity);
-                          setActivityForm(activity);
-                          setShowActivityModal(true);
-                        }}
-                        title="Edit"
-                      >
-                        ✏️
-                      </button>
-                      <button
-                        className="delete-btn"
-                        onClick={() => handleDeleteActivity(activity.id)}
-                        title="Delete"
-                      >
-                        🗑️
-                      </button>
-                    </div>
+                    {isOwner && (
+                      <div className="itinerary-actions">
+                        <button
+                          className="edit-btn"
+                          onClick={() => {
+                            setEditingItem(activity);
+                            setActivityForm(activity);
+                            setShowActivityModal(true);
+                          }}
+                          title="Edit"
+                        >
+                          ✏️
+                        </button>
+                        <button
+                          className="delete-btn"
+                          onClick={() => handleDeleteActivity(activity.id)}
+                          title="Delete"
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
