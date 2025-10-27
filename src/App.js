@@ -14,7 +14,6 @@ import CountryFeed from './CountryFeed';
 import UserSearch from './UserSearch';
 import PlaceDetail from './PlaceDetail';
 import Settings from './Settings';
-import Bookmarks from './Bookmarks';
 import FollowRequests from './FollowRequests';
 import Planner from './Planner';
 import TripPlanDetails from './TripPlanDetails';
@@ -42,7 +41,6 @@ function App() {
             <Route path="/search" element={<UserSearch />} />
             <Route path="/place/:placeId" element={<PlaceDetail />} />
             <Route path="/settings" element={<Settings />} />
-            <Route path="/bookmarks" element={<Bookmarks />} />
             <Route path="/follow-requests" element={<FollowRequests />} />
             <Route path="/planner" element={<Planner />} />
             <Route path="/planner/:planId" element={<TripPlanDetails />} />

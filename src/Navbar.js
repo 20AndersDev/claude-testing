@@ -11,7 +11,6 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
-  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState(null);
   const [quickResults, setQuickResults] = useState([]);
   const [showQuickResults, setShowQuickResults] = useState(false);
@@ -118,15 +117,6 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
   const handleLogout = () => {
     // In a real app, you'd clear authentication tokens here
     navigate('/login');
-  };
-
-  const handleProfileClick = () => {
-    navigate('/profile');
-    setShowMobileMenu(false);
-  };
-
-  const handleHamburgerClick = () => {
-    setShowMobileMenu(!showMobileMenu);
   };
 
   useEffect(() => {
@@ -301,9 +291,6 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
     <nav className="navbar">
       <div className="navbar-container">
         <div className="navbar-left">
-          <button className="hamburger-btn" onClick={handleHamburgerClick}>
-            <span className="hamburger-icon">☰</span>
-          </button>
           <Link to="/feed" className="navbar-logo">
             <span className="logo-icon">🗺️</span>
             <span className="logo-text">TripTrail</span>
@@ -311,18 +298,37 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
         </div>
 
         <div className="navbar-center">
+          {!loading && user && (
+            <nav className="navbar-menu">
+              <Link to="/feed" className="nav-menu-item">
+                <span className="nav-icon">🏠</span>
+                <span className="nav-text">Home</span>
+              </Link>
+              <Link to="/search" className="nav-menu-item">
+                <span className="nav-icon">🔍</span>
+                <span className="nav-text">Search</span>
+              </Link>
+              <Link to="/planner" className="nav-menu-item">
+                <span className="nav-icon">🗓️</span>
+                <span className="nav-text">Planner</span>
+              </Link>
+              <Link to="/profile" className="nav-menu-item nav-profile-item">
+                <div className="nav-profile-avatar">
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt="Profile" className="nav-avatar-image" />
+                  ) : (
+                    <span className="nav-icon">👤</span>
+                  )}
+                </div>
+                <span className="nav-text">Profile</span>
+              </Link>
+            </nav>
+          )}
         </div>
 
         <div className="navbar-right">
           {!loading && user ? (
             <>
-              <button
-                className="desktop-search-button"
-                onClick={() => navigate('/search')}
-                aria-label="Open search"
-              >
-                🔍 Search
-              </button>
               <button
                 className="nav-action-btn notifications-btn"
                 onClick={() => navigate('/follow-requests')}
@@ -333,23 +339,6 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
                   <span className="notification-badge">{(unreadCount + followRequestCount) > 9 ? '9+' : (unreadCount + followRequestCount)}</span>
                 )}
               </button>
-              <div className="user-menu">
-                <div className="user-avatar" onClick={handleProfileClick}>
-                  {avatarUrl ? (
-                    <img src={avatarUrl} alt="Profile" className="navbar-avatar-image" />
-                  ) : (
-                    '👤'
-                  )}
-                </div>
-                <div className="dropdown">
-                  <Link to="/profile" className="profile-option">
-                    👤 Profile
-                  </Link>
-                  <button onClick={handleLogout} className="logout-option">
-                    🚪 Logout
-                  </button>
-                </div>
-              </div>
             </>
           ) : (
             <Link to="/login" className="sign-in-btn">
@@ -358,36 +347,6 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
           )}
         </div>
       </div>
-
-      {showMobileMenu && (
-        <div
-          className="mobile-menu-overlay"
-          onClick={() => setShowMobileMenu(false)}
-        >
-          <div
-            className="mobile-menu"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button className="mobile-menu-close" onClick={() => setShowMobileMenu(false)}>✕</button>
-
-            <Link to="/bookmarks" className="mobile-menu-item" onClick={() => setShowMobileMenu(false)}>
-              🔖 Bookmarks
-            </Link>
-            <Link to="/planner" className="mobile-menu-item" onClick={() => setShowMobileMenu(false)}>
-              🗓️ Trip Planner
-            </Link>
-            <Link to="/settings" className="mobile-menu-item" onClick={() => setShowMobileMenu(false)}>
-              ⚙️ Settings
-            </Link>
-
-            <div className="mobile-menu-divider"></div>
-
-            <button className="mobile-menu-item logout" onClick={() => { handleLogout(); setShowMobileMenu(false); }}>
-              🚪 Logout
-            </button>
-          </div>
-        </div>
-      )}
     </nav>
   );
 }

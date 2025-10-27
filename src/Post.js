@@ -4,7 +4,7 @@ import { supabase } from './supabaseClient';
 import { createLikeNotification, createCommentNotification, createFollowNotification } from './notificationHelpers';
 import './Post.css';
 
-function Post({ post, onLike, onComment, onDelete, onDeleteComment, onBookmarkRemove, isBookmarked: initialBookmarked }) {
+function Post({ post, onLike, onComment, onDelete, onDeleteComment }) {
   const navigate = useNavigate();
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState('');
@@ -19,7 +19,6 @@ function Post({ post, onLike, onComment, onDelete, onDeleteComment, onBookmarkRe
   const [isFollowing, setIsFollowing] = useState(false);
   const [isLoadingFollow, setIsLoadingFollow] = useState(false);
   const [currentUserName, setCurrentUserName] = useState('');
-  const [isBookmarked, setIsBookmarked] = useState(initialBookmarked || false);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [showTripPlanModal, setShowTripPlanModal] = useState(false);
   const [userTripPlans, setUserTripPlans] = useState([]);
@@ -41,12 +40,6 @@ function Post({ post, onLike, onComment, onDelete, onDeleteComment, onBookmarkRe
       checkFollowStatus();
     }
   }, [currentUserId, post.user_id]);
-
-  useEffect(() => {
-    if (currentUserId && post.id && !initialBookmarked) {
-      checkBookmarkStatus();
-    }
-  }, [currentUserId, post.id]);
 
   useEffect(() => {
     const handleClickOutside = () => {
@@ -99,63 +92,6 @@ function Post({ post, onLike, onComment, onDelete, onDeleteComment, onBookmarkRe
     } catch (error) {
       // No follow relationship exists
       setIsFollowing(false);
-    }
-  };
-
-  const checkBookmarkStatus = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('bookmarks')
-        .select('id')
-        .eq('user_id', currentUserId)
-        .eq('post_id', post.id)
-        .single();
-
-      if (!error && data) {
-        setIsBookmarked(true);
-      }
-    } catch (error) {
-      setIsBookmarked(false);
-    }
-  };
-
-  const handleBookmarkToggle = async (e) => {
-    e.stopPropagation();
-    if (!currentUserId) {
-      setShowLoginPrompt(true);
-      return;
-    }
-
-    try {
-      if (isBookmarked) {
-        // Remove bookmark
-        const { error } = await supabase
-          .from('bookmarks')
-          .delete()
-          .eq('user_id', currentUserId)
-          .eq('post_id', post.id);
-
-        if (error) throw error;
-        setIsBookmarked(false);
-
-        // Call the remove callback if provided (for bookmarks page)
-        if (onBookmarkRemove) {
-          onBookmarkRemove();
-        }
-      } else {
-        // Add bookmark
-        const { error } = await supabase
-          .from('bookmarks')
-          .insert({
-            user_id: currentUserId,
-            post_id: post.id
-          });
-
-        if (error) throw error;
-        setIsBookmarked(true);
-      }
-    } catch (error) {
-      console.error('Error toggling bookmark:', error);
     }
   };
 
@@ -273,22 +209,12 @@ function Post({ post, onLike, onComment, onDelete, onDeleteComment, onBookmarkRe
   };
 
   const formatTime = (timestamp) => {
-    const now = new Date();
-    const postDate = new Date(timestamp);
-    const diff = now - postDate;
-    const minutes = Math.floor(diff / (1000 * 60));
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const days = Math.floor(hours / 24);
-
-    if (days > 0) {
-      return `${days}d ago`;
-    } else if (hours > 0) {
-      return `${hours}h ago`;
-    } else if (minutes > 0) {
-      return `${minutes}m ago`;
-    } else {
-      return 'Just now';
-    }
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    });
   };
 
   const formatDate = (dateString) => {
@@ -631,12 +557,12 @@ function Post({ post, onLike, onComment, onDelete, onDeleteComment, onBookmarkRe
   return (
     <div className="post">
       <div className="post-header">
-        <div
-          className="post-author-info"
-          onClick={() => navigate(currentUserId === post.user_id ? '/profile' : `/profile/${post.user_id}`)}
-          style={{ cursor: 'pointer' }}
-        >
-          <div className="author-avatar">
+        <div className="post-author-info">
+          <div
+            className="author-avatar"
+            onClick={() => navigate(currentUserId === post.user_id ? '/profile' : `/profile/${post.user_id}`)}
+            style={{ cursor: 'pointer' }}
+          >
             {post.author_avatar ? (
               <img src={post.author_avatar} alt={post.author} className="avatar-image" />
             ) : (
@@ -644,20 +570,32 @@ function Post({ post, onLike, onComment, onDelete, onDeleteComment, onBookmarkRe
             )}
           </div>
           <div className="author-details">
-            <div className="author-name">{post.author}</div>
-            <div className="post-time">{formatTime(post.timestamp)}</div>
+            <div className="author-name-row">
+              <div
+                className="author-name"
+                onClick={() => navigate(currentUserId === post.user_id ? '/profile' : `/profile/${post.user_id}`)}
+                style={{ cursor: 'pointer' }}
+              >
+                {post.author}
+              </div>
+              {currentUserId && post.user_id !== currentUserId && !isFollowing && (
+                <button
+                  className="follow-btn-compact"
+                  onClick={handleFollowToggle}
+                  disabled={isLoadingFollow}
+                  title="Follow"
+                >
+                  <span className="follow-icon">+</span>
+                </button>
+              )}
+            </div>
           </div>
         </div>
         <div className="post-header-actions">
-          {currentUserId && post.user_id !== currentUserId && (
-            <button
-              className={`follow-btn ${isFollowing ? 'following' : ''}`}
-              onClick={handleFollowToggle}
-              disabled={isLoadingFollow}
-            >
-              {isFollowing ? 'Following' : 'Follow'}
-            </button>
-          )}
+          <div className="post-timestamp">
+            <div className="post-date">{formatDate(post.timestamp)}</div>
+            <div className="post-time">{formatTime(post.timestamp)}</div>
+          </div>
           {currentUserId && post.user_id === currentUserId && (
             <div className="post-menu-container">
               <button className="post-menu-btn" onClick={toggleMenu} title="More options">
@@ -738,61 +676,6 @@ function Post({ post, onLike, onComment, onDelete, onDeleteComment, onBookmarkRe
               </div>
             )}
           </div>
-
-          {post.activities && post.activities.length > 0 && (
-            <div className="activities-preview">
-              <div className="activities-count-mobile">
-                📍 {post.activities.length} {post.activities.length === 1 ? 'Activity' : 'Activities'}
-              </div>
-              <h4>Activities & Places</h4>
-              <div className="activities-list">
-                {post.activities.slice(0, 3).map((activity, index) => (
-                  <div key={index} className="activity-preview">
-                    <span className="activity-icon">{getActivityIcon(activity.type)}</span>
-                    <div className="activity-info">
-                      <span className="activity-name">{activity.name}</span>
-                      <div className="activity-details">
-                        {activity.rating > 0 && renderStars(activity.rating)}
-                        {activity.cost && <span className="activity-cost">${activity.cost}</span>}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                {post.activities.length > 3 && (
-                  <div className="more-activities">
-                    +{post.activities.length - 3} more activities
-                  </div>
-                )}
-              </div>
-              {post.transport && post.transport.length > 0 && (
-                <div className="transport-preview">
-                  <h4>🚗 Transportation</h4>
-                  <div className="transport-list">
-                    {post.transport.slice(0, 2).map((transport, index) => (
-                      <div key={index} className="transport-item-preview">
-                        <span className="transport-icon">{getTransportIcon(transport.type)}</span>
-                        <span className="transport-route">{transport.from} → {transport.to}</span>
-                        {transport.cost && <span className="transport-cost">${transport.cost}</span>}
-                      </div>
-                    ))}
-                    {post.transport.length > 2 && (
-                      <div className="more-transport">
-                        +{post.transport.length - 2} more transports
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {calculateTotalCost() > 0 && (
-                <div className="trip-cost-summary">
-                  <span className="cost-label">💰 Total Trip Cost:</span>
-                  <span className="total-cost">${calculateTotalCost().toFixed(2)}</span>
-                </div>
-              )}
-
-            </div>
-          )}
         </div>
       ) : (
         <div className="post-content" style={{cursor: 'pointer'}}>
@@ -890,13 +773,6 @@ function Post({ post, onLike, onComment, onDelete, onDeleteComment, onBookmarkRe
         >
           <span className="action-icon">💬</span>
           <span className="action-count">{(post.comments || []).length}</span>
-        </button>
-        <button
-          className={`action-btn bookmark-btn ${isBookmarked ? 'bookmarked' : ''}`}
-          onClick={handleBookmarkToggle}
-          title={isBookmarked ? 'Remove bookmark' : 'Bookmark this post'}
-        >
-          <span className="action-icon">{isBookmarked ? '🔖' : '🏷️'}</span>
         </button>
         {(post.location || post.tripTitle) && (
           <button
