@@ -3,10 +3,12 @@ import {
   ComposableMap,
   Geographies,
   Geography,
-  ZoomableGroup
+  ZoomableGroup,
+  Marker
 } from 'react-simple-maps';
 import { supabase } from './supabaseClient';
 import './VisitedCountriesMap.css';
+import { geoCentroid } from 'd3-geo';
 
 const geoUrl = 'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json';
 
@@ -18,6 +20,7 @@ function VisitedCountriesMap({ userId, isOwnProfile }) {
   const [totalCountries, setTotalCountries] = useState(195); // Approximate number of countries
   const [isMapHovered, setIsMapHovered] = useState(false);
   const [zoom, setZoom] = useState(1);
+  const [center, setCenter] = useState([0, 20]);
   const [isExpanded, setIsExpanded] = useState(true);
 
   useEffect(() => {
@@ -87,6 +90,7 @@ function VisitedCountriesMap({ userId, isOwnProfile }) {
 
   const handleResetZoom = () => {
     setZoom(1);
+    setCenter([0, 20]);
   };
 
   return (
@@ -118,12 +122,15 @@ function VisitedCountriesMap({ userId, isOwnProfile }) {
         <ComposableMap
           projectionConfig={{
             scale: 220,
-            center: [10, 30]
+            center: [0, 20]
           }}
           width={800}
           height={280}
         >
-          <ZoomableGroup zoom={zoom}>
+          <ZoomableGroup
+            zoom={zoom}
+            center={center}
+          >
             <Geographies geography={geoUrl}>
               {({ geographies }) =>
                 geographies.map((geo) => {
@@ -168,6 +175,30 @@ function VisitedCountriesMap({ userId, isOwnProfile }) {
                     />
                   );
                 })
+              }
+            </Geographies>
+            {/* Add flag markers for visited countries */}
+            <Geographies geography={geoUrl}>
+              {({ geographies }) =>
+                geographies
+                  .filter(geo => visitedCountries.includes(geo.id))
+                  .map((geo) => {
+                    const centroid = geoCentroid(geo);
+                    return (
+                      <Marker key={`marker-${geo.id}`} coordinates={centroid}>
+                        <text
+                          textAnchor="middle"
+                          fontSize={zoom >= 2 ? 16 : 12}
+                          style={{
+                            pointerEvents: 'none',
+                            userSelect: 'none'
+                          }}
+                        >
+                          🚩
+                        </text>
+                      </Marker>
+                    );
+                  })
               }
             </Geographies>
           </ZoomableGroup>

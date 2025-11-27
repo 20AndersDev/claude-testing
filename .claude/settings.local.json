@@ -9,7 +9,12 @@
       "Bash(npm run build:*)",
       "mcp__ide__getDiagnostics",
       "Bash(cat:*)",
-      "Read(//c/**)"
+      "Read(//c/**)",
+      "Bash($null)",
+      "Bash(dir node_modulesflag-icons 2)",
+      "Bash(nul)",
+      "Bash(dir /b node_modulesflag-icons)",
+      "Bash(rm:*)"
     ],
     "deny": [],
     "ask": []

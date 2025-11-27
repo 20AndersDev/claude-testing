@@ -71,8 +71,9 @@ function Login() {
         <div className="login-header">
           <div className="login-icon">🗺️</div>
           <h1>TripTrail</h1>
-          <p className="login-subtitle">Explore, Experience</p>
-          <h2>Welcome Back</h2>
+          <p className="login-subtitle">Explore, Experience, Share Your Adventures</p>
+          <h2>Welcome Back, Traveler!</h2>
+          <p className="welcome-message">We're excited to see you again. Your next adventure awaits!</p>
         </div>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
@@ -105,13 +106,19 @@ function Login() {
               />
             </div>
           </div>
-          {error && <div style={{ color: 'red', marginBottom: '10px', textAlign: 'center' }}>{error}</div>}
+          {error && (
+            <div className="error-message">
+              <span className="error-icon">⚠️</span>
+              <span>{error}</span>
+            </div>
+          )}
           <button type="submit" className="login-btn" disabled={loading}>
-            {loading ? 'Logging in...' : 'Login'}
+            {loading ? '✨ Logging you in...' : '🚀 Continue Your Journey'}
           </button>
         </form>
         <div className="login-footer">
-          <p>Don't have an account? <Link to="/register">Create one</Link></p>
+          <p className="footer-text">Don't have an account? <Link to="/register">Join our community</Link></p>
+          <p className="help-text">Need help? We're here for you!</p>
         </div>
       </div>
     </div>

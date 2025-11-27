@@ -66,7 +66,10 @@ function Register() {
         }
       }
 
-      alert('Registration successful! Please check your email to verify your account.');
+      // Show a success message
+      setError('');
+      // You could use a toast notification here instead of alert for better UX
+      alert('🎉 Welcome to TripTrail! Please check your email to verify your account and start your adventure.');
       navigate('/login');
     } catch (error) {
       setError(error.message);
@@ -86,8 +89,9 @@ function Register() {
         <div className="register-header">
           <div className="register-icon">🗺️</div>
           <h1>TripTrail</h1>
-          <p className="register-subtitle">Explore, Experience</p>
-          <h2>Join the Journey</h2>
+          <p className="register-subtitle">Explore, Experience, Share Your Adventures</p>
+          <h2>Start Your Journey Today!</h2>
+          <p className="welcome-message">Join thousands of travelers sharing their stories and discovering the world together.</p>
         </div>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
@@ -165,13 +169,19 @@ function Register() {
               />
             </div>
           </div>
-          {error && <div style={{ color: 'red', marginBottom: '10px', textAlign: 'center' }}>{error}</div>}
+          {error && (
+            <div className="error-message">
+              <span className="error-icon">⚠️</span>
+              <span>{error}</span>
+            </div>
+          )}
           <button type="submit" className="register-btn" disabled={loading}>
-            {loading ? 'Creating Account...' : 'Create Account'}
+            {loading ? '✨ Creating your account...' : '🌟 Begin Your Adventure'}
           </button>
         </form>
         <div className="register-footer">
-          <p>Already have an account? <Link to="/login">Sign in</Link></p>
+          <p className="footer-text">Already have an account? <Link to="/login">Welcome back!</Link></p>
+          <p className="help-text">By signing up, you're joining a community of travelers from around the world!</p>
         </div>
       </div>
     </div>

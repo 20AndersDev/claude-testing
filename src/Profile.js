@@ -8,7 +8,207 @@ import Post from './Post';
 import WorldMap from './WorldMap';
 import VisitedCountriesMap from './VisitedCountriesMap';
 import useSwipeNavigation from './useSwipeNavigation';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import './Profile.css';
+
+const COUNTRIES = [
+  { name: "Afghanistan", flag: "🇦🇫" },
+  { name: "Albania", flag: "🇦🇱" },
+  { name: "Algeria", flag: "🇩🇿" },
+  { name: "Andorra", flag: "🇦🇩" },
+  { name: "Angola", flag: "🇦🇴" },
+  { name: "Antigua and Barbuda", flag: "🇦🇬" },
+  { name: "Argentina", flag: "🇦🇷" },
+  { name: "Armenia", flag: "🇦🇲" },
+  { name: "Australia", flag: "🇦🇺" },
+  { name: "Austria", flag: "🇦🇹" },
+  { name: "Azerbaijan", flag: "🇦🇿" },
+  { name: "Bahamas", flag: "🇧🇸" },
+  { name: "Bahrain", flag: "🇧🇭" },
+  { name: "Bangladesh", flag: "🇧🇩" },
+  { name: "Barbados", flag: "🇧🇧" },
+  { name: "Belarus", flag: "🇧🇾" },
+  { name: "Belgium", flag: "🇧🇪" },
+  { name: "Belize", flag: "🇧🇿" },
+  { name: "Benin", flag: "🇧🇯" },
+  { name: "Bhutan", flag: "🇧🇹" },
+  { name: "Bolivia", flag: "🇧🇴" },
+  { name: "Bosnia and Herzegovina", flag: "🇧🇦" },
+  { name: "Botswana", flag: "🇧🇼" },
+  { name: "Brazil", flag: "🇧🇷" },
+  { name: "Brunei", flag: "🇧🇳" },
+  { name: "Bulgaria", flag: "🇧🇬" },
+  { name: "Burkina Faso", flag: "🇧🇫" },
+  { name: "Burundi", flag: "🇧🇮" },
+  { name: "Cabo Verde", flag: "🇨🇻" },
+  { name: "Cambodia", flag: "🇰🇭" },
+  { name: "Cameroon", flag: "🇨🇲" },
+  { name: "Canada", flag: "🇨🇦" },
+  { name: "Central African Republic", flag: "🇨🇫" },
+  { name: "Chad", flag: "🇹🇩" },
+  { name: "Chile", flag: "🇨🇱" },
+  { name: "China", flag: "🇨🇳" },
+  { name: "Colombia", flag: "🇨🇴" },
+  { name: "Comoros", flag: "🇰🇲" },
+  { name: "Congo", flag: "🇨🇬" },
+  { name: "Costa Rica", flag: "🇨🇷" },
+  { name: "Croatia", flag: "🇭🇷" },
+  { name: "Cuba", flag: "🇨🇺" },
+  { name: "Cyprus", flag: "🇨🇾" },
+  { name: "Czech Republic", flag: "🇨🇿" },
+  { name: "Denmark", flag: "🇩🇰" },
+  { name: "Djibouti", flag: "🇩🇯" },
+  { name: "Dominica", flag: "🇩🇲" },
+  { name: "Dominican Republic", flag: "🇩🇴" },
+  { name: "Ecuador", flag: "🇪🇨" },
+  { name: "Egypt", flag: "🇪🇬" },
+  { name: "El Salvador", flag: "🇸🇻" },
+  { name: "Equatorial Guinea", flag: "🇬🇶" },
+  { name: "Eritrea", flag: "🇪🇷" },
+  { name: "Estonia", flag: "🇪🇪" },
+  { name: "Eswatini", flag: "🇸🇿" },
+  { name: "Ethiopia", flag: "🇪🇹" },
+  { name: "Fiji", flag: "🇫🇯" },
+  { name: "Finland", flag: "🇫🇮" },
+  { name: "France", flag: "🇫🇷" },
+  { name: "Gabon", flag: "🇬🇦" },
+  { name: "Gambia", flag: "🇬🇲" },
+  { name: "Georgia", flag: "🇬🇪" },
+  { name: "Germany", flag: "🇩🇪" },
+  { name: "Ghana", flag: "🇬🇭" },
+  { name: "Greece", flag: "🇬🇷" },
+  { name: "Grenada", flag: "🇬🇩" },
+  { name: "Guatemala", flag: "🇬🇹" },
+  { name: "Guinea", flag: "🇬🇳" },
+  { name: "Guinea-Bissau", flag: "🇬🇼" },
+  { name: "Guyana", flag: "🇬🇾" },
+  { name: "Haiti", flag: "🇭🇹" },
+  { name: "Honduras", flag: "🇭🇳" },
+  { name: "Hungary", flag: "🇭🇺" },
+  { name: "Iceland", flag: "🇮🇸" },
+  { name: "India", flag: "🇮🇳" },
+  { name: "Indonesia", flag: "🇮🇩" },
+  { name: "Iran", flag: "🇮🇷" },
+  { name: "Iraq", flag: "🇮🇶" },
+  { name: "Ireland", flag: "🇮🇪" },
+  { name: "Israel", flag: "🇮🇱" },
+  { name: "Italy", flag: "🇮🇹" },
+  { name: "Jamaica", flag: "🇯🇲" },
+  { name: "Japan", flag: "🇯🇵" },
+  { name: "Jordan", flag: "🇯🇴" },
+  { name: "Kazakhstan", flag: "🇰🇿" },
+  { name: "Kenya", flag: "🇰🇪" },
+  { name: "Kiribati", flag: "🇰🇮" },
+  { name: "Kosovo", flag: "🇽🇰" },
+  { name: "Kuwait", flag: "🇰🇼" },
+  { name: "Kyrgyzstan", flag: "🇰🇬" },
+  { name: "Laos", flag: "🇱🇦" },
+  { name: "Latvia", flag: "🇱🇻" },
+  { name: "Lebanon", flag: "🇱🇧" },
+  { name: "Lesotho", flag: "🇱🇸" },
+  { name: "Liberia", flag: "🇱🇷" },
+  { name: "Libya", flag: "🇱🇾" },
+  { name: "Liechtenstein", flag: "🇱🇮" },
+  { name: "Lithuania", flag: "🇱🇹" },
+  { name: "Luxembourg", flag: "🇱🇺" },
+  { name: "Madagascar", flag: "🇲🇬" },
+  { name: "Malawi", flag: "🇲🇼" },
+  { name: "Malaysia", flag: "🇲🇾" },
+  { name: "Maldives", flag: "🇲🇻" },
+  { name: "Mali", flag: "🇲🇱" },
+  { name: "Malta", flag: "🇲🇹" },
+  { name: "Marshall Islands", flag: "🇲🇭" },
+  { name: "Mauritania", flag: "🇲🇷" },
+  { name: "Mauritius", flag: "🇲🇺" },
+  { name: "Mexico", flag: "🇲🇽" },
+  { name: "Micronesia", flag: "🇫🇲" },
+  { name: "Moldova", flag: "🇲🇩" },
+  { name: "Monaco", flag: "🇲🇨" },
+  { name: "Mongolia", flag: "🇲🇳" },
+  { name: "Montenegro", flag: "🇲🇪" },
+  { name: "Morocco", flag: "🇲🇦" },
+  { name: "Mozambique", flag: "🇲🇿" },
+  { name: "Myanmar", flag: "🇲🇲" },
+  { name: "Namibia", flag: "🇳🇦" },
+  { name: "Nauru", flag: "🇳🇷" },
+  { name: "Nepal", flag: "🇳🇵" },
+  { name: "Netherlands", flag: "🇳🇱" },
+  { name: "New Zealand", flag: "🇳🇿" },
+  { name: "Nicaragua", flag: "🇳🇮" },
+  { name: "Niger", flag: "🇳🇪" },
+  { name: "Nigeria", flag: "🇳🇬" },
+  { name: "North Korea", flag: "🇰🇵" },
+  { name: "North Macedonia", flag: "🇲🇰" },
+  { name: "Norway", flag: "🇳🇴" },
+  { name: "Oman", flag: "🇴🇲" },
+  { name: "Pakistan", flag: "🇵🇰" },
+  { name: "Palau", flag: "🇵🇼" },
+  { name: "Palestine", flag: "🇵🇸" },
+  { name: "Panama", flag: "🇵🇦" },
+  { name: "Papua New Guinea", flag: "🇵🇬" },
+  { name: "Paraguay", flag: "🇵🇾" },
+  { name: "Peru", flag: "🇵🇪" },
+  { name: "Philippines", flag: "🇵🇭" },
+  { name: "Poland", flag: "🇵🇱" },
+  { name: "Portugal", flag: "🇵🇹" },
+  { name: "Qatar", flag: "🇶🇦" },
+  { name: "Romania", flag: "🇷🇴" },
+  { name: "Russia", flag: "🇷🇺" },
+  { name: "Rwanda", flag: "🇷🇼" },
+  { name: "Saint Kitts and Nevis", flag: "🇰🇳" },
+  { name: "Saint Lucia", flag: "🇱🇨" },
+  { name: "Saint Vincent and the Grenadines", flag: "🇻🇨" },
+  { name: "Samoa", flag: "🇼🇸" },
+  { name: "San Marino", flag: "🇸🇲" },
+  { name: "Sao Tome and Principe", flag: "🇸🇹" },
+  { name: "Saudi Arabia", flag: "🇸🇦" },
+  { name: "Senegal", flag: "🇸🇳" },
+  { name: "Serbia", flag: "🇷🇸" },
+  { name: "Seychelles", flag: "🇸🇨" },
+  { name: "Sierra Leone", flag: "🇸🇱" },
+  { name: "Singapore", flag: "🇸🇬" },
+  { name: "Slovakia", flag: "🇸🇰" },
+  { name: "Slovenia", flag: "🇸🇮" },
+  { name: "Solomon Islands", flag: "🇸🇧" },
+  { name: "Somalia", flag: "🇸🇴" },
+  { name: "South Africa", flag: "🇿🇦" },
+  { name: "South Korea", flag: "🇰🇷" },
+  { name: "South Sudan", flag: "🇸🇸" },
+  { name: "Spain", flag: "🇪🇸" },
+  { name: "Sri Lanka", flag: "🇱🇰" },
+  { name: "Sudan", flag: "🇸🇩" },
+  { name: "Suriname", flag: "🇸🇷" },
+  { name: "Sweden", flag: "🇸🇪" },
+  { name: "Switzerland", flag: "🇨🇭" },
+  { name: "Syria", flag: "🇸🇾" },
+  { name: "Taiwan", flag: "🇹🇼" },
+  { name: "Tajikistan", flag: "🇹🇯" },
+  { name: "Tanzania", flag: "🇹🇿" },
+  { name: "Thailand", flag: "🇹🇭" },
+  { name: "Timor-Leste", flag: "🇹🇱" },
+  { name: "Togo", flag: "🇹🇬" },
+  { name: "Tonga", flag: "🇹🇴" },
+  { name: "Trinidad and Tobago", flag: "🇹🇹" },
+  { name: "Tunisia", flag: "🇹🇳" },
+  { name: "Turkey", flag: "🇹🇷" },
+  { name: "Turkmenistan", flag: "🇹🇲" },
+  { name: "Tuvalu", flag: "🇹🇻" },
+  { name: "Uganda", flag: "🇺🇬" },
+  { name: "Ukraine", flag: "🇺🇦" },
+  { name: "United Arab Emirates", flag: "🇦🇪" },
+  { name: "United Kingdom", flag: "🇬🇧" },
+  { name: "United States", flag: "🇺🇸" },
+  { name: "Uruguay", flag: "🇺🇾" },
+  { name: "Uzbekistan", flag: "🇺🇿" },
+  { name: "Vanuatu", flag: "🇻🇺" },
+  { name: "Vatican City", flag: "🇻🇦" },
+  { name: "Venezuela", flag: "🇻🇪" },
+  { name: "Vietnam", flag: "🇻🇳" },
+  { name: "Yemen", flag: "🇾🇪" },
+  { name: "Zambia", flag: "🇿🇲" },
+  { name: "Zimbabwe", flag: "🇿🇼" }
+];
 
 function Profile() {
   const { userId } = useParams();
@@ -28,6 +228,8 @@ function Profile() {
     username: '',
     bio: 'Welcome to my profile! I love sharing thoughts and connecting with others.',
     location: '',
+    dateOfBirth: '',
+    country: '',
     joinDate: 'Recently',
     profilePicture: null,
     isPrivate: false
@@ -267,7 +469,7 @@ function Profile() {
       // Fetch profile data from database
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('full_name, username, bio, location, avatar_url, is_private')
+        .select('full_name, username, bio, location, date_of_birth, country, avatar_url, is_private')
         .eq('id', profileUserId)
         .single();
 
@@ -291,6 +493,8 @@ function Profile() {
           username: profileData.username || '',
           bio: profileData.bio || 'Welcome to my profile! I love sharing thoughts and connecting with others.',
           location: profileData.location || '',
+          dateOfBirth: profileData.date_of_birth || '',
+          country: profileData.country || '',
           joinDate: joinDate,
           profilePicture: profileData.avatar_url || user?.user_metadata?.avatar_url,
           isPrivate: profileData.is_private || false
@@ -490,7 +694,11 @@ function Profile() {
       const { error: updateError } = await supabase
         .from('profiles')
         .update({
+          full_name: updatedProfile.name,
           bio: updatedProfile.bio,
+          location: updatedProfile.location,
+          date_of_birth: updatedProfile.dateOfBirth,
+          country: updatedProfile.country,
           avatar_url: updatedProfile.profilePicture,
           is_private: updatedProfile.isPrivate
         })
@@ -511,7 +719,7 @@ function Profile() {
       setPreviewUrl(null);
 
       // Refresh profile data from database
-      await fetchUserProfile();
+      await fetchUserProfile(user.id);
     } catch (error) {
       console.error('Error saving profile:', error);
       alert('Failed to save profile');
@@ -544,6 +752,15 @@ function Profile() {
       profilePicture: emoji
     }));
     setPreviewUrl(null);
+  };
+
+  const handleRemovePhoto = () => {
+    setEditedProfile(prev => ({
+      ...prev,
+      profilePicture: null
+    }));
+    setPreviewUrl(null);
+    setSelectedFile(null);
   };
 
   const handleLike = async (postId) => {
@@ -757,6 +974,11 @@ function Profile() {
                       <div className="avatar-placeholder">👤</div>
                     )}
                   </div>
+                  <div className="profile-name-section">
+                    <h1 className="profile-name">{profile.name}</h1>
+                    {profile.username && <p className="profile-username">@{profile.username}</p>}
+                    <p className="profile-join-date">Joined {profile.joinDate}</p>
+                  </div>
                   <button
                     onClick={handleFollowToggle}
                     className={`follow-profile-btn ${isFollowing ? 'following' : ''} ${followRequestStatus === 'pending' ? 'requested' : ''}`}
@@ -764,16 +986,6 @@ function Profile() {
                   >
                     {isFollowing ? '✓ Following' : followRequestStatus === 'pending' ? '⏳ Requested' : '+ Follow'}
                   </button>
-                </div>
-                <div className="profile-info">
-                  <div className="display-info">
-                    <div className="profile-name-row">
-                      <div className="profile-name-section">
-                        <h1 className="profile-name">{profile.name}</h1>
-                        {profile.username && <p className="profile-username">@{profile.username}</p>}
-                      </div>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
@@ -810,7 +1022,7 @@ function Profile() {
                   </div>
                   <div className="avatar-options">
                     <label htmlFor="file-upload" className="upload-btn">
-                      📷 Upload Photo
+                      Upload Photo
                       <input
                         id="file-upload"
                         type="file"
@@ -819,7 +1031,73 @@ function Profile() {
                         style={{ display: 'none' }}
                       />
                     </label>
+                    {(previewUrl || editedProfile.profilePicture) && (
+                      <button onClick={handleRemovePhoto} className="remove-photo-btn">
+                        Remove Photo
+                      </button>
+                    )}
                   </div>
+                </div>
+                <div className="profile-field-edit">
+                  <label htmlFor="name">Display Name</label>
+                  <input
+                    id="name"
+                    name="name"
+                    type="text"
+                    value={editedProfile.name}
+                    onChange={handleChange}
+                    className="edit-input"
+                    placeholder="Your display name"
+                  />
+                </div>
+                <div className="profile-field-edit">
+                  <label htmlFor="dateOfBirth">Date of Birth</label>
+                  <DatePicker
+                    id="dateOfBirth"
+                    selected={editedProfile.dateOfBirth ? new Date(editedProfile.dateOfBirth) : null}
+                    onChange={(date) => {
+                      setEditedProfile(prev => ({
+                        ...prev,
+                        dateOfBirth: date ? date.toISOString().split('T')[0] : ''
+                      }));
+                    }}
+                    dateFormat="dd.MM.yyyy"
+                    placeholderText="dd.mm.yyyy"
+                    className="edit-input date-picker-input"
+                    showYearDropdown
+                    scrollableYearDropdown
+                    yearDropdownItemNumber={100}
+                    maxDate={new Date()}
+                  />
+                </div>
+                <div className="profile-field-edit">
+                  <label htmlFor="country">Country</label>
+                  <select
+                    id="country"
+                    name="country"
+                    value={editedProfile.country}
+                    onChange={handleChange}
+                    className="edit-input country-select"
+                  >
+                    <option value="">Select your country</option>
+                    {COUNTRIES.map(country => (
+                      <option key={country.name} value={country.name}>
+                        {country.flag} {country.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="profile-field-edit">
+                  <label htmlFor="location">Location</label>
+                  <input
+                    id="location"
+                    name="location"
+                    type="text"
+                    value={editedProfile.location}
+                    onChange={handleChange}
+                    className="edit-input"
+                    placeholder="City, State"
+                  />
                 </div>
                 <div className="profile-bio-edit">
                   <label htmlFor="bio">Bio</label>
@@ -830,7 +1108,7 @@ function Profile() {
                     onChange={handleChange}
                     className="edit-textarea"
                     placeholder="Tell us about yourself..."
-                    rows="6"
+                    rows="4"
                   />
                 </div>
                 <div className="profile-privacy-edit">
@@ -858,12 +1136,17 @@ function Profile() {
                   </div>
                 </div>
                 <div className="edit-buttons">
-                  <button onClick={handleSave} className="save-btn">💾 Save Changes</button>
-                  <button onClick={handleCancel} className="cancel-btn">❌ Cancel</button>
+                  <button onClick={handleSave} className="save-btn">Save Changes</button>
+                  <button onClick={handleCancel} className="cancel-btn">Cancel</button>
                 </div>
               </div>
             ) : (
               <>
+                {isOwnProfile && (
+                  <button onClick={handleEdit} className="edit-btn-icon" aria-label="Edit Profile">
+                    ✏️
+                  </button>
+                )}
                 <div className="profile-header-top">
                   <div className="profile-avatar-section">
                     <div className="profile-avatar">
@@ -873,9 +1156,12 @@ function Profile() {
                         <div className="avatar-placeholder">👤</div>
                       )}
                     </div>
-                    {isOwnProfile ? (
-                      <button onClick={handleEdit} className="edit-btn">✏️ Edit Profile</button>
-                    ) : (
+                    <div className="profile-name-section">
+                      <h1 className="profile-name">{profile.name}</h1>
+                      {profile.username && <p className="profile-username">@{profile.username}</p>}
+                      <p className="profile-join-date">Joined {profile.joinDate}</p>
+                    </div>
+                    {!isOwnProfile && (
                       <button
                         onClick={handleFollowToggle}
                         className={`follow-profile-btn ${isFollowing ? 'following' : ''} ${followRequestStatus === 'pending' ? 'requested' : ''} ${isFollowing && isHoveringFollow ? 'unfollow-hover' : ''}`}
@@ -890,11 +1176,6 @@ function Profile() {
                   <div className="profile-info">
                     <div className="display-info">
                       <div className="profile-name-row">
-                        <div className="profile-name-section">
-                          <h1 className="profile-name">{profile.name}</h1>
-                          {profile.username && <p className="profile-username">@{profile.username}</p>}
-                          <p className="profile-join-date">Joined {profile.joinDate}</p>
-                        </div>
                         <div className="profile-stats">
                           <button onClick={() => setActiveTab('followers')} className="stat-item">
                             <span className="stat-number">{followers.length}</span>
@@ -910,12 +1191,16 @@ function Profile() {
                           </div>
                         </div>
                       </div>
+                      <div className="profile-details">
+                        <div className="profile-info-row">
+                          {profile.dateOfBirth && <p className="profile-dob">🎂 {new Date(profile.dateOfBirth).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>}
+                          {profile.country && <p className="profile-country">{COUNTRIES.find(c => c.name === profile.country)?.flag || '🌍'} {profile.country}</p>}
+                          {profile.location && <p className="profile-location">📍 {profile.location}</p>}
+                        </div>
+                        <p className="profile-bio">{profile.bio}</p>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="profile-details">
-                  <p className="profile-location">📍 {profile.location}</p>
-                  <p className="profile-bio">{profile.bio}</p>
                 </div>
               </>
             )}
