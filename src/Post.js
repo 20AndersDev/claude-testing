@@ -20,16 +20,7 @@ function Post({ post, onLike, onComment, onDelete, onDeleteComment }) {
   const [isLoadingFollow, setIsLoadingFollow] = useState(false);
   const [currentUserName, setCurrentUserName] = useState('');
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
-  const [showTripPlanModal, setShowTripPlanModal] = useState(false);
-  const [userTripPlans, setUserTripPlans] = useState([]);
-  const [loadingTripPlans, setLoadingTripPlans] = useState(false);
-  const [selectedTripPlan, setSelectedTripPlan] = useState(null);
-  const [showItemSelection, setShowItemSelection] = useState(false);
-  const [selectedItems, setSelectedItems] = useState({
-    location: false,
-    activities: [],
-    accommodations: []
-  });
+  const [isBookmarked, setIsBookmarked] = useState(false);
 
   useEffect(() => {
     getCurrentUser();
@@ -38,6 +29,9 @@ function Post({ post, onLike, onComment, onDelete, onDeleteComment }) {
   useEffect(() => {
     if (currentUserId && post.user_id && currentUserId !== post.user_id) {
       checkFollowStatus();
+    }
+    if (currentUserId) {
+      checkBookmarkStatus();
     }
   }, [currentUserId, post.user_id]);
 
@@ -95,6 +89,24 @@ function Post({ post, onLike, onComment, onDelete, onDeleteComment }) {
     }
   };
 
+  const checkBookmarkStatus = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('bookmarks')
+        .select('id')
+        .eq('user_id', currentUserId)
+        .eq('post_id', post.id)
+        .single();
+
+      if (!error && data) {
+        setIsBookmarked(true);
+      }
+    } catch (error) {
+      // No bookmark exists
+      setIsBookmarked(false);
+    }
+  };
+
   const handleFollowToggle = async (e) => {
     e.stopPropagation();
     if (!currentUserId || currentUserId === post.user_id || isLoadingFollow) return;
@@ -131,6 +143,42 @@ function Post({ post, onLike, onComment, onDelete, onDeleteComment }) {
       console.error('Error toggling follow:', error);
     } finally {
       setIsLoadingFollow(false);
+    }
+  };
+
+  const handleBookmark = async () => {
+    if (!currentUserId) {
+      setShowLoginPrompt(true);
+      return;
+    }
+
+    try {
+      if (isBookmarked) {
+        // Remove bookmark
+        const { error } = await supabase
+          .from('bookmarks')
+          .delete()
+          .eq('user_id', currentUserId)
+          .eq('post_id', post.id);
+
+        if (!error) {
+          setIsBookmarked(false);
+        }
+      } else {
+        // Add bookmark
+        const { error } = await supabase
+          .from('bookmarks')
+          .insert([{
+            user_id: currentUserId,
+            post_id: post.id
+          }]);
+
+        if (!error) {
+          setIsBookmarked(true);
+        }
+      }
+    } catch (error) {
+      console.error('Error toggling bookmark:', error);
     }
   };
 
@@ -392,152 +440,6 @@ function Post({ post, onLike, onComment, onDelete, onDeleteComment }) {
     }
   };
 
-  const fetchUserTripPlans = async () => {
-    if (!currentUserId) return;
-
-    setLoadingTripPlans(true);
-    try {
-      // Fetch trip plans owned by user
-      const { data: ownedPlans, error: ownedError } = await supabase
-        .from('trip_plans')
-        .select('*')
-        .eq('user_id', currentUserId)
-        .order('created_at', { ascending: false });
-
-      if (ownedError) throw ownedError;
-
-      // Fetch trip plans where user is a collaborator
-      const { data: sharedPlans, error: sharedError } = await supabase
-        .from('trip_plans')
-        .select(`
-          *,
-          trip_collaborators!inner(user_id)
-        `)
-        .eq('trip_collaborators.user_id', currentUserId)
-        .neq('user_id', currentUserId)
-        .order('created_at', { ascending: false });
-
-      if (sharedError) throw sharedError;
-
-      const allPlans = [...(ownedPlans || []), ...(sharedPlans || [])];
-      setUserTripPlans(allPlans);
-    } catch (error) {
-      console.error('Error fetching trip plans:', error);
-    } finally {
-      setLoadingTripPlans(false);
-    }
-  };
-
-  const selectTripPlan = (tripPlanId) => {
-    setSelectedTripPlan(tripPlanId);
-    setShowTripPlanModal(false);
-    setShowItemSelection(true);
-  };
-
-  const toggleItemSelection = (type, index = null) => {
-    setSelectedItems(prev => {
-      if (type === 'location') {
-        return { ...prev, location: !prev.location };
-      } else if (type === 'activity') {
-        const activities = [...prev.activities];
-        const idx = activities.indexOf(index);
-        if (idx > -1) {
-          activities.splice(idx, 1);
-        } else {
-          activities.push(index);
-        }
-        return { ...prev, activities };
-      } else if (type === 'accommodation') {
-        const accommodations = [...prev.accommodations];
-        const idx = accommodations.indexOf(index);
-        if (idx > -1) {
-          accommodations.splice(idx, 1);
-        } else {
-          accommodations.push(index);
-        }
-        return { ...prev, accommodations };
-      }
-      return prev;
-    });
-  };
-
-  const handleAddToTripPlan = async () => {
-    if (!selectedTripPlan) return;
-
-    try {
-      const itemsToAdd = [];
-
-      // Add location if selected
-      if (selectedItems.location && (post.location || post.tripTitle)) {
-        itemsToAdd.push({
-          user_id: currentUserId,
-          trip_plan_id: selectedTripPlan,
-          place_id: null,
-          place_name: post.location || post.tripTitle,
-          place_address: post.location || '',
-          notes: `Added from post by ${post.author}`,
-        });
-      }
-
-      // Add selected activities
-      if (post.activities && selectedItems.activities.length > 0) {
-        selectedItems.activities.forEach(activityIndex => {
-          const activity = post.activities[activityIndex];
-          itemsToAdd.push({
-            user_id: currentUserId,
-            trip_plan_id: selectedTripPlan,
-            place_id: activity.place_id || null,
-            place_name: activity.name,
-            place_address: activity.location || post.location || '',
-            notes: `${activity.type || 'Activity'} - Added from post by ${post.author}`,
-          });
-        });
-      }
-
-      // Add selected accommodations
-      if (post.accommodations && selectedItems.accommodations.length > 0) {
-        selectedItems.accommodations.forEach(accIndex => {
-          const acc = post.accommodations[accIndex];
-          itemsToAdd.push({
-            user_id: currentUserId,
-            trip_plan_id: selectedTripPlan,
-            place_id: acc.place_id || null,
-            place_name: acc.name,
-            place_address: acc.location || post.location || '',
-            notes: `${acc.type || 'Accommodation'} - Added from post by ${post.author}`,
-          });
-        });
-      }
-
-      if (itemsToAdd.length === 0) {
-        alert('Please select at least one item to add');
-        return;
-      }
-
-      const { error } = await supabase
-        .from('planned_attractions')
-        .insert(itemsToAdd);
-
-      if (error) throw error;
-
-      alert(`Successfully added ${itemsToAdd.length} item(s) to trip plan!`);
-      setShowItemSelection(false);
-      setSelectedTripPlan(null);
-      setSelectedItems({ location: false, activities: [], accommodations: [] });
-    } catch (error) {
-      console.error('Error adding to trip plan:', error);
-      alert('Failed to add to trip plan');
-    }
-  };
-
-  const openTripPlanModal = () => {
-    if (!currentUserId) {
-      setShowLoginPrompt(true);
-      return;
-    }
-    fetchUserTripPlans();
-    setShowTripPlanModal(true);
-  };
 
   const renderStars = (rating) => {
     return (
@@ -577,6 +479,9 @@ function Post({ post, onLike, onComment, onDelete, onDeleteComment }) {
                 style={{ cursor: 'pointer' }}
               >
                 {post.author}
+                {post.author_username && (
+                  <span className="author-handle">@{post.author_username}</span>
+                )}
               </div>
               {currentUserId && post.user_id !== currentUserId && !isFollowing && (
                 <button
@@ -774,16 +679,14 @@ function Post({ post, onLike, onComment, onDelete, onDeleteComment }) {
           <span className="action-icon">💬</span>
           <span className="action-count">{(post.comments || []).length}</span>
         </button>
-        {(post.location || post.tripTitle) && (
-          <button
-            className="action-btn trip-plan-btn"
-            onClick={openTripPlanModal}
-            title="Add to trip plan"
-          >
-            <span className="action-icon">🗺️</span>
-            <span className="action-text">Add to Plan</span>
-          </button>
-        )}
+        <button
+          className={`action-btn bookmark-btn ${isBookmarked ? 'bookmarked' : ''}`}
+          onClick={handleBookmark}
+          title={isBookmarked ? "Remove bookmark" : "Bookmark"}
+        >
+          <span className="action-icon">{isBookmarked ? '🔖' : '🏷️'}</span>
+          <span className="action-text">{isBookmarked ? 'Saved' : 'Bookmark'}</span>
+        </button>
       </div>
 
       {showComments && (
@@ -880,133 +783,6 @@ function Post({ post, onLike, onComment, onDelete, onDeleteComment }) {
                 onClick={() => setShowLoginPrompt(false)}
               >
                 Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showTripPlanModal && (
-        <div className="login-prompt-overlay" onClick={() => setShowTripPlanModal(false)}>
-          <div className="login-prompt-modal trip-plan-modal" onClick={(e) => e.stopPropagation()}>
-            <button className="login-prompt-close" onClick={() => setShowTripPlanModal(false)}>
-              ✕
-            </button>
-            <div className="login-prompt-icon">🗺️</div>
-            <h3>Add to Trip Plan</h3>
-            <p>Select a trip plan to add "{post.location || post.tripTitle}"</p>
-            {loadingTripPlans ? (
-              <div className="trip-plans-loading">Loading your trip plans...</div>
-            ) : userTripPlans.length === 0 ? (
-              <div className="no-trip-plans">
-                <p>You don't have any trip plans yet.</p>
-                <button
-                  className="login-prompt-btn primary"
-                  onClick={() => navigate('/planner')}
-                >
-                  Create a Trip Plan
-                </button>
-              </div>
-            ) : (
-              <div className="trip-plans-list">
-                {userTripPlans.map((plan) => (
-                  <button
-                    key={plan.id}
-                    className="trip-plan-item"
-                    onClick={() => selectTripPlan(plan.id)}
-                  >
-                    <div className="trip-plan-icon">🗺️</div>
-                    <div className="trip-plan-info">
-                      <div className="trip-plan-name">{plan.name}</div>
-                      {plan.destination && (
-                        <div className="trip-plan-destination">📍 {plan.destination}</div>
-                      )}
-                    </div>
-                    <div className="trip-plan-arrow">→</div>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {showItemSelection && (
-        <div className="login-prompt-overlay" onClick={() => setShowItemSelection(false)}>
-          <div className="login-prompt-modal item-selection-modal" onClick={(e) => e.stopPropagation()}>
-            <button className="login-prompt-close" onClick={() => setShowItemSelection(false)}>
-              ✕
-            </button>
-            <div className="login-prompt-icon">📋</div>
-            <h3>Select Items to Add</h3>
-            <p>Choose what you want to add to your trip plan</p>
-
-            <div className="items-selection-list">
-              {(post.location || post.tripTitle) && (
-                <div className="selection-category">
-                  <h4>📍 Location</h4>
-                  <label className="item-checkbox">
-                    <input
-                      type="checkbox"
-                      checked={selectedItems.location}
-                      onChange={() => toggleItemSelection('location')}
-                    />
-                    <span className="checkbox-label">{post.location || post.tripTitle}</span>
-                  </label>
-                </div>
-              )}
-
-              {post.activities && post.activities.length > 0 && (
-                <div className="selection-category">
-                  <h4>🎯 Activities ({post.activities.length})</h4>
-                  {post.activities.map((activity, index) => (
-                    <label key={index} className="item-checkbox">
-                      <input
-                        type="checkbox"
-                        checked={selectedItems.activities.includes(index)}
-                        onChange={() => toggleItemSelection('activity', index)}
-                      />
-                      <span className="checkbox-label">
-                        {activity.name}
-                        {activity.type && <span className="item-type"> - {activity.type}</span>}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              )}
-
-              {post.accommodations && post.accommodations.length > 0 && (
-                <div className="selection-category">
-                  <h4>🏨 Accommodations ({post.accommodations.length})</h4>
-                  {post.accommodations.map((acc, index) => (
-                    <label key={index} className="item-checkbox">
-                      <input
-                        type="checkbox"
-                        checked={selectedItems.accommodations.includes(index)}
-                        onChange={() => toggleItemSelection('accommodation', index)}
-                      />
-                      <span className="checkbox-label">
-                        {acc.name}
-                        {acc.type && <span className="item-type"> - {acc.type}</span>}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div className="login-prompt-actions">
-              <button
-                className="login-prompt-btn secondary"
-                onClick={() => setShowItemSelection(false)}
-              >
-                Cancel
-              </button>
-              <button
-                className="login-prompt-btn primary"
-                onClick={handleAddToTripPlan}
-              >
-                Add Selected Items
               </button>
             </div>
           </div>

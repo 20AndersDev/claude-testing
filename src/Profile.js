@@ -246,6 +246,9 @@ function Profile() {
   const [followRequestStatus, setFollowRequestStatus] = useState(null); // 'pending', 'accepted', 'rejected', or null
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [followRequestId, setFollowRequestId] = useState(null);
+  const [isBlockedUser, setIsBlockedUser] = useState(false);
+  const [hasBlockedCurrentUser, setHasBlockedCurrentUser] = useState(false);
+  const [profileUserId, setProfileUserId] = useState(null); // Actual user ID of the profile being viewed
 
   // Load user data from Supabase
   useEffect(() => {
@@ -265,15 +268,35 @@ function Profile() {
     if (currentUserId !== null) {
       const loadProfileData = async () => {
         setIsLoadingProfile(true);
-        const profileUserId = userId || currentUserId;
+        let actualUserId = userId || currentUserId;
+
+        // If userId is provided, check if it's a username or ID
+        if (userId && userId !== currentUserId) {
+          // Try to get user ID from username
+          const { data: userData, error } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('username', userId)
+            .single();
+
+          if (userData) {
+            actualUserId = userData.id;
+          } else {
+            // If not found by username, assume it's already an ID
+            actualUserId = userId;
+          }
+        }
+
+        setProfileUserId(actualUserId);
 
         await Promise.all([
-          fetchUserProfile(profileUserId),
-          fetchUserPosts(profileUserId),
-          fetchFollowers(profileUserId),
-          fetchFollowing(profileUserId),
-          !isOwnProfile && checkFollowStatus(profileUserId),
-          !isOwnProfile && checkFollowRequestStatus(profileUserId)
+          fetchUserProfile(actualUserId),
+          fetchUserPosts(actualUserId),
+          fetchFollowers(actualUserId),
+          fetchFollowing(actualUserId),
+          !isOwnProfile && checkFollowStatus(actualUserId),
+          !isOwnProfile && checkFollowRequestStatus(actualUserId),
+          !isOwnProfile && checkBlockStatus(actualUserId)
         ]);
 
         setIsLoadingProfile(false);
@@ -354,13 +377,138 @@ function Profile() {
     }
   };
 
+  const checkBlockStatus = async (profileUserId) => {
+    try {
+      // Check if current user blocked the profile user
+      const { data: blockedByMe, error: error1 } = await supabase
+        .from('blocked_users')
+        .select('id')
+        .eq('blocker_id', currentUserId)
+        .eq('blocked_id', profileUserId)
+        .single();
+
+      if (error1 && error1.code !== 'PGRST116') {
+        console.error('Error checking block status:', error1);
+      }
+
+      setIsBlockedUser(!!blockedByMe);
+
+      // Check if profile user blocked current user
+      const { data: blockedMe, error: error2 } = await supabase
+        .from('blocked_users')
+        .select('id')
+        .eq('blocker_id', profileUserId)
+        .eq('blocked_id', currentUserId)
+        .single();
+
+      if (error2 && error2.code !== 'PGRST116') {
+        console.error('Error checking if blocked:', error2);
+      }
+
+      setHasBlockedCurrentUser(!!blockedMe);
+    } catch (error) {
+      console.error('Error checking block status:', error);
+    }
+  };
+
+  const handleBlockUser = async (e) => {
+    console.log('handleBlockUser called');
+    console.log('Current state:', { profileUserId, currentUserId, isBlockedUser });
+
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    if (!profileUserId) {
+      console.error('No profile user ID available');
+      alert('Error: No profile user ID available');
+      return;
+    }
+
+    if (!currentUserId) {
+      console.error('No current user ID available');
+      alert('Error: No current user ID available');
+      return;
+    }
+
+    const action = isBlockedUser ? 'unblock' : 'block';
+    console.log(`Attempting to ${action} user`);
+
+    // Temporarily removed confirmation for debugging
+    // const confirmed = window.confirm(`Are you sure you want to ${action} this user?`);
+    // console.log('Confirmation result:', confirmed);
+    // if (!confirmed) {
+    //   console.log('User cancelled action');
+    //   return;
+    // }
+
+    try {
+      if (isBlockedUser) {
+        // Unblock user
+        console.log('Unblocking user:', { blocker_id: currentUserId, blocked_id: profileUserId });
+        const { data, error } = await supabase
+          .from('blocked_users')
+          .delete()
+          .eq('blocker_id', currentUserId)
+          .eq('blocked_id', profileUserId)
+          .select();
+
+        console.log('Unblock result:', { data, error });
+
+        if (error) {
+          console.error('Unblock error:', error);
+          throw error;
+        }
+
+        console.log('Setting isBlockedUser to false');
+        setIsBlockedUser(false);
+        alert('User unblocked successfully');
+      } else {
+        // Block user
+        console.log('Blocking user:', { blocker_id: currentUserId, blocked_id: profileUserId });
+        const { data, error } = await supabase
+          .from('blocked_users')
+          .insert([{
+            blocker_id: currentUserId,
+            blocked_id: profileUserId
+          }])
+          .select();
+
+        console.log('Block result:', { data, error });
+
+        if (error) {
+          console.error('Block error:', error);
+          if (error.code === 'PGRST204' || error.code === 'PGRST116') {
+            alert('Block feature not yet enabled. Please set up the database schema.');
+            return;
+          }
+          throw error;
+        }
+
+        console.log('Setting isBlockedUser to true');
+        setIsBlockedUser(true);
+        alert('User blocked successfully');
+      }
+    } catch (error) {
+      console.error('Error blocking/unblocking user:', error);
+      alert(`Failed to update block status: ${error.message}`);
+    }
+  };
+
   const handleFollowToggle = async () => {
     if (isLoadingFollow) return;
 
-    const profileUserId = userId || currentUserId;
+    if (!profileUserId) {
+      console.error('No profile user ID available');
+      return;
+    }
+
     setIsLoadingFollow(true);
 
     try {
+      console.log('Follow toggle:', { currentUserId, profileUserId, isFollowing, followRequestStatus });
+
       if (isFollowing) {
         // Unfollow
         const { error } = await supabase
@@ -369,7 +517,10 @@ function Profile() {
           .eq('follower_id', currentUserId)
           .eq('following_id', profileUserId);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Unfollow error:', error);
+          throw error;
+        }
         setIsFollowing(false);
 
         // Update followers count
@@ -381,13 +532,33 @@ function Profile() {
           .delete()
           .eq('id', followRequestId);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Cancel request error:', error);
+          throw error;
+        }
         setFollowRequestStatus(null);
         setFollowRequestId(null);
       } else {
         // Check if the profile is private
         if (profile.isPrivate) {
+          // First check if a follow request already exists
+          const { data: existingRequest } = await supabase
+            .from('follow_requests')
+            .select('id, status')
+            .eq('requester_id', currentUserId)
+            .eq('requested_id', profileUserId)
+            .single();
+
+          if (existingRequest) {
+            console.log('Follow request already exists:', existingRequest);
+            setFollowRequestStatus(existingRequest.status);
+            setFollowRequestId(existingRequest.id);
+            alert('Follow request already sent');
+            return;
+          }
+
           // Create follow request instead of direct follow
+          console.log('Creating follow request:', { requester_id: currentUserId, requested_id: profileUserId });
           const { data: requestData, error: requestError } = await supabase
             .from('follow_requests')
             .insert({
@@ -398,7 +569,25 @@ function Profile() {
             .select()
             .single();
 
-          if (requestError) throw requestError;
+          if (requestError) {
+            console.error('Follow request error:', requestError);
+            // If duplicate key error, fetch the existing request
+            if (requestError.code === '23505') {
+              const { data: existingReq } = await supabase
+                .from('follow_requests')
+                .select('id, status')
+                .eq('requester_id', currentUserId)
+                .eq('requested_id', profileUserId)
+                .single();
+
+              if (existingReq) {
+                setFollowRequestStatus(existingReq.status);
+                setFollowRequestId(existingReq.id);
+                return;
+              }
+            }
+            throw requestError;
+          }
           setFollowRequestStatus('pending');
           setFollowRequestId(requestData.id);
 
@@ -412,10 +601,33 @@ function Profile() {
           if (profileData) {
             const requesterName = profileData.full_name || profileData.username || 'User';
             // Create notification for the follow request
+            console.log('Creating follow request notification:', {
+              requestedUserId: profileUserId,
+              requesterId: currentUserId,
+              requesterName,
+              requestId: requestData.id
+            });
             await createFollowRequestNotification(profileUserId, currentUserId, requesterName, requestData.id);
+            console.log('Follow request notification created successfully');
+            alert('Follow request sent!');
           }
         } else {
           // Public profile - direct follow
+          // First check if already following
+          const { data: existingFollow } = await supabase
+            .from('follows')
+            .select('id')
+            .eq('follower_id', currentUserId)
+            .eq('following_id', profileUserId)
+            .single();
+
+          if (existingFollow) {
+            console.log('Already following this user');
+            setIsFollowing(true);
+            return;
+          }
+
+          console.log('Creating direct follow:', { follower_id: currentUserId, following_id: profileUserId });
           const { error } = await supabase
             .from('follows')
             .insert({
@@ -423,7 +635,15 @@ function Profile() {
               following_id: profileUserId
             });
 
-          if (error) throw error;
+          if (error) {
+            console.error('Follow error:', error);
+            // If duplicate key error, just update state
+            if (error.code === '23505') {
+              setIsFollowing(true);
+              return;
+            }
+            throw error;
+          }
           setIsFollowing(true);
 
           // Update followers count - fetch current user profile
@@ -450,6 +670,7 @@ function Profile() {
       }
     } catch (error) {
       console.error('Error toggling follow:', error);
+      alert('Failed to update follow status. Please try again.');
     } finally {
       setIsLoadingFollow(false);
     }
@@ -979,13 +1200,30 @@ function Profile() {
                     {profile.username && <p className="profile-username">@{profile.username}</p>}
                     <p className="profile-join-date">Joined {profile.joinDate}</p>
                   </div>
-                  <button
-                    onClick={handleFollowToggle}
-                    className={`follow-profile-btn ${isFollowing ? 'following' : ''} ${followRequestStatus === 'pending' ? 'requested' : ''}`}
-                    disabled={isLoadingFollow}
-                  >
-                    {isFollowing ? '✓ Following' : followRequestStatus === 'pending' ? '⏳ Requested' : '+ Follow'}
-                  </button>
+                  <div className="profile-action-buttons">
+                    <button
+                      onClick={() => navigate(`/messages/${profileUserId}`)}
+                      className="message-profile-btn"
+                      title="Send Message"
+                    >
+                      💬
+                    </button>
+                    <button
+                      onClick={handleFollowToggle}
+                      className={`follow-profile-btn ${isFollowing ? 'following' : ''} ${followRequestStatus === 'pending' ? 'requested' : ''}`}
+                      disabled={isLoadingFollow}
+                      title={followRequestStatus === 'pending' ? 'Request Pending' : isFollowing ? 'Following' : 'Follow'}
+                    >
+                      {isFollowing ? '✓' : followRequestStatus === 'pending' ? '⏳' : '+'}
+                    </button>
+                    <button
+                      className={`block-user-btn ${isBlockedUser ? 'blocked' : ''}`}
+                      onClick={handleBlockUser}
+                      title={isBlockedUser ? 'Unblock user' : 'Block user'}
+                    >
+                      {isBlockedUser ? '🔓' : '🔒'}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1162,15 +1400,32 @@ function Profile() {
                       <p className="profile-join-date">Joined {profile.joinDate}</p>
                     </div>
                     {!isOwnProfile && (
-                      <button
-                        onClick={handleFollowToggle}
-                        className={`follow-profile-btn ${isFollowing ? 'following' : ''} ${followRequestStatus === 'pending' ? 'requested' : ''} ${isFollowing && isHoveringFollow ? 'unfollow-hover' : ''}`}
-                        disabled={isLoadingFollow}
-                        onMouseEnter={() => setIsHoveringFollow(true)}
-                        onMouseLeave={() => setIsHoveringFollow(false)}
-                      >
-                        {followRequestStatus === 'pending' && isHoveringFollow ? '✗ Cancel Request' : followRequestStatus === 'pending' ? '⏳ Requested' : isFollowing && isHoveringFollow ? '✗ Unfollow' : isFollowing ? '✓ Following' : '+ Follow'}
-                      </button>
+                      <div className="profile-action-buttons">
+                        <button
+                          onClick={() => navigate(`/messages/${profileUserId}`)}
+                          className="message-profile-btn"
+                          title="Send Message"
+                        >
+                          💬
+                        </button>
+                        <button
+                          onClick={handleFollowToggle}
+                          className={`follow-profile-btn ${isFollowing ? 'following' : ''} ${followRequestStatus === 'pending' ? 'requested' : ''} ${isFollowing && isHoveringFollow ? 'unfollow-hover' : ''}`}
+                          disabled={isLoadingFollow}
+                          onMouseEnter={() => setIsHoveringFollow(true)}
+                          onMouseLeave={() => setIsHoveringFollow(false)}
+                          title={followRequestStatus === 'pending' ? (isHoveringFollow ? 'Cancel Request' : 'Request Pending') : isFollowing ? (isHoveringFollow ? 'Unfollow' : 'Following') : 'Follow'}
+                        >
+                          {followRequestStatus === 'pending' && isHoveringFollow ? '✗' : followRequestStatus === 'pending' ? '⏳' : isFollowing && isHoveringFollow ? '✗' : isFollowing ? '✓' : '+'}
+                        </button>
+                        <button
+                          className={`block-user-btn ${isBlockedUser ? 'blocked' : ''}`}
+                          onClick={handleBlockUser}
+                          title={isBlockedUser ? 'Unblock user' : 'Block user'}
+                        >
+                          {isBlockedUser ? '🔓' : '🔒'}
+                        </button>
+                      </div>
                     )}
                   </div>
                   <div className="profile-info">

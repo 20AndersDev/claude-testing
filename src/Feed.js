@@ -141,7 +141,8 @@ function Feed() {
   const [activeFilter, setActiveFilter] = useState("all");
   const [showCreatePost, setShowCreatePost] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("following");
+  const [activeTab, setActiveTab] = useState("discovery");
+  const [sortBy, setSortBy] = useState("recent");
 
   useEffect(() => {
     let filtered = posts;
@@ -196,8 +197,32 @@ function Feed() {
         break;
     }
 
+    // Apply sorting
+    switch (sortBy) {
+      case "popular":
+        filtered = [...filtered].sort((a, b) => (b.likes || 0) - (a.likes || 0));
+        break;
+      case "recent":
+        filtered = [...filtered].sort(
+          (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+        );
+        break;
+      case "oldest":
+        filtered = [...filtered].sort(
+          (a, b) => new Date(a.timestamp) - new Date(b.timestamp)
+        );
+        break;
+      case "comments":
+        filtered = [...filtered].sort(
+          (a, b) => ((b.comments || []).length) - ((a.comments || []).length)
+        );
+        break;
+      default:
+        break;
+    }
+
     setFilteredPosts(filtered);
-  }, [posts, searchTerm, activeFilter, activeTab]);
+  }, [posts, searchTerm, activeFilter, activeTab, sortBy]);
 
   const handleSearchChange = (term) => {
     setSearchTerm(term);
@@ -438,18 +463,11 @@ function Feed() {
           onCreatePost={handleCreatePostToggle}
           isOpen={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
+          sortBy={sortBy}
+          onSortChange={setSortBy}
         />
         <div className="feed">
           <div className="feed-tabs">
-            <button
-              className={`feed-tab ${
-                activeTab === "following" ? "active" : ""
-              }`}
-              onClick={() => handleTabChange("following")}
-            >
-              <span className="tab-icon">👥</span>
-              Following
-            </button>
             <button
               className={`feed-tab ${
                 activeTab === "discovery" ? "active" : ""
@@ -458,6 +476,15 @@ function Feed() {
             >
               <span className="tab-icon">🌍</span>
               Discover
+            </button>
+            <button
+              className={`feed-tab ${
+                activeTab === "following" ? "active" : ""
+              }`}
+              onClick={() => handleTabChange("following")}
+            >
+              <span className="tab-icon">👥</span>
+              Following
             </button>
           </div>
           <button className="planner-cta-button" onClick={() => navigate('/planner')}>

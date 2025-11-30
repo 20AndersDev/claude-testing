@@ -209,15 +209,6 @@ function CreatePost({ onAddPost }) {
                       onChange={(e) => updateActivity(index, 'time', e.target.value)}
                       className="time-input"
                     />
-                    <input
-                      type="number"
-                      value={activity.cost}
-                      onChange={(e) => updateActivity(index, 'cost', e.target.value)}
-                      placeholder="Cost ($)"
-                      className="cost-input"
-                      min="0"
-                      step="0.01"
-                    />
                     <div className="rating-container">
                       <label className="rating-label">Rating:</label>
                       <StarRating

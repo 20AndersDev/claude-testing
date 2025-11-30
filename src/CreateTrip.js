@@ -36,10 +36,73 @@ function CreateTrip() {
   const [accommodationPlaceSuggestions, setAccommodationPlaceSuggestions] = useState([]);
   const [showAccommodationSuggestions, setShowAccommodationSuggestions] = useState(null);
 
+  const [countrySearchInput, setCountrySearchInput] = useState('');
+  const [showCountrySuggestions, setShowCountrySuggestions] = useState(false);
+  const [filteredCountries, setFilteredCountries] = useState([]);
+
   const { isLoaded } = useLoadScript({
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_PLACES_API_KEY,
     libraries,
   });
+
+  const countries = [
+    { name: 'Argentina', flag: '🇦🇷' },
+    { name: 'Australia', flag: '🇦🇺' },
+    { name: 'Austria', flag: '🇦🇹' },
+    { name: 'Belgium', flag: '🇧🇪' },
+    { name: 'Brazil', flag: '🇧🇷' },
+    { name: 'Canada', flag: '🇨🇦' },
+    { name: 'China', flag: '🇨🇳' },
+    { name: 'Czech Republic', flag: '🇨🇿' },
+    { name: 'Denmark', flag: '🇩🇰' },
+    { name: 'Egypt', flag: '🇪🇬' },
+    { name: 'Finland', flag: '🇫🇮' },
+    { name: 'France', flag: '🇫🇷' },
+    { name: 'Germany', flag: '🇩🇪' },
+    { name: 'Greece', flag: '🇬🇷' },
+    { name: 'Iceland', flag: '🇮🇸' },
+    { name: 'Ireland', flag: '🇮🇪' },
+    { name: 'Italy', flag: '🇮🇹' },
+    { name: 'Japan', flag: '🇯🇵' },
+    { name: 'Mexico', flag: '🇲🇽' },
+    { name: 'Morocco', flag: '🇲🇦' },
+    { name: 'Netherlands', flag: '🇳🇱' },
+    { name: 'New Zealand', flag: '🇳🇿' },
+    { name: 'Norway', flag: '🇳🇴' },
+    { name: 'Poland', flag: '🇵🇱' },
+    { name: 'Portugal', flag: '🇵🇹' },
+    { name: 'South Africa', flag: '🇿🇦' },
+    { name: 'South Korea', flag: '🇰🇷' },
+    { name: 'Spain', flag: '🇪🇸' },
+    { name: 'Sweden', flag: '🇸🇪' },
+    { name: 'Switzerland', flag: '🇨🇭' },
+    { name: 'Thailand', flag: '🇹🇭' },
+    { name: 'United Kingdom', flag: '🇬🇧' },
+    { name: 'United States', flag: '🇺🇸' },
+    { name: 'Vietnam', flag: '🇻🇳' }
+  ];
+
+  const handleCountrySearchInput = (value) => {
+    setCountrySearchInput(value);
+
+    if (value.trim().length > 0) {
+      const filtered = countries.filter(country =>
+        country.toLowerCase().includes(value.toLowerCase())
+      );
+      setFilteredCountries(filtered);
+      setShowCountrySuggestions(true);
+    } else {
+      setFilteredCountries([]);
+      setShowCountrySuggestions(false);
+    }
+  };
+
+  const selectCountry = (country) => {
+    handleTripDataChange('country', country);
+    setCountrySearchInput(country);
+    setShowCountrySuggestions(false);
+    setFilteredCountries([]);
+  };
 
   const handleTripDataChange = (field, value) => {
     setTripData(prev => ({ ...prev, [field]: value }));
@@ -448,48 +511,45 @@ function CreateTrip() {
             </div>
             <div className="form-group">
               <label>Country <span className="required">*</span></label>
-              <select
-                value={tripData.country}
-                onChange={(e) => handleTripDataChange('country', e.target.value)}
-                className="form-input"
-                required
-              >
-                <option value="">Select a country</option>
-                <option value="Norway">Norway</option>
-                <option value="Sweden">Sweden</option>
-                <option value="Denmark">Denmark</option>
-                <option value="Finland">Finland</option>
-                <option value="Iceland">Iceland</option>
-                <option value="United Kingdom">United Kingdom</option>
-                <option value="Ireland">Ireland</option>
-                <option value="France">France</option>
-                <option value="Germany">Germany</option>
-                <option value="Spain">Spain</option>
-                <option value="Italy">Italy</option>
-                <option value="Portugal">Portugal</option>
-                <option value="Netherlands">Netherlands</option>
-                <option value="Belgium">Belgium</option>
-                <option value="Switzerland">Switzerland</option>
-                <option value="Austria">Austria</option>
-                <option value="Greece">Greece</option>
-                <option value="Poland">Poland</option>
-                <option value="Czech Republic">Czech Republic</option>
-                <option value="United States">United States</option>
-                <option value="Canada">Canada</option>
-                <option value="Mexico">Mexico</option>
-                <option value="Brazil">Brazil</option>
-                <option value="Argentina">Argentina</option>
-                <option value="Japan">Japan</option>
-                <option value="China">China</option>
-                <option value="South Korea">South Korea</option>
-                <option value="Thailand">Thailand</option>
-                <option value="Vietnam">Vietnam</option>
-                <option value="Australia">Australia</option>
-                <option value="New Zealand">New Zealand</option>
-                <option value="Egypt">Egypt</option>
-                <option value="Morocco">Morocco</option>
-                <option value="South Africa">South Africa</option>
-              </select>
+              <div className="autocomplete-wrapper">
+                <input
+                  type="search"
+                  name="country-search"
+                  value={countrySearchInput || tripData.country}
+                  onChange={(e) => handleCountrySearchInput(e.target.value)}
+                  onFocus={() => {
+                    if (countrySearchInput.trim().length > 0 || tripData.country) {
+                      const filtered = countries.filter(country =>
+                        country.toLowerCase().includes((countrySearchInput || tripData.country).toLowerCase())
+                      );
+                      setFilteredCountries(filtered);
+                      setShowCountrySuggestions(true);
+                    }
+                  }}
+                  onBlur={() => setTimeout(() => setShowCountrySuggestions(false), 200)}
+                  placeholder="Search for a country..."
+                  className="form-input"
+                  autoComplete="off"
+                  data-lpignore="true"
+                  required
+                />
+                {showCountrySuggestions && filteredCountries.length > 0 && (
+                  <div className="place-suggestions-dropdown">
+                    {filteredCountries.map((country) => (
+                      <div
+                        key={country}
+                        className="place-suggestion-item"
+                        onClick={() => selectCountry(country)}
+                      >
+                        <div className="place-suggestion-icon">🌍</div>
+                        <div className="place-suggestion-info">
+                          <div className="place-suggestion-name">{country}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
             <div className="form-group">
               <label>City/Location <span className="optional">(optional)</span></label>
@@ -519,31 +579,6 @@ function CreateTrip() {
                   onChange={(e) => handleTripDataChange('endDate', e.target.value)}
                   className="form-input"
                 />
-              </div>
-            </div>
-            <div className="form-group">
-              <label>Price Range <span className="optional">(optional)</span></label>
-              <div className="price-range-slider">
-                <input
-                  type="range"
-                  min="1"
-                  max="4"
-                  value={tripData.priceRange}
-                  onChange={(e) => handleTripDataChange('priceRange', e.target.value)}
-                  className="range-input"
-                />
-                <div className="price-range-labels">
-                  <span className={tripData.priceRange == 1 ? 'active' : ''}>$</span>
-                  <span className={tripData.priceRange == 2 ? 'active' : ''}>$$</span>
-                  <span className={tripData.priceRange == 3 ? 'active' : ''}>$$$</span>
-                  <span className={tripData.priceRange == 4 ? 'active' : ''}>$$$$</span>
-                </div>
-                <div className="price-range-description">
-                  {tripData.priceRange == 1 && 'Budget (Under $500)'}
-                  {tripData.priceRange == 2 && 'Moderate ($500-$1500)'}
-                  {tripData.priceRange == 3 && 'Expensive ($1500-$3000)'}
-                  {tripData.priceRange == 4 && 'Luxury (Over $3000)'}
-                </div>
               </div>
             </div>
             <div className="form-group">

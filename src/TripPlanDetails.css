@@ -79,10 +79,10 @@
 }
 
 .toggle-chat-btn {
-  position: absolute;
-  top: -16px;
-  right: 20px;
-  padding: 8px 12px;
+  position: fixed;
+  top: 84px;
+  right: 30px;
+  padding: 10px 20px;
   background: white;
   color: var(--primary);
   border: 2px solid var(--primary);
@@ -91,13 +91,13 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  z-index: 10;
+  z-index: 100;
   display: flex;
   align-items: center;
   gap: 6px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
   min-width: 36px;
-  height: 36px;
+  height: auto;
   justify-content: center;
 }
 
@@ -109,10 +109,16 @@
 }
 
 .show-chat-btn {
-  position: static;
-  margin: 20px auto;
+  position: fixed;
+  top: 84px;
+  right: 30px;
+  margin: 0;
   display: flex;
   width: fit-content;
+  padding: 10px 20px;
+  font-size: 14px;
+  z-index: 100;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 }
 
 /* Hero Section */
@@ -1035,6 +1041,16 @@
   height: 100%;
   flex-shrink: 0;
   position: relative;
+  transition: all 0.3s ease;
+}
+
+.chat-panel:has(.show-chat-btn) {
+  width: 0;
+  min-width: 0;
+  background: transparent;
+  box-shadow: none;
+  overflow: visible;
+  flex-shrink: 0;
 }
 
 .chat-header {

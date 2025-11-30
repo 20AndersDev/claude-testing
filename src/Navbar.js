@@ -18,6 +18,7 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
   const [placeResults, setPlaceResults] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [followRequestCount, setFollowRequestCount] = useState(0);
+  const [unreadMessageCount, setUnreadMessageCount] = useState(0);
 
   const { isLoaded } = useLoadScript({
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_PLACES_API_KEY,
@@ -130,6 +131,7 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
     if (currentUserId) {
       fetchNotificationCount();
       fetchFollowRequestCount();
+      fetchUnreadMessageCount();
 
       // Set up real-time subscription for notifications
       const notificationsSubscription = supabase
@@ -166,9 +168,39 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
         )
         .subscribe();
 
+      // Set up real-time subscription for direct messages
+      const messagesSubscription = supabase
+        .channel('navbar_direct_messages')
+        .on('postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'direct_messages'
+          },
+          (payload) => {
+            // Only count if message is not from current user
+            if (payload.new.sender_id !== currentUserId) {
+              fetchUnreadMessageCount();
+            }
+          }
+        )
+        .on('postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'direct_messages'
+          },
+          () => {
+            // Refresh count when messages are marked as read
+            fetchUnreadMessageCount();
+          }
+        )
+        .subscribe();
+
       return () => {
         supabase.removeChannel(notificationsSubscription);
         supabase.removeChannel(followRequestsSubscription);
+        supabase.removeChannel(messagesSubscription);
       };
     }
   }, [currentUserId]);
@@ -287,6 +319,53 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
     }
   };
 
+  const fetchUnreadMessageCount = async () => {
+    try {
+      // First get all conversations for current user
+      const { data: conversationsData, error: convError } = await supabase
+        .from('conversations')
+        .select('id')
+        .or(`user1_id.eq.${currentUserId},user2_id.eq.${currentUserId}`);
+
+      if (convError) {
+        if (convError.code === 'PGRST204' || convError.code === 'PGRST116') {
+          setUnreadMessageCount(0);
+          return;
+        }
+        throw convError;
+      }
+
+      if (!conversationsData || conversationsData.length === 0) {
+        setUnreadMessageCount(0);
+        return;
+      }
+
+      const conversationIds = conversationsData.map(c => c.id);
+
+      // Then count unread messages in those conversations
+      const { count, error } = await supabase
+        .from('direct_messages')
+        .select('*', { count: 'exact', head: true })
+        .in('conversation_id', conversationIds)
+        .neq('sender_id', currentUserId)
+        .eq('read', false);
+
+      if (error) {
+        if (error.code === 'PGRST204' || error.code === 'PGRST116') {
+          setUnreadMessageCount(0);
+          return;
+        }
+        throw error;
+      }
+
+      console.log('Unread message count:', count);
+      setUnreadMessageCount(count || 0);
+    } catch (error) {
+      console.error('Error fetching unread message count:', error);
+      setUnreadMessageCount(0);
+    }
+  };
+
   return (
     <nav className="navbar">
       <div className="navbar-container">
@@ -330,6 +409,16 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
           {!loading && user ? (
             <>
               <button
+                className="nav-action-btn messages-btn"
+                onClick={() => navigate('/messages')}
+                title="Messages"
+              >
+                <span className="action-icon">💬</span>
+                {unreadMessageCount > 0 && (
+                  <span className="notification-badge">{unreadMessageCount > 9 ? '9+' : unreadMessageCount}</span>
+                )}
+              </button>
+              <button
                 className="nav-action-btn notifications-btn"
                 onClick={() => navigate('/follow-requests')}
                 title="Notifications"
@@ -338,6 +427,13 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
                 {(unreadCount + followRequestCount) > 0 && (
                   <span className="notification-badge">{(unreadCount + followRequestCount) > 9 ? '9+' : (unreadCount + followRequestCount)}</span>
                 )}
+              </button>
+              <button
+                className="nav-action-btn settings-btn"
+                onClick={() => navigate('/settings')}
+                title="Settings"
+              >
+                <span className="action-icon">⚙️</span>
               </button>
             </>
           ) : (

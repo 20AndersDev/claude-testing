@@ -341,6 +341,16 @@
   font-size: 15px;
   line-height: 1.2;
   min-height: 18px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.author-handle {
+  font-weight: 400;
+  color: var(--text-secondary);
+  font-size: 14px;
 }
 
 .post-content {

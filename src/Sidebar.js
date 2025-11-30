@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Sidebar.css';
 
-function Sidebar({ posts, onFilterChange, onCreatePost, isOpen, onClose }) {
+function Sidebar({ posts, onFilterChange, onCreatePost, isOpen, onClose, sortBy, onSortChange }) {
   const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState('all');
   const [showAllCountries, setShowAllCountries] = useState(false);
@@ -19,14 +19,38 @@ function Sidebar({ posts, onFilterChange, onCreatePost, isOpen, onClose }) {
       .map(post => ({ location: post.location, likes: post.likes }))
       .sort((a, b) => b.likes - a.likes)
       .slice(0, 3);
+
+    // Add filler data if not enough real destinations
+    const fillerDestinations = [
+      { location: 'Paris, France', likes: 234 },
+      { location: 'Tokyo, Japan', likes: 198 },
+      { location: 'Bali, Indonesia', likes: 187 }
+    ];
+
+    if (locations.length < 3) {
+      return [...locations, ...fillerDestinations.slice(0, 3 - locations.length)];
+    }
+
     return locations;
   };
 
   const getHotTrips = () => {
-    return posts
+    const trips = posts
       .filter(post => post.likes > 25 || (post.activities && post.activities.length > 3))
       .sort((a, b) => b.likes - a.likes)
       .slice(0, 2);
+
+    // Add filler data if not enough real trips
+    const fillerTrips = [
+      { id: 'filler-1', tripTitle: 'Weekend in Rome', location: 'Rome, Italy', likes: 156 },
+      { id: 'filler-2', tripTitle: 'Island Hopping Adventure', location: 'Greek Islands', likes: 143 }
+    ];
+
+    if (trips.length < 2) {
+      return [...trips, ...fillerTrips.slice(0, 2 - trips.length)];
+    }
+
+    return trips;
   };
 
   const getTrendingHashtags = () => {
@@ -38,10 +62,27 @@ function Sidebar({ posts, onFilterChange, onCreatePost, isOpen, onClose }) {
         });
       }
     });
-    return Object.entries(hashtagCount)
+
+    const realHashtags = Object.entries(hashtagCount)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 6)
       .map(([tag, count]) => ({ tag, count }));
+
+    // Add filler data if not enough real hashtags
+    const fillerHashtags = [
+      { tag: 'travel', count: 156 },
+      { tag: 'wanderlust', count: 142 },
+      { tag: 'adventure', count: 128 },
+      { tag: 'beach', count: 115 },
+      { tag: 'vacation', count: 103 },
+      { tag: 'explore', count: 98 }
+    ];
+
+    if (realHashtags.length < 6) {
+      return [...realHashtags, ...fillerHashtags.slice(0, 6 - realHashtags.length)];
+    }
+
+    return realHashtags;
   };
 
   const trendingDestinations = getTrendingDestinations();
@@ -211,38 +252,20 @@ function Sidebar({ posts, onFilterChange, onCreatePost, isOpen, onClose }) {
         >
           + New Trip
         </button>
-        <button
-          className="trip-planner-sidebar-btn"
-          onClick={() => navigate('/planner')}
-        >
-          <span className="planner-icon">🗓️</span>
-          <div className="planner-text">
-            <span className="planner-title">Trip Planner</span>
-            <span className="planner-subtitle">Plan future trips</span>
-          </div>
-        </button>
       </div>
 
       <div className="sidebar-section">
-        <h3 className="sidebar-title">🌍 Explore Countries</h3>
-        <div className="country-list">
-          {popularCountries.map((country) => (
-            <button
-              key={country.name}
-              className="country-item"
-              onClick={() => navigate(`/country/${encodeURIComponent(country.name)}`)}
-            >
-              <span className="country-flag">{country.flag}</span>
-              <span className="country-name">{country.name}</span>
-            </button>
-          ))}
-        </div>
-        <button
-          className="view-all-countries-btn"
-          onClick={() => setShowAllCountries(true)}
+        <h3 className="sidebar-title">🔄 Sort Posts</h3>
+        <select
+          className="sidebar-sort-select"
+          value={sortBy}
+          onChange={(e) => onSortChange(e.target.value)}
         >
-          View All Countries →
-        </button>
+          <option value="recent">Most Recent</option>
+          <option value="popular">Most Popular</option>
+          <option value="comments">Most Discussed</option>
+          <option value="oldest">Oldest First</option>
+        </select>
       </div>
 
       <div className="sidebar-section">

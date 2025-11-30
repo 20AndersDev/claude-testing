@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from './supabaseClient';
 import { useLoadScript } from '@react-google-maps/api';
 import Navbar from './Navbar';
+import Sidebar from './Sidebar';
 import useSwipeNavigation from './useSwipeNavigation';
 import './UserSearch.css';
 
@@ -73,6 +74,7 @@ function UserSearch() {
   const [isLoading, setIsLoading] = useState(false);
   const [currentUserId, setCurrentUserId] = useState(null);
   const [posts, setPosts] = useState([]);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
 
   const { isLoaded } = useLoadScript({
@@ -114,10 +116,29 @@ function UserSearch() {
         });
       }
     });
-    return Object.entries(hashtagCount)
+
+    const realHashtags = Object.entries(hashtagCount)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 8)
       .map(([tag, count]) => ({ tag, count }));
+
+    // Add filler data if not enough real hashtags
+    const fillerHashtags = [
+      { tag: 'travel', count: 156 },
+      { tag: 'wanderlust', count: 142 },
+      { tag: 'adventure', count: 128 },
+      { tag: 'beach', count: 115 },
+      { tag: 'vacation', count: 103 },
+      { tag: 'explore', count: 98 },
+      { tag: 'foodie', count: 87 },
+      { tag: 'photography', count: 76 }
+    ];
+
+    if (realHashtags.length < 8) {
+      return [...realHashtags, ...fillerHashtags.slice(0, 8 - realHashtags.length)];
+    }
+
+    return realHashtags;
   };
 
   const getTrendingDestinations = () => {
@@ -126,6 +147,20 @@ function UserSearch() {
       .map(post => ({ location: post.location, likes: post.likes }))
       .sort((a, b) => b.likes - a.likes)
       .slice(0, 5);
+
+    // Add filler data if not enough real destinations
+    const fillerDestinations = [
+      { location: 'Paris, France', likes: 234 },
+      { location: 'Tokyo, Japan', likes: 198 },
+      { location: 'Bali, Indonesia', likes: 187 },
+      { location: 'New York, USA', likes: 165 },
+      { location: 'Barcelona, Spain', likes: 152 }
+    ];
+
+    if (locations.length < 5) {
+      return [...locations, ...fillerDestinations.slice(0, 5 - locations.length)];
+    }
+
     return locations;
   };
 
@@ -280,10 +315,28 @@ function UserSearch() {
     }
   };
 
+  const handleMessageUser = (e, userId) => {
+    e.stopPropagation(); // Prevent triggering handleUserClick
+    navigate(`/messages/${userId}`);
+  };
+
+  const handleSidebarToggle = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
   return (
     <>
-      <Navbar />
+      <Navbar onSidebarToggle={handleSidebarToggle} />
       <div className="user-search-page page-transition-container">
+      <Sidebar
+        posts={posts}
+        onFilterChange={() => {}}
+        onCreatePost={() => navigate('/create-trip')}
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        sortBy="recent"
+        onSortChange={() => {}}
+      />
       <div className="search-container">
         <div className="search-header">
           <h1>🔍 Search</h1>
@@ -312,56 +365,6 @@ function UserSearch() {
             <div className="search-loading">Searching...</div>
           )}
 
-          {!isLoading && searchQuery.trim().length < 2 && (
-            <>
-              <div className="trending-section mobile-only-trending">
-                <div className="trending-subsection">
-                  <h3 className="trending-title">#️⃣ Trending Hashtags</h3>
-                  <div className="hashtag-grid">
-                    {getTrendingHashtags().map((item) => (
-                      <button
-                        key={item.tag}
-                        className="hashtag-chip"
-                        onClick={() => navigate(`/hashtag/${item.tag}`)}
-                      >
-                        #{item.tag}
-                        <span className="hashtag-count-badge">{item.count}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="trending-subsection">
-                  <h3 className="trending-title">🚀 Trending Destinations</h3>
-                  <div className="trending-destinations-list">
-                    {getTrendingDestinations().map((dest, index) => (
-                      <div key={dest.location} className="trending-destination-item">
-                        <span className="destination-rank">#{index + 1}</span>
-                        <span className="destination-name">{dest.location}</span>
-                        <span className="destination-likes">❤️ {dest.likes}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="trending-subsection">
-                  <h3 className="trending-title">🌍 Explore Countries</h3>
-                  <div className="explore-countries-grid">
-                    {getExploreCountries().map((country) => (
-                      <button
-                        key={country.code}
-                        className="country-chip"
-                        onClick={() => setSearchQuery(country.name)}
-                      >
-                        <span className="country-flag">{country.flag}</span>
-                        <span className="country-name">{country.name}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
 
           {!isLoading && searchQuery.trim().length >= 2 && searchResults.length === 0 && placeResults.length === 0 && (
             <div className="no-results-found">
@@ -398,6 +401,15 @@ function UserSearch() {
                         <div className="user-result-username">@{user.username}</div>
                       )}
                     </div>
+                    {user.id !== currentUserId && (
+                      <button
+                        className="message-user-btn"
+                        onClick={(e) => handleMessageUser(e, user.id)}
+                        title="Send Message"
+                      >
+                        💬
+                      </button>
+                    )}
                   </div>
                 ))}
               </div>

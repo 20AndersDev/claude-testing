@@ -14,7 +14,8 @@
       "Bash(dir node_modulesflag-icons 2)",
       "Bash(nul)",
       "Bash(dir /b node_modulesflag-icons)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(taskkill:*)"
     ],
     "deny": [],
     "ask": []

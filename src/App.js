@@ -17,6 +17,7 @@ import Settings from './Settings';
 import FollowRequests from './FollowRequests';
 import Planner from './Planner';
 import TripPlanDetails from './TripPlanDetails';
+import DirectMessages from './DirectMessages';
 import BottomNav from './BottomNav';
 import './App.css';
 import './themes.css';
@@ -44,6 +45,8 @@ function App() {
             <Route path="/follow-requests" element={<FollowRequests />} />
             <Route path="/planner" element={<Planner />} />
             <Route path="/planner/:planId" element={<TripPlanDetails />} />
+            <Route path="/messages" element={<DirectMessages />} />
+            <Route path="/messages/:userId" element={<DirectMessages />} />
             <Route path="/" element={<Navigate to="/login" replace />} />
           </Routes>
           <BottomNav />

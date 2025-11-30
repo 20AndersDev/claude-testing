@@ -14,10 +14,21 @@ export async function createNotification(userId, type, actorId, actorName, postI
   try {
     // Don't create notification if user is acting on their own content
     if (userId === actorId) {
+      console.log('Skipping notification creation: user is acting on their own content');
       return;
     }
 
-    const { error } = await supabase
+    console.log('Creating notification:', {
+      user_id: userId,
+      type,
+      actor_id: actorId,
+      actor_name: actorName,
+      post_id: postId,
+      comment_text: commentText,
+      request_id: requestId
+    });
+
+    const { data, error } = await supabase
       .from('notifications')
       .insert({
         user_id: userId,
@@ -29,10 +40,13 @@ export async function createNotification(userId, type, actorId, actorName, postI
         request_id: requestId,
         read: false,
         created_at: new Date().toISOString()
-      });
+      })
+      .select();
 
     if (error) {
       console.error('Error creating notification:', error);
+    } else {
+      console.log('Notification created successfully:', data);
     }
   } catch (error) {
     console.error('Error in createNotification:', error);
