@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Sidebar.css';
 
-function Sidebar({ posts, onFilterChange, onCreatePost, isOpen, onClose, sortBy, onSortChange }) {
+function Sidebar({ posts, onFilterChange, isOpen, onClose, sortBy, onSortChange }) {
   const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState('all');
   const [showAllCountries, setShowAllCountries] = useState(false);

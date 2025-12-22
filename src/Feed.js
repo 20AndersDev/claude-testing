@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "./supabaseClient";
 import Navbar from "./Navbar";
-import CreatePost from "./CreatePost";
 import Post from "./Post";
 import Sidebar from "./Sidebar";
 import useSwipeNavigation from "./useSwipeNavigation";
@@ -27,13 +26,23 @@ function Feed() {
           schema: "public",
           table: "posts",
         },
-        (payload) => {
+        async (payload) => {
+          // Fetch current profile data
+          const { data: profileData } = await supabase
+            .from("profiles")
+            .select("full_name, username, avatar_url")
+            .eq("id", payload.new.user_id)
+            .single();
+
           // Update the specific post in the list
           setPosts((prevPosts) =>
             prevPosts.map((post) => {
               if (post.id === payload.new.id) {
                 return {
                   ...payload.new,
+                  author: profileData?.full_name || profileData?.username || payload.new.author || 'User',
+                  author_avatar: profileData?.avatar_url || payload.new.author_avatar,
+                  author_username: profileData?.username || payload.new.author_username,
                   tripTitle: payload.new.trip_title,
                   startDate: payload.new.start_date,
                   endDate: payload.new.end_date,
@@ -55,10 +64,20 @@ function Feed() {
           schema: "public",
           table: "posts",
         },
-        (payload) => {
+        async (payload) => {
+          // Fetch current profile data
+          const { data: profileData } = await supabase
+            .from("profiles")
+            .select("full_name, username, avatar_url")
+            .eq("id", payload.new.user_id)
+            .single();
+
           // Add new post to the beginning of the list
           const newPost = {
             ...payload.new,
+            author: profileData?.full_name || profileData?.username || payload.new.author || 'User',
+            author_avatar: profileData?.avatar_url || payload.new.author_avatar,
+            author_username: profileData?.username || payload.new.author_username,
             tripTitle: payload.new.trip_title,
             startDate: payload.new.start_date,
             endDate: payload.new.end_date,
@@ -116,17 +135,36 @@ function Feed() {
         followedUserIds = (followsData || []).map((f) => f.following_id);
       }
 
+      // Fetch profile information for all unique user_ids
+      const uniqueUserIds = [...new Set(postsData.map(post => post.user_id))];
+      const { data: profilesData } = await supabase
+        .from("profiles")
+        .select("id, full_name, username, avatar_url")
+        .in("id", uniqueUserIds);
+
+      // Create a map of user_id to profile data
+      const profilesMap = {};
+      (profilesData || []).forEach(profile => {
+        profilesMap[profile.id] = profile;
+      });
+
       // Map database fields to component format
-      const mappedPosts = (postsData || []).map((post) => ({
-        ...post,
-        tripTitle: post.trip_title,
-        startDate: post.start_date,
-        endDate: post.end_date,
-        timestamp: post.created_at,
-        userEmail: post.user_id,
-        userId: post.user_id,
-        isFollowing: followedUserIds.includes(post.user_id),
-      }));
+      const mappedPosts = (postsData || []).map((post) => {
+        const profile = profilesMap[post.user_id];
+        return {
+          ...post,
+          author: profile?.full_name || profile?.username || post.author || 'User',
+          author_avatar: profile?.avatar_url || post.author_avatar,
+          author_username: profile?.username || post.author_username,
+          tripTitle: post.trip_title,
+          startDate: post.start_date,
+          endDate: post.end_date,
+          timestamp: post.created_at,
+          userEmail: post.user_id,
+          userId: post.user_id,
+          isFollowing: followedUserIds.includes(post.user_id),
+        };
+      });
 
       setPosts(mappedPosts);
     } catch (error) {
@@ -139,7 +177,6 @@ function Feed() {
   const [filteredPosts, setFilteredPosts] = useState(posts);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
-  const [showCreatePost, setShowCreatePost] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("discovery");
   const [sortBy, setSortBy] = useState("recent");
@@ -232,10 +269,6 @@ function Feed() {
     setActiveFilter(filter);
   };
 
-  const handleCreatePostToggle = () => {
-    setShowCreatePost(true);
-  };
-
   const handleSidebarToggle = () => {
     setSidebarOpen(!sidebarOpen);
   };
@@ -244,46 +277,6 @@ function Feed() {
     setActiveTab(tab);
   };
 
-  const addPost = async (tripData) => {
-    try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
-        alert("You must be logged in to create a post");
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from("posts")
-        .insert([
-          {
-            user_id: user.id,
-            author: user.user_metadata?.full_name || user.email,
-            content: tripData.content,
-            trip_title: tripData.tripTitle,
-            location: tripData.location,
-            start_date: tripData.startDate,
-            end_date: tripData.endDate,
-            activities: tripData.activities,
-            transport: tripData.transport,
-            hashtags: tripData.hashtags,
-            booking_link: tripData.bookingLink,
-            likes_count: 0,
-          },
-        ])
-        .select();
-
-      if (error) throw error;
-
-      await fetchPosts(); // Refresh posts
-      setShowCreatePost(false);
-    } catch (error) {
-      console.error("Error creating post:", error);
-      alert("Failed to create post");
-    }
-  };
 
   const likePost = async (postId) => {
     try {
@@ -460,7 +453,6 @@ function Feed() {
         <Sidebar
           posts={posts}
           onFilterChange={handleFilterChange}
-          onCreatePost={handleCreatePostToggle}
           isOpen={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
           sortBy={sortBy}
@@ -495,7 +487,6 @@ function Feed() {
             </div>
             <span className="planner-cta-arrow">→</span>
           </button>
-          {showCreatePost && <CreatePost onAddPost={addPost} />}
           <div className="posts-container">
             {isLoading ? (
               <div className="loading-state">

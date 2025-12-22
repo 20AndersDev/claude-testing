@@ -71,9 +71,7 @@ function Login() {
         <div className="login-header">
           <div className="login-icon">🗺️</div>
           <h1>TripTrail</h1>
-          <p className="login-subtitle">Explore, Experience, Share Your Adventures</p>
-          <h2>Welcome Back, Traveler!</h2>
-          <p className="welcome-message">We're excited to see you again. Your next adventure awaits!</p>
+          <h2>Sign in</h2>
         </div>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
@@ -86,7 +84,7 @@ function Login() {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="Enter your email"
+                placeholder="Email"
                 required
               />
             </div>
@@ -101,7 +99,7 @@ function Login() {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                placeholder="Enter your password"
+                placeholder="Password"
                 required
               />
             </div>
@@ -113,12 +111,11 @@ function Login() {
             </div>
           )}
           <button type="submit" className="login-btn" disabled={loading}>
-            {loading ? '✨ Logging you in...' : '🚀 Continue Your Journey'}
+            {loading ? 'Signing in...' : 'Sign in'}
           </button>
         </form>
         <div className="login-footer">
-          <p className="footer-text">Don't have an account? <Link to="/register">Join our community</Link></p>
-          <p className="help-text">Need help? We're here for you!</p>
+          <p className="footer-text">Don't have an account? <Link to="/register">Sign up</Link></p>
         </div>
       </div>
     </div>

@@ -1,13 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from './supabaseClient';
 import Navbar from './Navbar';
 import './CreateTrip.css';
 import { popularLocations } from './locations';
 
-function CreateTrip() {
+function EditTrip() {
   const navigate = useNavigate();
+  const { postId } = useParams();
   const locationRef = useRef(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [tripData, setTripData] = useState({
     content: '',
     tripTitle: '',
@@ -37,6 +39,57 @@ function CreateTrip() {
     { emoji: '😍', label: 'Excellent', value: 5 }
   ];
 
+  useEffect(() => {
+    fetchPost();
+  }, [postId]);
+
+  const fetchPost = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        alert('You must be logged in to edit a post');
+        navigate('/login');
+        return;
+      }
+
+      const { data: post, error } = await supabase
+        .from('posts')
+        .select('*')
+        .eq('id', postId)
+        .single();
+
+      if (error) throw error;
+
+      // Check if user owns this post
+      if (post.user_id !== user.id) {
+        alert('You can only edit your own posts');
+        navigate('/feed');
+        return;
+      }
+
+      // Populate form with existing data
+      setTripData({
+        content: post.content || '',
+        tripTitle: post.trip_title || '',
+        location: post.location || '',
+        country: post.country || '',
+        startDate: post.start_date || '',
+        endDate: post.end_date || '',
+        images: post.images || [],
+        links: post.booking_link || ''
+      });
+
+      setPositives(post.positives || []);
+      setRedFlags(post.red_flags || []);
+      setTripRating(post.trip_rating || null);
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Error fetching post:', error);
+      alert('Failed to load post');
+      navigate('/feed');
+    }
+  };
+
   const handleLocationInput = (value) => {
     setTripData({ ...tripData, location: value });
 
@@ -63,7 +116,6 @@ function CreateTrip() {
     setFilteredLocations([]);
   };
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (locationRef.current && !locationRef.current.contains(event.target)) {
@@ -181,30 +233,17 @@ function CreateTrip() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        alert('You must be logged in to create a trip');
+        alert('You must be logged in to update a post');
         navigate('/login');
         return;
       }
-
-      // Fetch user's profile data
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('full_name, username, avatar_url')
-        .eq('id', user.id)
-        .single();
-
-      const displayName = profileData?.full_name || profileData?.username || user.user_metadata?.display_name || user.email?.split('@')[0] || 'User';
-      const avatarUrl = profileData?.avatar_url || user.user_metadata?.avatar_url || null;
 
       // Extract hashtags from content
       const hashtagRegex = /#(\w+)/g;
       const hashtagMatches = tripData.content.match(hashtagRegex);
       const hashtags = hashtagMatches ? hashtagMatches.map(tag => tag.substring(1)) : [];
 
-      const completeTrip = {
-        user_id: user.id,
-        author: displayName,
-        author_avatar: avatarUrl,
+      const updatedTrip = {
         trip_title: tripData.tripTitle,
         content: tripData.content.trim() || `Just visited ${tripData.tripTitle}!`,
         location: tripData.location.trim() || tripData.country,
@@ -216,24 +255,21 @@ function CreateTrip() {
         booking_link: tripData.links.trim() || null,
         positives: positives.length > 0 ? positives : null,
         red_flags: redFlags.length > 0 ? redFlags : null,
-        trip_rating: tripRating,
-        likes: 0,
-        comments: []
+        trip_rating: tripRating
       };
 
-      const { data: newPost, error: postError } = await supabase
+      const { error: updateError } = await supabase
         .from('posts')
-        .insert([completeTrip])
-        .select()
-        .single();
+        .update(updatedTrip)
+        .eq('id', postId);
 
-      if (postError) {
-        console.error('Error creating post:', postError);
-        alert('Failed to create post: ' + postError.message);
+      if (updateError) {
+        console.error('Error updating post:', updateError);
+        alert('Failed to update post: ' + updateError.message);
         return;
       }
 
-      // Update visited countries if country is selected
+      // Update visited countries if country changed
       if (tripData.country && user) {
         const { data: profileData } = await supabase
           .from('profiles')
@@ -253,12 +289,26 @@ function CreateTrip() {
         }
       }
 
-      navigate('/feed');
+      navigate(`/post/${postId}`);
     } catch (error) {
-      console.error('Error creating trip:', error);
-      alert('An error occurred while creating your post');
+      console.error('Error updating trip:', error);
+      alert('An error occurred while updating your post');
     }
   };
+
+  if (isLoading) {
+    return (
+      <>
+        <Navbar />
+        <div className="create-trip-container">
+          <div className="loading-state">
+            <div className="loading-spinner"></div>
+            <p>Loading post...</p>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
@@ -266,10 +316,10 @@ function CreateTrip() {
       <div className="create-trip-container">
         <div className="create-trip-content">
           <div className="create-trip-header">
-            <button onClick={() => navigate('/feed')} className="back-btn">
+            <button onClick={() => navigate(`/post/${postId}`)} className="back-btn">
               ← Back
             </button>
-            <h1>Share Your Trip</h1>
+            <h1>Edit Your Trip</h1>
           </div>
 
           <form onSubmit={handleSubmit} className="trip-form">
@@ -468,7 +518,7 @@ function CreateTrip() {
             </div>
 
             <div className="form-actions">
-              <button type="button" onClick={() => navigate('/feed')} className="cancel-btn">
+              <button type="button" onClick={() => navigate(`/post/${postId}`)} className="cancel-btn">
                 Cancel
               </button>
               <button
@@ -476,7 +526,7 @@ function CreateTrip() {
                 className="submit-btn"
                 disabled={!tripData.tripTitle.trim() || !tripData.location.trim()}
               >
-                Share Trip
+                Update Trip
               </button>
             </div>
           </form>
@@ -486,4 +536,4 @@ function CreateTrip() {
   );
 }
 
-export default CreateTrip;
+export default EditTrip;

@@ -8,6 +8,7 @@ import Feed from './Feed';
 import Profile from './Profile';
 import TripDetails from './TripDetails';
 import CreateTrip from './CreateTrip';
+import EditTrip from './EditTrip';
 import PostDetail from './PostDetail';
 import HashtagFeed from './HashtagFeed';
 import CountryFeed from './CountryFeed';
@@ -35,6 +36,7 @@ function App() {
             <Route path="/profile" element={<Profile />} />
             <Route path="/profile/:userId" element={<Profile />} />
             <Route path="/create-trip" element={<CreateTrip />} />
+            <Route path="/edit-trip/:postId" element={<EditTrip />} />
             <Route path="/trip/:tripId" element={<TripDetails />} />
             <Route path="/post/:postId" element={<PostDetail />} />
             <Route path="/hashtag/:hashtag" element={<HashtagFeed />} />

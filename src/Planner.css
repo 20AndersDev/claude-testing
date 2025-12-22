@@ -627,11 +627,11 @@
   gap: 16px;
 }
 
-.search-input {
+.planner-page .search-input {
   position: relative;
 }
 
-.search-results {
+.planner-page .search-results {
   position: absolute;
   top: 100%;
   left: 0;
@@ -646,27 +646,27 @@
   z-index: 10;
 }
 
-.search-result-item {
+.planner-page .search-result-item {
   padding: 12px 16px;
   cursor: pointer;
   transition: background 0.2s ease;
   border-bottom: 1px solid var(--border);
 }
 
-.search-result-item:last-child {
+.planner-page .search-result-item:last-child {
   border-bottom: none;
 }
 
-.search-result-item:hover {
+.planner-page .search-result-item:hover {
   background: var(--background);
 }
 
-.search-result-item strong {
+.planner-page .search-result-item strong {
   color: var(--text);
   font-size: 14px;
 }
 
-.search-result-item small {
+.planner-page .search-result-item small {
   color: var(--text-secondary);
   font-size: 12px;
 }

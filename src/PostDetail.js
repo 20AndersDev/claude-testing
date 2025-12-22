@@ -33,10 +33,20 @@ function PostDetail() {
           table: 'posts',
           filter: `id=eq.${postId}`
         },
-        (payload) => {
+        async (payload) => {
+          // Fetch current profile data for the author
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('full_name, username, avatar_url')
+            .eq('id', payload.new.user_id)
+            .single();
+
           // Update post with new data
           const updatedPost = {
             ...payload.new,
+            author: profileData?.full_name || profileData?.username || payload.new.author || 'User',
+            author_avatar: profileData?.avatar_url || payload.new.author_avatar,
+            author_username: profileData?.username || payload.new.author_username,
             tripTitle: payload.new.trip_title,
             startDate: payload.new.start_date,
             endDate: payload.new.end_date,
@@ -99,9 +109,19 @@ function PostDetail() {
       console.error('Error fetching post:', error);
       navigate('/feed');
     } else {
+      // Fetch the current profile information for the post author
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('full_name, username, avatar_url')
+        .eq('id', data.user_id)
+        .single();
+
       // Map database fields to component format
       const mappedPost = {
         ...data,
+        author: profileData?.full_name || profileData?.username || data.author || 'User',
+        author_avatar: profileData?.avatar_url || data.author_avatar,
+        author_username: profileData?.username || data.author_username,
         tripTitle: data.trip_title,
         startDate: data.start_date,
         endDate: data.end_date,
@@ -230,6 +250,33 @@ function PostDetail() {
     }
   }, [commentText, post]);
 
+  const renderTextWithHashtags = (text) => {
+    if (!text) return null;
+
+    // Regex to match hashtags (#word)
+    const hashtagRegex = /(#[\w]+)/g;
+    const parts = text.split(hashtagRegex);
+
+    return parts.map((part, index) => {
+      if (part.match(hashtagRegex)) {
+        const hashtag = part.substring(1); // Remove the # symbol
+        return (
+          <span
+            key={index}
+            className="hashtag-link"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/hashtag/${hashtag}`);
+            }}
+          >
+            {part}
+          </span>
+        );
+      }
+      return part;
+    });
+  };
+
   const nextImage = useCallback(() => {
     setCurrentImageIndex(prev => (prev + 1) % postImages.length);
   }, [postImages.length]);
@@ -356,6 +403,17 @@ function PostDetail() {
     </div>
   );
 
+  const getRatingEmoji = (rating) => {
+    const emojis = {
+      1: { emoji: '😞', label: 'Very Bad' },
+      2: { emoji: '😕', label: 'Bad' },
+      3: { emoji: '😐', label: 'Okay' },
+      4: { emoji: '😊', label: 'Good' },
+      5: { emoji: '😍', label: 'Excellent' }
+    };
+    return emojis[rating] || null;
+  };
+
   if (!post) {
     return (
       <div className="App">
@@ -429,6 +487,13 @@ function PostDetail() {
                 </button>
                 {showMenu && (
                   <div className="post-menu-dropdown">
+                    <button className="menu-item edit-item" onClick={(e) => {
+                      e.stopPropagation();
+                      setShowMenu(false);
+                      navigate(`/edit-trip/${post.id}`);
+                    }}>
+                      ✏️ Edit Post
+                    </button>
                     <button className="menu-item delete-item" onClick={handleDelete}>
                       🗑️ Delete Post
                     </button>
@@ -462,10 +527,77 @@ function PostDetail() {
 
           {/* Content Section */}
           <div className="content-section">
+            {post.trip_rating && (
+              <div className="trip-rating-section">
+                <h3 className="section-title">Overall Experience</h3>
+                <div className="trip-rating-badge">
+                  <span className="rating-emoji-xl">{getRatingEmoji(post.trip_rating).emoji}</span>
+                  <span className="rating-label-large">{getRatingEmoji(post.trip_rating).label}</span>
+                </div>
+              </div>
+            )}
+
             <div className="story">
               <h3 className="section-title">📖 {post.tripTitle ? 'Trip Story' : 'Story'}</h3>
-              <p className="story-text">{post.content}</p>
+              <p className="story-text">{renderTextWithHashtags(post.content)}</p>
             </div>
+
+            {/* Hashtags */}
+            {post.hashtags && post.hashtags.length > 0 && (
+              <div className="post-hashtags">
+                {post.hashtags.map((hashtag, index) => (
+                  <span
+                    key={index}
+                    className="hashtag-tag"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/hashtag/${hashtag}`);
+                    }}
+                  >
+                    #{hashtag}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Positives and Red Flags */}
+            {(post.positives || post.red_flags) && (
+              <>
+                <div className="divider"></div>
+                <div className="tips-display">
+                  {post.positives && post.positives.length > 0 && (
+                    <div className="positives-display">
+                      <h3 className="section-title positives-title">
+                        <span className="tip-icon-display">⭐</span> What Was Great
+                      </h3>
+                      <ul className="tip-list-display">
+                        {post.positives.map((item, index) => (
+                          <li key={index} className="tip-item-display positive-item-display">
+                            <span className="tip-bullet">⭐</span>
+                            <span className="tip-text">{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {post.red_flags && post.red_flags.length > 0 && (
+                    <div className="red-flags-display">
+                      <h3 className="section-title red-flags-title">
+                        <span className="tip-icon-display">🚩</span> Red Flags & Tips
+                      </h3>
+                      <ul className="tip-list-display">
+                        {post.red_flags.map((item, index) => (
+                          <li key={index} className="tip-item-display red-flag-item-display">
+                            <span className="tip-bullet">🚩</span>
+                            <span className="tip-text">{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
 
             {/* Activities */}
             {post.activities && post.activities.length > 0 && (

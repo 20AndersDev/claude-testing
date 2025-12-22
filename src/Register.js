@@ -69,7 +69,7 @@ function Register() {
       // Show a success message
       setError('');
       // You could use a toast notification here instead of alert for better UX
-      alert('🎉 Welcome to TripTrail! Please check your email to verify your account and start your adventure.');
+      alert('Account created. Please check your email to verify your account.');
       navigate('/login');
     } catch (error) {
       setError(error.message);
@@ -89,9 +89,7 @@ function Register() {
         <div className="register-header">
           <div className="register-icon">🗺️</div>
           <h1>TripTrail</h1>
-          <p className="register-subtitle">Explore, Experience, Share Your Adventures</p>
-          <h2>Start Your Journey Today!</h2>
-          <p className="welcome-message">Join thousands of travelers sharing their stories and discovering the world together.</p>
+          <h2>Create account</h2>
         </div>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
@@ -104,7 +102,7 @@ function Register() {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                placeholder="Enter your full name"
+                placeholder="Full name"
                 required
               />
             </div>
@@ -119,7 +117,7 @@ function Register() {
                 name="username"
                 value={formData.username}
                 onChange={handleChange}
-                placeholder="Choose a username"
+                placeholder="Username"
                 required
               />
             </div>
@@ -134,7 +132,7 @@ function Register() {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="Enter your email"
+                placeholder="Email"
                 required
               />
             </div>
@@ -149,7 +147,7 @@ function Register() {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                placeholder="Create a password"
+                placeholder="Password"
                 required
               />
             </div>
@@ -164,7 +162,7 @@ function Register() {
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                placeholder="Confirm your password"
+                placeholder="Confirm password"
                 required
               />
             </div>
@@ -176,12 +174,11 @@ function Register() {
             </div>
           )}
           <button type="submit" className="register-btn" disabled={loading}>
-            {loading ? '✨ Creating your account...' : '🌟 Begin Your Adventure'}
+            {loading ? 'Creating account...' : 'Sign up'}
           </button>
         </form>
         <div className="register-footer">
-          <p className="footer-text">Already have an account? <Link to="/login">Welcome back!</Link></p>
-          <p className="help-text">By signing up, you're joining a community of travelers from around the world!</p>
+          <p className="footer-text">Already have an account? <Link to="/login">Sign in</Link></p>
         </div>
       </div>
     </div>

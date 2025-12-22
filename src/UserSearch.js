@@ -1,74 +1,74 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { supabase } from './supabaseClient';
-import { useLoadScript } from '@react-google-maps/api';
-import Navbar from './Navbar';
-import Sidebar from './Sidebar';
-import useSwipeNavigation from './useSwipeNavigation';
-import './UserSearch.css';
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { supabase } from "./supabaseClient";
+import { useLoadScript } from "@react-google-maps/api";
+import Navbar from "./Navbar";
+import Sidebar from "./Sidebar";
+import useSwipeNavigation from "./useSwipeNavigation";
+import "./UserSearch.css";
 
-const libraries = ['places'];
+const libraries = ["places"];
 
 // Country to flag emoji mapping
 const countryFlags = {
-  'United States': '🇺🇸',
-  'USA': '🇺🇸',
-  'France': '🇫🇷',
-  'Italy': '🇮🇹',
-  'Spain': '🇪🇸',
-  'Japan': '🇯🇵',
-  'United Kingdom': '🇬🇧',
-  'UK': '🇬🇧',
-  'Germany': '🇩🇪',
-  'Australia': '🇦🇺',
-  'Thailand': '🇹🇭',
-  'Greece': '🇬🇷',
-  'Brazil': '🇧🇷',
-  'Mexico': '🇲🇽',
-  'Canada': '🇨🇦',
-  'Portugal': '🇵🇹',
-  'Netherlands': '🇳🇱',
-  'Switzerland': '🇨🇭',
-  'Turkey': '🇹🇷',
-  'South Korea': '🇰🇷',
-  'Egypt': '🇪🇬',
-  'Iceland': '🇮🇸',
-  'Ireland': '🇮🇪',
-  'Austria': '🇦🇹',
-  'Poland': '🇵🇱',
-  'Czech Republic': '🇨🇿',
-  'Hungary': '🇭🇺',
-  'Croatia': '🇭🇷',
-  'Norway': '🇳🇴',
-  'Sweden': '🇸🇪',
-  'Finland': '🇫🇮',
-  'Denmark': '🇩🇰',
-  'Belgium': '🇧🇪',
-  'India': '🇮🇳',
-  'China': '🇨🇳',
-  'Russia': '🇷🇺',
-  'Argentina': '🇦🇷',
-  'Chile': '🇨🇱',
-  'Peru': '🇵🇪',
-  'Colombia': '🇨🇴',
-  'Morocco': '🇲🇦',
-  'South Africa': '🇿🇦',
-  'New Zealand': '🇳🇿',
-  'Singapore': '🇸🇬',
-  'Malaysia': '🇲🇾',
-  'Indonesia': '🇮🇩',
-  'Philippines': '🇵🇭',
-  'Vietnam': '🇻🇳',
-  'United Arab Emirates': '🇦🇪',
-  'UAE': '🇦🇪',
-  'Saudi Arabia': '🇸🇦',
-  'Israel': '🇮🇱',
+  "United States": "🇺🇸",
+  USA: "🇺🇸",
+  France: "🇫🇷",
+  Italy: "🇮🇹",
+  Spain: "🇪🇸",
+  Japan: "🇯🇵",
+  "United Kingdom": "🇬🇧",
+  UK: "🇬🇧",
+  Germany: "🇩🇪",
+  Australia: "🇦🇺",
+  Thailand: "🇹🇭",
+  Greece: "🇬🇷",
+  Brazil: "🇧🇷",
+  Mexico: "🇲🇽",
+  Canada: "🇨🇦",
+  Portugal: "🇵🇹",
+  Netherlands: "🇳🇱",
+  Switzerland: "🇨🇭",
+  Turkey: "🇹🇷",
+  "South Korea": "🇰🇷",
+  Egypt: "🇪🇬",
+  Iceland: "🇮🇸",
+  Ireland: "🇮🇪",
+  Austria: "🇦🇹",
+  Poland: "🇵🇱",
+  "Czech Republic": "🇨🇿",
+  Hungary: "🇭🇺",
+  Croatia: "🇭🇷",
+  Norway: "🇳🇴",
+  Sweden: "🇸🇪",
+  Finland: "🇫🇮",
+  Denmark: "🇩🇰",
+  Belgium: "🇧🇪",
+  India: "🇮🇳",
+  China: "🇨🇳",
+  Russia: "🇷🇺",
+  Argentina: "🇦🇷",
+  Chile: "🇨🇱",
+  Peru: "🇵🇪",
+  Colombia: "🇨🇴",
+  Morocco: "🇲🇦",
+  "South Africa": "🇿🇦",
+  "New Zealand": "🇳🇿",
+  Singapore: "🇸🇬",
+  Malaysia: "🇲🇾",
+  Indonesia: "🇮🇩",
+  Philippines: "🇵🇭",
+  Vietnam: "🇻🇳",
+  "United Arab Emirates": "🇦🇪",
+  UAE: "🇦🇪",
+  "Saudi Arabia": "🇸🇦",
+  Israel: "🇮🇱",
 };
 
 function UserSearch() {
   const location = useLocation();
   useSwipeNavigation();
-  const [searchQuery, setSearchQuery] = useState(location.state?.query || '');
+  const [searchQuery, setSearchQuery] = useState(location.state?.query || "");
   const [searchResults, setSearchResults] = useState([]);
   const [placeResults, setPlaceResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -84,7 +84,9 @@ function UserSearch() {
 
   useEffect(() => {
     const fetchCurrentUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (user) {
         setCurrentUserId(user.id);
       }
@@ -96,22 +98,22 @@ function UserSearch() {
   const fetchPosts = async () => {
     try {
       const { data: postsData, error } = await supabase
-        .from('posts')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .from("posts")
+        .select("*")
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
       setPosts(postsData || []);
     } catch (error) {
-      console.error('Error fetching posts:', error);
+      console.error("Error fetching posts:", error);
     }
   };
 
   const getTrendingHashtags = () => {
     const hashtagCount = {};
-    posts.forEach(post => {
+    posts.forEach((post) => {
       if (post.hashtags) {
-        post.hashtags.forEach(tag => {
+        post.hashtags.forEach((tag) => {
           hashtagCount[tag] = (hashtagCount[tag] || 0) + 1;
         });
       }
@@ -124,18 +126,21 @@ function UserSearch() {
 
     // Add filler data if not enough real hashtags
     const fillerHashtags = [
-      { tag: 'travel', count: 156 },
-      { tag: 'wanderlust', count: 142 },
-      { tag: 'adventure', count: 128 },
-      { tag: 'beach', count: 115 },
-      { tag: 'vacation', count: 103 },
-      { tag: 'explore', count: 98 },
-      { tag: 'foodie', count: 87 },
-      { tag: 'photography', count: 76 }
+      { tag: "travel", count: 156 },
+      { tag: "wanderlust", count: 142 },
+      { tag: "adventure", count: 128 },
+      { tag: "beach", count: 115 },
+      { tag: "vacation", count: 103 },
+      { tag: "explore", count: 98 },
+      { tag: "foodie", count: 87 },
+      { tag: "photography", count: 76 },
     ];
 
     if (realHashtags.length < 8) {
-      return [...realHashtags, ...fillerHashtags.slice(0, 8 - realHashtags.length)];
+      return [
+        ...realHashtags,
+        ...fillerHashtags.slice(0, 8 - realHashtags.length),
+      ];
     }
 
     return realHashtags;
@@ -143,22 +148,25 @@ function UserSearch() {
 
   const getTrendingDestinations = () => {
     const locations = posts
-      .filter(post => post.location && post.likes > 10)
-      .map(post => ({ location: post.location, likes: post.likes }))
+      .filter((post) => post.location && post.likes > 10)
+      .map((post) => ({ location: post.location, likes: post.likes }))
       .sort((a, b) => b.likes - a.likes)
       .slice(0, 5);
 
     // Add filler data if not enough real destinations
     const fillerDestinations = [
-      { location: 'Paris, France', likes: 234 },
-      { location: 'Tokyo, Japan', likes: 198 },
-      { location: 'Bali, Indonesia', likes: 187 },
-      { location: 'New York, USA', likes: 165 },
-      { location: 'Barcelona, Spain', likes: 152 }
+      { location: "Paris, France", likes: 234 },
+      { location: "Tokyo, Japan", likes: 198 },
+      { location: "Bali, Indonesia", likes: 187 },
+      { location: "New York, USA", likes: 165 },
+      { location: "Barcelona, Spain", likes: 152 },
     ];
 
     if (locations.length < 5) {
-      return [...locations, ...fillerDestinations.slice(0, 5 - locations.length)];
+      return [
+        ...locations,
+        ...fillerDestinations.slice(0, 5 - locations.length),
+      ];
     }
 
     return locations;
@@ -166,26 +174,26 @@ function UserSearch() {
 
   const getExploreCountries = () => {
     return [
-      { name: 'United States', flag: '🇺🇸', code: 'US' },
-      { name: 'France', flag: '🇫🇷', code: 'FR' },
-      { name: 'Italy', flag: '🇮🇹', code: 'IT' },
-      { name: 'Spain', flag: '🇪🇸', code: 'ES' },
-      { name: 'Japan', flag: '🇯🇵', code: 'JP' },
-      { name: 'United Kingdom', flag: '🇬🇧', code: 'GB' },
-      { name: 'Germany', flag: '🇩🇪', code: 'DE' },
-      { name: 'Australia', flag: '🇦🇺', code: 'AU' },
-      { name: 'Thailand', flag: '🇹🇭', code: 'TH' },
-      { name: 'Greece', flag: '🇬🇷', code: 'GR' },
-      { name: 'Brazil', flag: '🇧🇷', code: 'BR' },
-      { name: 'Mexico', flag: '🇲🇽', code: 'MX' },
-      { name: 'Canada', flag: '🇨🇦', code: 'CA' },
-      { name: 'Portugal', flag: '🇵🇹', code: 'PT' },
-      { name: 'Netherlands', flag: '🇳🇱', code: 'NL' },
-      { name: 'Switzerland', flag: '🇨🇭', code: 'CH' },
-      { name: 'Turkey', flag: '🇹🇷', code: 'TR' },
-      { name: 'South Korea', flag: '🇰🇷', code: 'KR' },
-      { name: 'Egypt', flag: '🇪🇬', code: 'EG' },
-      { name: 'Iceland', flag: '🇮🇸', code: 'IS' },
+      { name: "United States", flag: "🇺🇸", code: "US" },
+      { name: "France", flag: "🇫🇷", code: "FR" },
+      { name: "Italy", flag: "🇮🇹", code: "IT" },
+      { name: "Spain", flag: "🇪🇸", code: "ES" },
+      { name: "Japan", flag: "🇯🇵", code: "JP" },
+      { name: "United Kingdom", flag: "🇬🇧", code: "GB" },
+      { name: "Germany", flag: "🇩🇪", code: "DE" },
+      { name: "Australia", flag: "🇦🇺", code: "AU" },
+      { name: "Thailand", flag: "🇹🇭", code: "TH" },
+      { name: "Greece", flag: "🇬🇷", code: "GR" },
+      { name: "Brazil", flag: "🇧🇷", code: "BR" },
+      { name: "Mexico", flag: "🇲🇽", code: "MX" },
+      { name: "Canada", flag: "🇨🇦", code: "CA" },
+      { name: "Portugal", flag: "🇵🇹", code: "PT" },
+      { name: "Netherlands", flag: "🇳🇱", code: "NL" },
+      { name: "Switzerland", flag: "🇨🇭", code: "CH" },
+      { name: "Turkey", flag: "🇹🇷", code: "TR" },
+      { name: "South Korea", flag: "🇰🇷", code: "KR" },
+      { name: "Egypt", flag: "🇪🇬", code: "EG" },
+      { name: "Iceland", flag: "🇮🇸", code: "IS" },
     ];
   };
 
@@ -200,23 +208,28 @@ function UserSearch() {
       setIsLoading(true);
       try {
         const query = searchQuery.trim().toLowerCase();
-        const isHandleSearch = query.startsWith('@');
+        const isHandleSearch = query.startsWith("@");
         const searchTerm = isHandleSearch ? query.slice(1) : query;
 
         // Search users
         let queryBuilder = supabase
-          .from('profiles')
-          .select('id, full_name, username, avatar_url');
+          .from("profiles")
+          .select("id, full_name, username, avatar_url");
 
         if (isHandleSearch) {
-          queryBuilder = queryBuilder.ilike('username', `%${searchTerm}%`);
+          queryBuilder = queryBuilder.ilike("username", `%${searchTerm}%`);
         } else {
-          queryBuilder = queryBuilder.or(`full_name.ilike.%${searchTerm}%,username.ilike.%${searchTerm}%`);
+          queryBuilder = queryBuilder.or(
+            `full_name.ilike.%${searchTerm}%,username.ilike.%${searchTerm}%`
+          );
         }
 
         const { data, error } = await queryBuilder.limit(20);
 
-        if (error) throw error;
+        if (error) {
+          console.error("Search error:", error);
+          throw error;
+        }
 
         setSearchResults(data || []);
 
@@ -225,7 +238,7 @@ function UserSearch() {
           searchPlaces(searchQuery);
         }
       } catch (error) {
-        console.error('Error searching users:', error);
+        console.error("Error searching users:", error);
         setSearchResults([]);
       } finally {
         setIsLoading(false);
@@ -240,7 +253,8 @@ function UserSearch() {
   }, [searchQuery, isLoaded]);
 
   const searchPlaces = async (query) => {
-    if (!window.google || !window.google.maps || !window.google.maps.places) return;
+    if (!window.google || !window.google.maps || !window.google.maps.places)
+      return;
 
     try {
       // Use the standard AutocompleteService which is more reliable
@@ -250,44 +264,71 @@ function UserSearch() {
           input: query,
         },
         async (predictions, status) => {
-          if (status === window.google.maps.places.PlacesServiceStatus.OK && predictions) {
+          if (
+            status === window.google.maps.places.PlacesServiceStatus.OK &&
+            predictions
+          ) {
             // Get place details for each prediction to fetch photos
             const placesWithDetails = await Promise.all(
               predictions.slice(0, 10).map(async (place) => {
                 return new Promise((resolve) => {
                   // Create a temporary div for PlacesService
-                  const div = document.createElement('div');
-                  const placesService = new window.google.maps.places.PlacesService(div);
+                  const div = document.createElement("div");
+                  const placesService =
+                    new window.google.maps.places.PlacesService(div);
 
                   placesService.getDetails(
                     {
                       placeId: place.place_id,
-                      fields: ['photos', 'icon', 'types', 'name', 'address_components']
+                      fields: [
+                        "photos",
+                        "icon",
+                        "types",
+                        "name",
+                        "address_components",
+                      ],
                     },
                     (placeDetails, detailsStatus) => {
-                      if (detailsStatus === window.google.maps.places.PlacesServiceStatus.OK && placeDetails) {
+                      if (
+                        detailsStatus ===
+                          window.google.maps.places.PlacesServiceStatus.OK &&
+                        placeDetails
+                      ) {
                         // Get the first photo if available
-                        const photoUrl = placeDetails.photos && placeDetails.photos.length > 0
-                          ? placeDetails.photos[0].getUrl({ maxWidth: 100, maxHeight: 100 })
-                          : placeDetails.icon;
+                        const photoUrl =
+                          placeDetails.photos && placeDetails.photos.length > 0
+                            ? placeDetails.photos[0].getUrl({
+                                maxWidth: 100,
+                                maxHeight: 100,
+                              })
+                            : placeDetails.icon;
 
                         // Extract country from address components
-                        const countryComponent = placeDetails.address_components?.find(
-                          component => component.types.includes('country')
-                        );
+                        const countryComponent =
+                          placeDetails.address_components?.find((component) =>
+                            component.types.includes("country")
+                          );
                         const countryName = countryComponent?.long_name;
-                        const countryFlag = countryName ? countryFlags[countryName] : null;
+                        const countryFlag = countryName
+                          ? countryFlags[countryName]
+                          : null;
 
                         resolve({
                           ...place,
                           photoUrl: photoUrl,
                           types: placeDetails.types || [],
                           countryFlag: countryFlag,
-                          countryName: countryName
+                          countryName: countryName,
                         });
                       } else {
                         // Fallback to just the place without photo
-                        resolve({ ...place, photoUrl: null, types: [], countryFlag: null, countryName: null });
+                        resolve({
+                          ...place,
+                          photoUrl: null,
+                          types: [],
+                          countryFlag: null,
+                          countryName: null,
+                        });
                       }
                     }
                   );
@@ -302,14 +343,14 @@ function UserSearch() {
         }
       );
     } catch (error) {
-      console.error('Error fetching place suggestions:', error);
+      console.error("Error fetching place suggestions:", error);
       setPlaceResults([]);
     }
   };
 
   const handleUserClick = (userId) => {
     if (userId === currentUserId) {
-      navigate('/profile');
+      navigate("/profile");
     } else {
       navigate(`/profile/${userId}`);
     }
@@ -328,145 +369,167 @@ function UserSearch() {
     <>
       <Navbar onSidebarToggle={handleSidebarToggle} />
       <div className="user-search-page page-transition-container">
-      <Sidebar
-        posts={posts}
-        onFilterChange={() => {}}
-        onCreatePost={() => navigate('/create-trip')}
-        isOpen={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-        sortBy="recent"
-        onSortChange={() => {}}
-      />
-      <div className="search-container">
-        <div className="search-header">
-          <h1>🔍 Search</h1>
-          <p className="search-subtitle">
-            {searchQuery.trim().length >= 2 && !isLoading && (() => {
-              const totalResults = searchResults.length + placeResults.length;
-              return `${totalResults} ${totalResults === 1 ? 'result' : 'results'} found`;
-            })()}
-            {searchQuery.trim().length < 2 && 'Discover people and places'}
-          </p>
-        </div>
+        <Sidebar
+          posts={posts}
+          onFilterChange={() => {}}
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+          sortBy="recent"
+          onSortChange={() => {}}
+        />
+        <div className="search-container">
+          <div className="search-header">
+            <div className="search-icon-header">🔍</div>
+            <h1>Search</h1>
+            <p className="search-subtitle">
+              {searchQuery.trim().length >= 2 &&
+                !isLoading &&
+                (() => {
+                  const totalResults =
+                    searchResults.length + placeResults.length;
+                  return `${totalResults} ${
+                    totalResults === 1 ? "result" : "results"
+                  } found`;
+                })()}
+              {searchQuery.trim().length < 2 && "Discover travelers and places"}
+            </p>
+          </div>
 
-        <div className="search-input-wrapper">
-          <input
-            type="search"
-            className="user-search-input"
-            placeholder="Search users & places"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            autoFocus
-          />
-        </div>
+          <div className="search-input-wrapper">
+            <input
+              type="search"
+              className="user-search-input"
+              placeholder="Search for people, places, or destinations..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              autoFocus
+            />
+          </div>
 
-        <div className="search-results">
-          {isLoading && (
-            <div className="search-loading">Searching...</div>
-          )}
+          <div className="search-results">
+            {isLoading && <div className="search-loading">Searching...</div>}
 
+            {!isLoading &&
+              searchQuery.trim().length >= 2 &&
+              searchResults.length === 0 &&
+              placeResults.length === 0 && (
+                <div className="no-results-found">
+                  <div className="no-results-icon">😔</div>
+                  <p>No results found for "{searchQuery}"</p>
+                </div>
+              )}
 
-          {!isLoading && searchQuery.trim().length >= 2 && searchResults.length === 0 && placeResults.length === 0 && (
-            <div className="no-results-found">
-              <div className="no-results-icon">😔</div>
-              <p>No results found for "{searchQuery}"</p>
-            </div>
-          )}
-
-          {!isLoading && searchResults.length > 0 && (
-            <>
-              <div className="results-group-header">👤 Users</div>
-              <div className="users-results-list">
-                {searchResults.map((user) => (
-                  <div
-                    key={user.id}
-                    className="user-result-item"
-                    onClick={() => handleUserClick(user.id)}
-                  >
-                    <div className="user-result-avatar">
-                      {user.avatar_url ? (
-                        <img src={user.avatar_url} alt={user.full_name || user.username} />
-                      ) : (
-                        <div className="avatar-placeholder">
-                          {(user.full_name || user.username || 'U').charAt(0).toUpperCase()}
+            {!isLoading && searchResults.length > 0 && (
+              <>
+                <div className="results-group-header">👤 Users</div>
+                <div className="users-results-list">
+                  {searchResults.map((user) => (
+                    <div
+                      key={user.id}
+                      className="user-result-item"
+                      onClick={() => handleUserClick(user.id)}
+                    >
+                      <div className="user-result-avatar">
+                        {user.avatar_url ? (
+                          <img
+                            src={user.avatar_url}
+                            alt={user.full_name || user.username}
+                          />
+                        ) : (
+                          <div className="avatar-placeholder">
+                            {(user.full_name || user.username || "U")
+                              .charAt(0)
+                              .toUpperCase()}
+                          </div>
+                        )}
+                      </div>
+                      <div className="user-result-info">
+                        <div className="user-result-name">
+                          {user.full_name || user.username || "User"}
+                          {user.id === currentUserId && (
+                            <span className="you-badge">You</span>
+                          )}
                         </div>
-                      )}
-                    </div>
-                    <div className="user-result-info">
-                      <div className="user-result-name">
-                        {user.full_name || user.username || 'User'}
-                        {user.id === currentUserId && <span className="you-badge">You</span>}
+                        {user.username && (
+                          <div className="user-result-username">
+                            @{user.username}
+                          </div>
+                        )}
                       </div>
-                      {user.username && (
-                        <div className="user-result-username">@{user.username}</div>
+                      {user.id !== currentUserId && (
+                        <button
+                          className="message-user-btn"
+                          onClick={(e) => handleMessageUser(e, user.id)}
+                          title="Send Message"
+                        >
+                          💬
+                        </button>
                       )}
                     </div>
-                    {user.id !== currentUserId && (
-                      <button
-                        className="message-user-btn"
-                        onClick={(e) => handleMessageUser(e, user.id)}
-                        title="Send Message"
-                      >
-                        💬
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
+                  ))}
+                </div>
+              </>
+            )}
 
-          {!isLoading && placeResults.length > 0 && (
-            <>
-              {searchResults.length > 0 && <div className="results-divider"></div>}
-              <div className="results-group-header">📍 Places</div>
-              <div className="users-results-list">
-                {placeResults.map((place) => (
-                  <div
-                    key={place.place_id}
-                    className="user-result-item"
-                    onClick={() => navigate(`/place/${place.place_id}`)}
-                  >
-                    <div className="user-result-avatar">
-                      {place.photoUrl ? (
-                        <img
-                          src={place.photoUrl}
-                          alt={place.structured_formatting.main_text}
-                          className="place-photo"
-                        />
-                      ) : (
-                        <div className="avatar-placeholder place-icon">
-                          📍
+            {!isLoading && placeResults.length > 0 && (
+              <>
+                {searchResults.length > 0 && (
+                  <div className="results-divider"></div>
+                )}
+                <div className="results-group-header">📍 Places</div>
+                <div className="users-results-list">
+                  {placeResults.map((place) => (
+                    <div
+                      key={place.place_id}
+                      className="user-result-item"
+                      onClick={() => navigate(`/place/${place.place_id}`)}
+                    >
+                      <div className="user-result-avatar">
+                        {place.photoUrl ? (
+                          <img
+                            src={place.photoUrl}
+                            alt={place.structured_formatting.main_text}
+                            className="place-photo"
+                          />
+                        ) : (
+                          <div className="avatar-placeholder place-icon">
+                            📍
+                          </div>
+                        )}
+                      </div>
+                      <div className="user-result-info">
+                        <div className="user-result-name">
+                          {place.countryFlag && (
+                            <span className="place-country-flag">
+                              {place.countryFlag}
+                            </span>
+                          )}
+                          {place.structured_formatting.main_text}
                         </div>
-                      )}
-                    </div>
-                    <div className="user-result-info">
-                      <div className="user-result-name">
-                        {place.countryFlag && <span className="place-country-flag">{place.countryFlag}</span>}
-                        {place.structured_formatting.main_text}
-                      </div>
-                      <div className="user-result-username">
-                        {place.structured_formatting.secondary_text}
+                        <div className="user-result-username">
+                          {place.structured_formatting.secondary_text}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
+                  ))}
+                </div>
+              </>
+            )}
 
-          {!isLoading && searchQuery.trim().length < 2 && (
-            <div className="search-hint">
-              <div className="hint-icon">💡</div>
-              <p>Start typing to explore</p>
-              <div className="search-examples">
-                <div className="example">Search for people or destinations</div>
+            {!isLoading && searchQuery.trim().length < 2 && (
+              <div className="search-hint">
+                <div className="hint-icon">💡</div>
+                <p>Start typing to explore</p>
+                <div className="search-examples">
+                  <div className="example">
+                    Search for people or destinations
+                  </div>
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
-    </div>
     </>
   );
 }
