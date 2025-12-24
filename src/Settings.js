@@ -7,7 +7,7 @@ import './Settings.css';
 
 function Settings() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const [activeSection, setActiveSection] = useState('security');
   const [mfaEnabled, setMfaEnabled] = useState(false);
   const [showMfaSetup, setShowMfaSetup] = useState(false);
@@ -20,6 +20,7 @@ function Settings() {
   const [blockedUsers, setBlockedUsers] = useState([]);
   const [loadingBlockedUsers, setLoadingBlockedUsers] = useState(false);
   const [passwordResetLoading, setPasswordResetLoading] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   useEffect(() => {
     checkMfaStatus();
@@ -202,6 +203,21 @@ function Settings() {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate('/login');
+    } catch (error) {
+      console.error('Error logging out:', error);
+      setError('Failed to log out. Please try again.');
+    }
+  };
+
+  const confirmLogout = () => {
+    setShowLogoutModal(false);
+    handleLogout();
+  };
+
   const menuItems = [
     { id: 'account', label: 'Account', icon: '👤' },
     { id: 'security', label: 'Security', icon: '🔐' },
@@ -216,8 +232,25 @@ function Settings() {
           <div className="settings-content-section">
             <h2>Account Settings</h2>
             <p className="section-description">Manage your account information and preferences</p>
-            <div className="settings-placeholder">
-              <p>Account settings coming soon...</p>
+
+            <div className="setting-card">
+              <div className="setting-card-header">
+                <div className="setting-card-title">
+                  <h3>Log Out</h3>
+                </div>
+                <p className="setting-card-description">
+                  Sign out of your account. You'll need to sign in again to access your profile.
+                </p>
+              </div>
+
+              <div className="setting-card-action">
+                <button
+                  className="btn-danger"
+                  onClick={() => setShowLogoutModal(true)}
+                >
+                  Log Out
+                </button>
+              </div>
             </div>
           </div>
         );
@@ -449,6 +482,29 @@ function Settings() {
             >
               {loading ? 'Verifying...' : 'Verify & Enable'}
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutModal && (
+        <div className="modal-overlay" onClick={() => setShowLogoutModal(false)}>
+          <div className="confirmation-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Log Out</h3>
+              <button className="modal-close" onClick={() => setShowLogoutModal(false)}>✕</button>
+            </div>
+            <div className="modal-body">
+              <p>Are you sure you want to log out?</p>
+            </div>
+            <div className="modal-actions">
+              <button className="btn-cancel" onClick={() => setShowLogoutModal(false)}>
+                Cancel
+              </button>
+              <button className="btn-confirm" onClick={confirmLogout}>
+                Log Out
+              </button>
+            </div>
           </div>
         </div>
       )}

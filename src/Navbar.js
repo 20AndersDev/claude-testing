@@ -9,7 +9,7 @@ const libraries = ['places'];
 
 function Navbar({ onSearchChange, onSidebarToggle }) {
   const navigate = useNavigate();
-  const { user, loading } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [avatarUrl, setAvatarUrl] = useState(null);
   const [quickResults, setQuickResults] = useState([]);
@@ -19,6 +19,8 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [followRequestCount, setFollowRequestCount] = useState(0);
   const [unreadMessageCount, setUnreadMessageCount] = useState(0);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
 
   const { isLoaded } = useLoadScript({
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_PLACES_API_KEY,
@@ -115,9 +117,36 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
     }
   };
 
-  const handleLogout = () => {
-    // In a real app, you'd clear authentication tokens here
-    navigate('/login');
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate('/login');
+    } catch (error) {
+      console.error('Error logging out:', error);
+      alert('Failed to log out. Please try again.');
+    }
+  };
+
+  const confirmLogout = () => {
+    setShowLogoutModal(false);
+    handleLogout();
+  };
+
+  const handleProfileClick = (e) => {
+    e.preventDefault();
+    setShowProfileDropdown(!showProfileDropdown);
+  };
+
+  const handleDropdownItemClick = (path) => {
+    setShowProfileDropdown(false);
+    if (path) {
+      navigate(path);
+    }
+  };
+
+  const handleLogoutClick = () => {
+    setShowProfileDropdown(false);
+    setShowLogoutModal(true);
   };
 
   useEffect(() => {
@@ -391,16 +420,46 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
                 <span className="nav-icon">🗓️</span>
                 <span className="nav-text">Planner</span>
               </Link>
-              <Link to="/profile" className="nav-menu-item nav-profile-item">
-                <div className="nav-profile-avatar">
-                  {avatarUrl ? (
-                    <img src={avatarUrl} alt="Profile" className="nav-avatar-image" />
-                  ) : (
-                    <span className="nav-icon">👤</span>
-                  )}
-                </div>
-                <span className="nav-text">Profile</span>
-              </Link>
+              <div className="nav-profile-wrapper">
+                <button onClick={handleProfileClick} className="nav-menu-item nav-profile-item">
+                  <div className="nav-profile-avatar">
+                    {avatarUrl ? (
+                      <img src={avatarUrl} alt="Profile" className="nav-avatar-image" />
+                    ) : (
+                      <span className="nav-icon">👤</span>
+                    )}
+                  </div>
+                  <span className="nav-text">Profile</span>
+                  <span className="dropdown-arrow">{showProfileDropdown ? '▲' : '▼'}</span>
+                </button>
+
+                {showProfileDropdown && (
+                  <div className="profile-dropdown">
+                    <button
+                      className="dropdown-item"
+                      onClick={() => handleDropdownItemClick('/profile')}
+                    >
+                      <span className="dropdown-icon">👤</span>
+                      <span className="dropdown-text">Profile</span>
+                    </button>
+                    <button
+                      className="dropdown-item"
+                      onClick={() => handleDropdownItemClick('/settings')}
+                    >
+                      <span className="dropdown-icon">⚙️</span>
+                      <span className="dropdown-text">Settings</span>
+                    </button>
+                    <div className="dropdown-divider"></div>
+                    <button
+                      className="dropdown-item logout-item"
+                      onClick={handleLogoutClick}
+                    >
+                      <span className="dropdown-icon">🚪</span>
+                      <span className="dropdown-text">Log Out</span>
+                    </button>
+                  </div>
+                )}
+              </div>
             </nav>
           )}
         </div>
@@ -428,13 +487,6 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
                   <span className="notification-badge">{(unreadCount + followRequestCount) > 9 ? '9+' : (unreadCount + followRequestCount)}</span>
                 )}
               </button>
-              <button
-                className="nav-action-btn settings-btn"
-                onClick={() => navigate('/settings')}
-                title="Settings"
-              >
-                <span className="action-icon">⚙️</span>
-              </button>
             </>
           ) : (
             <Link to="/login" className="sign-in-btn">
@@ -443,6 +495,29 @@ function Navbar({ onSearchChange, onSidebarToggle }) {
           )}
         </div>
       </div>
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutModal && (
+        <div className="modal-overlay" onClick={() => setShowLogoutModal(false)}>
+          <div className="confirmation-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Log Out</h3>
+              <button className="modal-close" onClick={() => setShowLogoutModal(false)}>✕</button>
+            </div>
+            <div className="modal-body">
+              <p>Are you sure you want to log out?</p>
+            </div>
+            <div className="modal-actions">
+              <button className="btn-cancel" onClick={() => setShowLogoutModal(false)}>
+                Cancel
+              </button>
+              <button className="btn-confirm" onClick={confirmLogout}>
+                Log Out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </nav>
   );
 }
