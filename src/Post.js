@@ -358,6 +358,20 @@ function Post({ post, onLike, onComment, onDelete, onDeleteComment }) {
     navigate(`/post/${post.id}`);
   };
 
+  const getEventIcon = (eventType) => {
+    const eventIcons = {
+      concert: '🎵',
+      festival: '🎪',
+      sports: '⚽',
+      conference: '📊',
+      exhibition: '🎨',
+      theater: '🎭',
+      food: '🍽️',
+      other: '🎉'
+    };
+    return eventIcons[eventType] || '🎫';
+  };
+
   const getCountryFlag = (country) => {
     const countryFlags = {
       "United States": "🇺🇸",
@@ -487,9 +501,11 @@ function Post({ post, onLike, onComment, onDelete, onDeleteComment }) {
   const renderTextWithHashtags = (text) => {
     if (!text) return null;
 
-    // Regex to match hashtags (#word)
+    // Regex to match hashtags (#word) and mentions (@username)
     const hashtagRegex = /(#[\w]+)/g;
-    const parts = text.split(hashtagRegex);
+    const mentionRegex = /(@[\w]+)/g;
+    const combinedRegex = /(#[\w]+|@[\w]+)/g;
+    const parts = text.split(combinedRegex);
 
     return parts.map((part, index) => {
       if (part.match(hashtagRegex)) {
@@ -501,6 +517,37 @@ function Post({ post, onLike, onComment, onDelete, onDeleteComment }) {
             onClick={(e) => {
               e.stopPropagation();
               navigate(`/hashtag/${hashtag}`);
+            }}
+          >
+            {part}
+          </span>
+        );
+      } else if (part.match(mentionRegex)) {
+        const username = part.substring(1); // Remove the @ symbol
+        return (
+          <span
+            key={index}
+            className="mention-link"
+            onClick={async (e) => {
+              e.stopPropagation();
+              // Fetch user ID from username
+              try {
+                const { data: userData } = await supabase
+                  .from('profiles')
+                  .select('id')
+                  .eq('username', username)
+                  .single();
+
+                if (userData) {
+                  if (currentUserId === userData.id) {
+                    navigate('/profile');
+                  } else {
+                    navigate(`/profile/${userData.id}`);
+                  }
+                }
+              } catch (error) {
+                console.error('Error fetching user:', error);
+              }
             }}
           >
             {part}
@@ -581,7 +628,34 @@ function Post({ post, onLike, onComment, onDelete, onDeleteComment }) {
           <div className="author-details">
             <div className="author-name-row">
               <div className="author-info-container">
-                {post.tripTitle && post.location ? (
+                {post.is_event && post.event_name && post.location ? (
+                  <div className="visit-announcement">
+                    <span
+                      className="author-name-inline"
+                      onClick={() =>
+                        navigate(
+                          currentUserId === post.user_id
+                            ? "/profile"
+                            : `/profile/${post.user_id}`
+                        )
+                      }
+                      style={{ cursor: "pointer" }}
+                    >
+                      {post.author}
+                    </span>
+                    <span className="visit-text"> was at </span>
+                    <span className="event-name-inline">
+                      {getEventIcon(post.event_type)} {post.event_name}
+                    </span>
+                    <span className="visit-text"> in </span>
+                    <span className="visit-location">{post.location}</span>
+                    {post.country && (
+                      <span className="country-flag-inline">
+                        {getCountryFlag(post.country)}
+                      </span>
+                    )}
+                  </div>
+                ) : post.tripTitle && post.location ? (
                   <div className="visit-announcement">
                     <span
                       className="author-name-inline"
@@ -677,7 +751,7 @@ function Post({ post, onLike, onComment, onDelete, onDeleteComment }) {
         </div>
       </div>
 
-      {post.tripTitle ? (
+      {post.is_event || post.tripTitle ? (
         <div className="trip-post">
           {postImages.length > 0 && (
             <div className="post-images">
@@ -691,7 +765,7 @@ function Post({ post, onLike, onComment, onDelete, onDeleteComment }) {
                 >
                   <img
                     src={postImages[currentImageIndex].url}
-                    alt="Travel destination"
+                    alt={post.is_event ? "Event" : "Travel destination"}
                   />
                   {postImages.length > 1 && (
                     <>
@@ -746,12 +820,32 @@ function Post({ post, onLike, onComment, onDelete, onDeleteComment }) {
           >
             <div className="trip-header-content">
               <div className="trip-title-section">
-                <h3 className="trip-title">🗺️ {post.tripTitle}</h3>
-                <div className="trip-dates">
-                  📅 {post.startDate && formatDate(post.startDate)}
-                  {post.startDate && post.endDate && " - "}
-                  {post.endDate && formatDate(post.endDate)}
-                </div>
+                {post.is_event ? (
+                  <>
+                    <h3 className="trip-title">
+                      {getEventIcon(post.event_type)} {post.tripTitle}
+                    </h3>
+                    {post.event_name && (
+                      <div className="event-name-subtitle">
+                        🎫 {post.event_name}
+                      </div>
+                    )}
+                    <div className="trip-dates">
+                      📅 {post.startDate && formatDate(post.startDate)}
+                      {post.startDate && post.endDate && " - "}
+                      {post.endDate && formatDate(post.endDate)}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <h3 className="trip-title">🗺️ {post.tripTitle}</h3>
+                    <div className="trip-dates">
+                      📅 {post.startDate && formatDate(post.startDate)}
+                      {post.startDate && post.endDate && " - "}
+                      {post.endDate && formatDate(post.endDate)}
+                    </div>
+                  </>
+                )}
               </div>
               {post.trip_rating && (
                 <div className="trip-rating-badge">
@@ -774,15 +868,15 @@ function Post({ post, onLike, onComment, onDelete, onDeleteComment }) {
                   : getTruncatedText(post.content)
               )}
             </p>
-            {shouldTruncateText(post.content) && (
+            {shouldTruncateText(post.content) && !isTextExpanded && (
               <button
-                className={`show-more-btn ${isTextExpanded ? "expanded" : ""}`}
+                className="show-more-btn"
                 onClick={(e) => {
                   e.stopPropagation();
-                  setIsTextExpanded(!isTextExpanded);
+                  handleTripClick();
                 }}
               >
-                {isTextExpanded ? "Show less" : "Show more"}
+                Show more
               </button>
             )}
           </div>
@@ -796,15 +890,15 @@ function Post({ post, onLike, onComment, onDelete, onDeleteComment }) {
                 : getTruncatedText(post.content)
             )}
           </p>
-          {shouldTruncateText(post.content) && (
+          {shouldTruncateText(post.content) && !isTextExpanded && (
             <button
-              className={`show-more-btn ${isTextExpanded ? "expanded" : ""}`}
+              className="show-more-btn"
               onClick={(e) => {
                 e.stopPropagation();
-                setIsTextExpanded(!isTextExpanded);
+                handlePostClick();
               }}
             >
-              {isTextExpanded ? "Show less" : "Show more"}
+              Show more
             </button>
           )}
           {postImages.length > 0 && (
@@ -971,7 +1065,7 @@ function Post({ post, onLike, onComment, onDelete, onDeleteComment }) {
                     {formatTime(comment.timestamp)}
                   </div>
                 </div>
-                <div className="comment-text">{comment.content}</div>
+                <div className="comment-text">{renderTextWithHashtags(comment.content)}</div>
               </div>
               {currentUserId &&
                 comment.user_id === currentUserId &&

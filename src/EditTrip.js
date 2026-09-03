@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from './supabaseClient';
+import { createTagNotification } from './notificationHelpers';
 import Navbar from './Navbar';
+import MentionTextarea from './MentionTextarea';
+import LocationAutocomplete from './LocationAutocomplete';
 import './CreateTrip.css';
 import { popularLocations } from './locations';
 
@@ -25,6 +28,8 @@ function EditTrip() {
   const [positiveInput, setPositiveInput] = useState('');
   const [redFlags, setRedFlags] = useState([]);
   const [redFlagInput, setRedFlagInput] = useState('');
+  const [mentionedUsers, setMentionedUsers] = useState([]);
+  const [originalMentionedUserIds, setOriginalMentionedUserIds] = useState([]);
 
   const [uploading, setUploading] = useState(false);
   const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
@@ -82,6 +87,20 @@ function EditTrip() {
       setPositives(post.positives || []);
       setRedFlags(post.red_flags || []);
       setTripRating(post.trip_rating || null);
+
+      // Load mentioned users
+      if (post.mentioned_users && post.mentioned_users.length > 0) {
+        const { data: usersData } = await supabase
+          .from('profiles')
+          .select('id, full_name, username, avatar_url')
+          .in('id', post.mentioned_users);
+
+        if (usersData) {
+          setMentionedUsers(usersData);
+          setOriginalMentionedUserIds(post.mentioned_users);
+        }
+      }
+
       setIsLoading(false);
     } catch (error) {
       console.error('Error fetching post:', error);
@@ -90,42 +109,17 @@ function EditTrip() {
     }
   };
 
-  const handleLocationInput = (value) => {
-    setTripData({ ...tripData, location: value });
-
-    if (value.trim().length > 0) {
-      const filtered = popularLocations.filter(loc =>
-        loc.city.toLowerCase().includes(value.toLowerCase()) ||
-        loc.country.toLowerCase().includes(value.toLowerCase())
-      );
-      setFilteredLocations(filtered);
-      setShowLocationSuggestions(true);
-    } else {
-      setFilteredLocations([]);
-      setShowLocationSuggestions(false);
-    }
-  };
-
-  const selectLocation = (locationData) => {
+  const handlePlaceSelected = (placeData) => {
     setTripData({
       ...tripData,
-      location: `${locationData.city}, ${locationData.country}`,
-      country: locationData.country
+      location: placeData.location,
+      country: placeData.country || ''
     });
-    setShowLocationSuggestions(false);
-    setFilteredLocations([]);
   };
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (locationRef.current && !locationRef.current.contains(event.target)) {
-        setShowLocationSuggestions(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  const handleLocationChange = (value) => {
+    setTripData({ ...tripData, location: value });
+  };
 
   const handleAddPositive = () => {
     if (positiveInput.trim() && !positives.includes(positiveInput.trim())) {
@@ -243,6 +237,15 @@ function EditTrip() {
       const hashtagMatches = tripData.content.match(hashtagRegex);
       const hashtags = hashtagMatches ? hashtagMatches.map(tag => tag.substring(1)) : [];
 
+      // Fetch user's profile data
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('full_name, username, avatar_url')
+        .eq('id', user.id)
+        .single();
+
+      const displayName = profileData?.full_name || profileData?.username || user.user_metadata?.display_name || user.email?.split('@')[0] || 'User';
+
       const updatedTrip = {
         trip_title: tripData.tripTitle,
         content: tripData.content.trim() || `Just visited ${tripData.tripTitle}!`,
@@ -252,6 +255,7 @@ function EditTrip() {
         end_date: tripData.endDate || null,
         images: tripData.images || [],
         hashtags: hashtags,
+        mentioned_users: mentionedUsers.map(u => u.id),
         booking_link: tripData.links.trim() || null,
         positives: positives.length > 0 ? positives : null,
         red_flags: redFlags.length > 0 ? redFlags : null,
@@ -267,6 +271,22 @@ function EditTrip() {
         console.error('Error updating post:', updateError);
         alert('Failed to update post: ' + updateError.message);
         return;
+      }
+
+      // Send notifications to newly mentioned users (not already mentioned)
+      const newMentionedUserIds = mentionedUsers
+        .map(u => u.id)
+        .filter(id => !originalMentionedUserIds.includes(id));
+
+      if (newMentionedUserIds.length > 0) {
+        for (const userId of newMentionedUserIds) {
+          await createTagNotification(
+            userId,
+            user.id,
+            displayName,
+            postId
+          );
+        }
       }
 
       // Update visited countries if country changed
@@ -338,30 +358,12 @@ function EditTrip() {
             <div className="form-section">
               <label className="form-label">Trip Details</label>
               <div className="form-row">
-                <div className="location-search-container" ref={locationRef}>
-                  <input
-                    type="text"
-                    value={tripData.location}
-                    onChange={(e) => handleLocationInput(e.target.value)}
-                    placeholder="Location (e.g., Paris, Tokyo)"
-                    className="trip-input"
-                    required
-                  />
-                  {showLocationSuggestions && filteredLocations.length > 0 && (
-                    <div className="location-suggestions">
-                      {filteredLocations.slice(0, 8).map((loc, index) => (
-                        <div
-                          key={index}
-                          className="location-suggestion-item"
-                          onClick={() => selectLocation(loc)}
-                        >
-                          <span className="location-flag">{loc.flag}</span>
-                          <span className="location-name">{loc.city}, {loc.country}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <LocationAutocomplete
+                  value={tripData.location}
+                  onChange={handleLocationChange}
+                  onPlaceSelected={handlePlaceSelected}
+                  placeholder="Search for a location..."
+                />
               </div>
               <div className="form-row">
                 <input
@@ -383,14 +385,15 @@ function EditTrip() {
 
             <div className="form-section">
               <label className="form-label">Your Story</label>
-              <textarea
+              <MentionTextarea
                 value={tripData.content}
-                onChange={(e) => setTripData({ ...tripData, content: e.target.value })}
-                placeholder="Share your travel experience... What made this trip special? Any tips for others? (Add #hashtags to make your post discoverable)"
+                onChange={(value) => setTripData({ ...tripData, content: value })}
+                onMentionedUsersChange={setMentionedUsers}
+                placeholder="Share your travel experience... What made this trip special? Any tips for others? (Add #hashtags and @mention friends)"
                 className="trip-textarea"
                 rows={6}
               />
-              <p className="form-hint">Add hashtags with #hashtag in your story</p>
+              <p className="form-hint">Add hashtags with #hashtag and mention friends with @username</p>
             </div>
 
             <div className="tips-section">

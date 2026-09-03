@@ -1,12 +1,27 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from './supabaseClient';
 import './PostModal.css';
 
 function PostModal({ post, onClose, onLike, onComment }) {
+  const navigate = useNavigate();
   const [commentText, setCommentText] = useState('');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [slideDirection, setSlideDirection] = useState('');
+  const [currentUserId, setCurrentUserId] = useState(null);
+
+  useEffect(() => {
+    const getCurrentUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setCurrentUserId(user.id);
+      }
+    };
+    getCurrentUser();
+  }, []);
+
   const handleOverlayClick = (e) => {
     if (e.target === e.currentTarget) {
       onClose();
@@ -91,6 +106,68 @@ function PostModal({ post, onClose, onLike, onComment }) {
         ))}
       </div>
     );
+  };
+
+  const renderTextWithHashtags = (text) => {
+    if (!text) return null;
+
+    // Regex to match hashtags (#word) and mentions (@username)
+    const hashtagRegex = /(#[\w]+)/g;
+    const mentionRegex = /(@[\w]+)/g;
+    const combinedRegex = /(#[\w]+|@[\w]+)/g;
+    const parts = text.split(combinedRegex);
+
+    return parts.map((part, index) => {
+      if (part.match(hashtagRegex)) {
+        const hashtag = part.substring(1); // Remove the # symbol
+        return (
+          <span
+            key={index}
+            className="hashtag-link"
+            onClick={(e) => {
+              e.stopPropagation();
+              onClose();
+              navigate(`/hashtag/${hashtag}`);
+            }}
+          >
+            {part}
+          </span>
+        );
+      } else if (part.match(mentionRegex)) {
+        const username = part.substring(1); // Remove the @ symbol
+        return (
+          <span
+            key={index}
+            className="mention-link"
+            onClick={async (e) => {
+              e.stopPropagation();
+              // Fetch user ID from username
+              try {
+                const { data: userData } = await supabase
+                  .from('profiles')
+                  .select('id')
+                  .eq('username', username)
+                  .single();
+
+                if (userData) {
+                  onClose();
+                  if (currentUserId === userData.id) {
+                    navigate('/profile');
+                  } else {
+                    navigate(`/profile/${userData.id}`);
+                  }
+                }
+              } catch (error) {
+                console.error('Error fetching user:', error);
+              }
+            }}
+          >
+            {part}
+          </span>
+        );
+      }
+      return part;
+    });
   };
 
   const calculateTotalCost = () => {
@@ -281,7 +358,7 @@ function PostModal({ post, onClose, onLike, onComment }) {
 
             <div className="modal-story">
               <h4>Trip Story</h4>
-              <p>{post.content}</p>
+              <p>{renderTextWithHashtags(post.content)}</p>
             </div>
 
             {activities.length > 0 && (
@@ -450,7 +527,7 @@ function PostModal({ post, onClose, onLike, onComment }) {
                 )}
               </div>
             </div>
-            <p>{post.content}</p>
+            <p>{renderTextWithHashtags(post.content)}</p>
           </div>
         )}
 
@@ -463,7 +540,7 @@ function PostModal({ post, onClose, onLike, onComment }) {
                   <div className="modal-comment-avatar">👤</div>
                   <div className="modal-comment-content">
                     <div className="modal-comment-author">{comment.author}</div>
-                    <div className="modal-comment-text">{comment.content}</div>
+                    <div className="modal-comment-text">{renderTextWithHashtags(comment.content)}</div>
                     <div className="modal-comment-time">{formatTime(comment.timestamp)}</div>
                   </div>
                 </div>

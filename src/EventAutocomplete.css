@@ -1,0 +1,430 @@
+.event-autocomplete-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.event-input-container {
+  position: relative;
+  width: 100%;
+}
+
+.event-autocomplete-input {
+  width: 100%;
+  padding-right: 40px;
+}
+
+.event-loading {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.loading-spinner-small {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(5, 150, 105, 0.2);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.event-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  z-index: 1000;
+  max-height: 450px;
+  overflow: hidden;
+  animation: dropdownSlideIn 0.2s ease-out;
+}
+
+@keyframes dropdownSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.event-dropdown-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, rgba(5, 150, 105, 0.08), rgba(16, 185, 129, 0.08));
+  border-bottom: 1px solid var(--border);
+}
+
+.event-dropdown-icon {
+  font-size: 18px;
+}
+
+.event-dropdown-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.event-results-list {
+  max-height: 350px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.event-results-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.event-results-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.event-results-list::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+.event-results-list::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+.event-result-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.event-result-item:last-child {
+  border-bottom: none;
+}
+
+.event-result-item:hover,
+.event-result-item.selected {
+  background: linear-gradient(135deg, rgba(5, 150, 105, 0.06), rgba(16, 185, 129, 0.06));
+}
+
+.event-result-item.selected {
+  border-left: 3px solid var(--primary);
+}
+
+.event-result-image {
+  flex-shrink: 0;
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--background);
+}
+
+.event-result-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.event-result-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.event-result-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.past-event-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  background: linear-gradient(135deg, rgba(156, 163, 175, 0.15), rgba(107, 114, 128, 0.15));
+  color: var(--text-secondary);
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  flex-shrink: 0;
+  border: 1px solid rgba(156, 163, 175, 0.2);
+}
+
+.event-result-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.event-result-location,
+.event-result-date {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.event-result-venue {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Custom Event Button - Separate from dropdown */
+.custom-event-button {
+  margin-top: 8px;
+  background: var(--surface);
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.custom-event-button:hover {
+  border-color: var(--primary);
+  background: linear-gradient(135deg, rgba(5, 150, 105, 0.04), rgba(16, 185, 129, 0.04));
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.1);
+  transform: translateY(-1px);
+}
+
+.custom-event-button-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.custom-event-button-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.custom-event-button-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.custom-event-button-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.custom-event-button-subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* Custom Event Option - For no results */
+.custom-event-option {
+  background: linear-gradient(135deg, rgba(5, 150, 105, 0.03), rgba(16, 185, 129, 0.03));
+  border-top: 2px solid var(--border);
+  border-left: none;
+  border-bottom: none;
+}
+
+.custom-event-option:hover {
+  background: linear-gradient(135deg, rgba(5, 150, 105, 0.08), rgba(16, 185, 129, 0.08));
+  border-left: 3px solid var(--primary);
+}
+
+.custom-event-icon {
+  flex-shrink: 0;
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  background: linear-gradient(135deg, rgba(5, 150, 105, 0.1), rgba(16, 185, 129, 0.1));
+  border: 2px dashed var(--border);
+}
+
+.custom-event-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 500;
+  font-style: italic;
+}
+
+.event-dropdown-footer {
+  padding: 8px 16px;
+  text-align: center;
+  background: var(--background);
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.event-no-results {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.no-results-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+  opacity: 0.5;
+}
+
+.event-no-results p {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.no-results-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* Dark mode support */
+:root.dark-mode .event-dropdown {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+:root.dark-mode .event-dropdown-header {
+  background: linear-gradient(135deg, rgba(5, 150, 105, 0.12), rgba(16, 185, 129, 0.12));
+}
+
+:root.dark-mode .event-result-item:hover,
+:root.dark-mode .event-result-item.selected {
+  background: linear-gradient(135deg, rgba(5, 150, 105, 0.1), rgba(16, 185, 129, 0.1));
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .event-dropdown {
+    max-height: 400px;
+  }
+
+  .event-results-list {
+    max-height: 320px;
+  }
+
+  .event-result-item {
+    padding: 10px 12px;
+  }
+
+  .event-result-image,
+  .custom-event-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 24px;
+  }
+
+  .event-result-name {
+    font-size: 13px;
+  }
+
+  .event-result-location,
+  .event-result-date {
+    font-size: 11px;
+  }
+
+  .event-result-venue,
+  .custom-event-hint {
+    font-size: 10px;
+  }
+
+  .custom-event-button {
+    padding: 12px 14px;
+  }
+
+  .custom-event-button-icon {
+    font-size: 20px;
+  }
+
+  .custom-event-button-title {
+    font-size: 13px;
+  }
+
+  .custom-event-button-subtitle {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .event-dropdown {
+    max-height: 350px;
+  }
+
+  .event-results-list {
+    max-height: 280px;
+  }
+
+  .event-result-item {
+    padding: 8px 10px;
+  }
+
+  .event-result-image,
+  .custom-event-icon {
+    width: 45px;
+    height: 45px;
+    font-size: 22px;
+  }
+
+  .custom-event-button {
+    padding: 10px 12px;
+  }
+
+  .custom-event-button-icon {
+    font-size: 18px;
+  }
+
+  .custom-event-button-title {
+    font-size: 12px;
+  }
+
+  .custom-event-button-subtitle {
+    font-size: 10px;
+  }
+}

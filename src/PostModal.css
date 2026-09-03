@@ -719,3 +719,34 @@
 :root.dark-mode .modal-activity {
   border-left-color: var(--primary-light);
 }
+
+/* Hashtag and Mention Styles */
+.hashtag-link {
+  color: var(--primary);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.hashtag-link:hover {
+  color: var(--primary-hover);
+  text-decoration: underline;
+}
+
+.mention-link {
+  color: #3b82f6;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  background: rgba(59, 130, 246, 0.1);
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+.mention-link:hover {
+  color: #2563eb;
+  background: rgba(59, 130, 246, 0.2);
+  text-decoration: underline;
+}

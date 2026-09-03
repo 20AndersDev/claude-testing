@@ -1,7 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
+import { createTagNotification } from './notificationHelpers';
 import Navbar from './Navbar';
+import MentionTextarea from './MentionTextarea';
+import LocationAutocomplete from './LocationAutocomplete';
+import EventAutocomplete from './EventAutocomplete';
 import './CreateTrip.css';
 import { popularLocations } from './locations';
 
@@ -16,13 +20,18 @@ function CreateTrip() {
     startDate: '',
     endDate: '',
     images: [],
-    links: ''
+    links: '',
+    isEvent: false,
+    eventName: '',
+    eventType: '',
+    eventTitle: ''
   });
 
   const [positives, setPositives] = useState([]);
   const [positiveInput, setPositiveInput] = useState('');
   const [redFlags, setRedFlags] = useState([]);
   const [redFlagInput, setRedFlagInput] = useState('');
+  const [mentionedUsers, setMentionedUsers] = useState([]);
 
   const [uploading, setUploading] = useState(false);
   const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
@@ -37,43 +46,32 @@ function CreateTrip() {
     { emoji: '😍', label: 'Excellent', value: 5 }
   ];
 
-  const handleLocationInput = (value) => {
-    setTripData({ ...tripData, location: value });
-
-    if (value.trim().length > 0) {
-      const filtered = popularLocations.filter(loc =>
-        loc.city.toLowerCase().includes(value.toLowerCase()) ||
-        loc.country.toLowerCase().includes(value.toLowerCase())
-      );
-      setFilteredLocations(filtered);
-      setShowLocationSuggestions(true);
-    } else {
-      setFilteredLocations([]);
-      setShowLocationSuggestions(false);
-    }
-  };
-
-  const selectLocation = (locationData) => {
+  const handlePlaceSelected = (placeData) => {
     setTripData({
       ...tripData,
-      location: `${locationData.city}, ${locationData.country}`,
-      country: locationData.country
+      location: placeData.location,
+      country: placeData.country || ''
     });
-    setShowLocationSuggestions(false);
-    setFilteredLocations([]);
   };
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (locationRef.current && !locationRef.current.contains(event.target)) {
-        setShowLocationSuggestions(false);
-      }
-    };
+  const handleLocationChange = (value) => {
+    setTripData({ ...tripData, location: value });
+  };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  const handleEventSelected = (eventData) => {
+    setTripData({
+      ...tripData,
+      eventName: eventData.eventName,
+      location: eventData.location || tripData.location,
+      country: eventData.country || tripData.country,
+      eventType: eventData.eventType || tripData.eventType,
+      startDate: eventData.date || tripData.startDate
+    });
+  };
+
+  const handleEventNameChange = (value) => {
+    setTripData({ ...tripData, eventName: value });
+  };
 
   const handleAddPositive = () => {
     if (positiveInput.trim() && !positives.includes(positiveInput.trim())) {
@@ -173,9 +171,17 @@ function CreateTrip() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!tripData.tripTitle.trim() || !tripData.location.trim()) {
-      alert('Please fill in trip title and location');
-      return;
+    // Validate based on post type
+    if (tripData.isEvent) {
+      if (!tripData.eventTitle.trim() || !tripData.eventName.trim() || !tripData.location.trim() || !tripData.eventType) {
+        alert('Please fill in post title, event name, location, and event type');
+        return;
+      }
+    } else {
+      if (!tripData.tripTitle.trim() || !tripData.location.trim()) {
+        alert('Please fill in trip title and location');
+        return;
+      }
     }
 
     try {
@@ -205,14 +211,21 @@ function CreateTrip() {
         user_id: user.id,
         author: displayName,
         author_avatar: avatarUrl,
-        trip_title: tripData.tripTitle,
-        content: tripData.content.trim() || `Just visited ${tripData.tripTitle}!`,
+        author_username: profileData?.username || null,
+        trip_title: tripData.isEvent ? tripData.eventTitle : tripData.tripTitle,
+        is_event: tripData.isEvent || false,
+        event_name: tripData.isEvent ? tripData.eventName : null,
+        event_type: tripData.isEvent ? tripData.eventType : null,
+        content: tripData.content.trim() || (tripData.isEvent
+          ? `Attended ${tripData.eventName} in ${tripData.location}!`
+          : `Just visited ${tripData.tripTitle}!`),
         location: tripData.location.trim() || tripData.country,
         country: tripData.country || null,
         start_date: tripData.startDate || null,
         end_date: tripData.endDate || null,
         images: tripData.images || [],
         hashtags: hashtags,
+        mentioned_users: mentionedUsers.map(u => u.id),
         booking_link: tripData.links.trim() || null,
         positives: positives.length > 0 ? positives : null,
         red_flags: redFlags.length > 0 ? redFlags : null,
@@ -231,6 +244,18 @@ function CreateTrip() {
         console.error('Error creating post:', postError);
         alert('Failed to create post: ' + postError.message);
         return;
+      }
+
+      // Send notifications to mentioned users
+      if (mentionedUsers.length > 0 && newPost) {
+        for (const mentionedUser of mentionedUsers) {
+          await createTagNotification(
+            mentionedUser.id,
+            user.id,
+            displayName,
+            newPost.id
+          );
+        }
       }
 
       // Update visited countries if country is selected
@@ -274,44 +299,92 @@ function CreateTrip() {
 
           <form onSubmit={handleSubmit} className="trip-form">
             <div className="form-section">
-              <label className="form-label">Trip Title</label>
-              <input
-                type="text"
-                value={tripData.tripTitle}
-                onChange={(e) => setTripData({ ...tripData, tripTitle: e.target.value })}
-                placeholder="e.g., Weekend in Paris, Summer in Tokyo"
-                className="trip-input title-input"
-                required
-              />
+              <label className="form-label">Post Type</label>
+              <div className="post-type-toggle">
+                <button
+                  type="button"
+                  className={`type-btn ${!tripData.isEvent ? 'active' : ''}`}
+                  onClick={() => setTripData({ ...tripData, isEvent: false, eventName: '', eventType: '', eventTitle: '' })}
+                >
+                  🗺️ Trip/Visit
+                </button>
+                <button
+                  type="button"
+                  className={`type-btn ${tripData.isEvent ? 'active' : ''}`}
+                  onClick={() => setTripData({ ...tripData, isEvent: true, tripTitle: '' })}
+                >
+                  🎫 Event
+                </button>
+              </div>
             </div>
 
-            <div className="form-section">
-              <label className="form-label">Trip Details</label>
-              <div className="form-row">
-                <div className="location-search-container" ref={locationRef}>
+            {!tripData.isEvent ? (
+              <div className="form-section">
+                <label className="form-label">Trip Title</label>
+                <input
+                  type="text"
+                  value={tripData.tripTitle}
+                  onChange={(e) => setTripData({ ...tripData, tripTitle: e.target.value })}
+                  placeholder="e.g., Weekend in Paris, Summer in Tokyo"
+                  className="trip-input title-input"
+                  required
+                />
+              </div>
+            ) : (
+              <>
+                <div className="form-section">
+                  <label className="form-label">Post Title</label>
                   <input
                     type="text"
-                    value={tripData.location}
-                    onChange={(e) => handleLocationInput(e.target.value)}
-                    placeholder="Location (e.g., Paris, Tokyo)"
-                    className="trip-input"
+                    value={tripData.eventTitle}
+                    onChange={(e) => setTripData({ ...tripData, eventTitle: e.target.value })}
+                    placeholder="e.g., Amazing Concert Experience, Epic Festival Weekend"
+                    className="trip-input title-input"
                     required
                   />
-                  {showLocationSuggestions && filteredLocations.length > 0 && (
-                    <div className="location-suggestions">
-                      {filteredLocations.slice(0, 8).map((loc, index) => (
-                        <div
-                          key={index}
-                          className="location-suggestion-item"
-                          onClick={() => selectLocation(loc)}
-                        >
-                          <span className="location-flag">{loc.flag}</span>
-                          <span className="location-name">{loc.city}, {loc.country}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                  <p className="form-hint">Give your event post a catchy title</p>
                 </div>
+                <div className="form-section">
+                  <label className="form-label">Event Name</label>
+                  <EventAutocomplete
+                    value={tripData.eventName}
+                    onChange={handleEventNameChange}
+                    onEventSelected={handleEventSelected}
+                    placeholder="Search for events (e.g., Coldplay, Tomorrowland)..."
+                  />
+                  <p className="form-hint">Search Ticketmaster or enter a custom event name</p>
+                </div>
+                <div className="form-section">
+                  <label className="form-label">Event Type</label>
+                  <select
+                    value={tripData.eventType}
+                    onChange={(e) => setTripData({ ...tripData, eventType: e.target.value })}
+                    className="trip-input event-type-select"
+                    required
+                  >
+                    <option value="">Select event type...</option>
+                    <option value="concert">🎵 Concert</option>
+                    <option value="festival">🎪 Festival</option>
+                    <option value="sports">⚽ Sports Event</option>
+                    <option value="conference">📊 Conference</option>
+                    <option value="exhibition">🎨 Exhibition</option>
+                    <option value="theater">🎭 Theater/Show</option>
+                    <option value="food">🍽️ Food Event</option>
+                    <option value="other">🎉 Other Event</option>
+                  </select>
+                </div>
+              </>
+            )}
+
+            <div className="form-section">
+              <label className="form-label">{tripData.isEvent ? 'Event Location' : 'Trip Details'}</label>
+              <div className="form-row">
+                <LocationAutocomplete
+                  value={tripData.location}
+                  onChange={handleLocationChange}
+                  onPlaceSelected={handlePlaceSelected}
+                  placeholder={tripData.isEvent ? "Where is the event?" : "Search for a location..."}
+                />
               </div>
               <div className="form-row">
                 <input
@@ -319,28 +392,31 @@ function CreateTrip() {
                   value={tripData.startDate}
                   onChange={(e) => setTripData({ ...tripData, startDate: e.target.value })}
                   className="date-input"
-                  placeholder="Start date"
+                  placeholder={tripData.isEvent ? "Event date" : "Start date"}
                 />
-                <input
-                  type="date"
-                  value={tripData.endDate}
-                  onChange={(e) => setTripData({ ...tripData, endDate: e.target.value })}
-                  className="date-input"
-                  placeholder="End date"
-                />
+                {!tripData.isEvent && (
+                  <input
+                    type="date"
+                    value={tripData.endDate}
+                    onChange={(e) => setTripData({ ...tripData, endDate: e.target.value })}
+                    className="date-input"
+                    placeholder="End date"
+                  />
+                )}
               </div>
             </div>
 
             <div className="form-section">
               <label className="form-label">Your Story</label>
-              <textarea
+              <MentionTextarea
                 value={tripData.content}
-                onChange={(e) => setTripData({ ...tripData, content: e.target.value })}
-                placeholder="Share your travel experience... What made this trip special? Any tips for others? (Add #hashtags to make your post discoverable)"
+                onChange={(value) => setTripData({ ...tripData, content: value })}
+                onMentionedUsersChange={setMentionedUsers}
+                placeholder="Share your travel experience... What made this trip special? Any tips for others? (Add #hashtags and @mention friends)"
                 className="trip-textarea"
                 rows={6}
               />
-              <p className="form-hint">Add hashtags with #hashtag in your story</p>
+              <p className="form-hint">Add hashtags with #hashtag and mention friends with @username</p>
             </div>
 
             <div className="tips-section">
@@ -474,9 +550,13 @@ function CreateTrip() {
               <button
                 type="submit"
                 className="submit-btn"
-                disabled={!tripData.tripTitle.trim() || !tripData.location.trim()}
+                disabled={
+                  tripData.isEvent
+                    ? (!tripData.eventTitle.trim() || !tripData.eventName.trim() || !tripData.location.trim() || !tripData.eventType)
+                    : (!tripData.tripTitle.trim() || !tripData.location.trim())
+                }
               >
-                Share Trip
+                {tripData.isEvent ? 'Share Event' : 'Share Trip'}
               </button>
             </div>
           </form>

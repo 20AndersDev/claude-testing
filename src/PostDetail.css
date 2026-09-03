@@ -67,6 +67,18 @@
   margin-bottom: 8px;
 }
 
+.event-name-hero {
+  font-size: clamp(0.95rem, 2.2vw, 1.15rem);
+  font-weight: 600;
+  padding: 8px 18px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 14px;
+  backdrop-filter: blur(10px);
+  display: inline-block;
+  margin-bottom: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
 .hero-dates,
 .hero-meta {
   font-size: 1rem;
@@ -1047,6 +1059,24 @@
 
 .hashtag-link:hover {
   color: var(--primary-hover);
+  text-decoration: underline;
+}
+
+/* Mentions Styles */
+.mention-link {
+  color: #3b82f6;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  background: rgba(59, 130, 246, 0.1);
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+.mention-link:hover {
+  color: #2563eb;
+  background: rgba(59, 130, 246, 0.2);
   text-decoration: underline;
 }
 

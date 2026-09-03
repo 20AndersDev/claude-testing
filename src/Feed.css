@@ -221,34 +221,58 @@
 
 /* Floating Action Button */
 .create-post-fab {
-  display: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   position: fixed;
-  bottom: 90px;
-  right: 20px;
-  width: 60px;
-  height: 60px;
+  bottom: 30px;
+  right: 30px;
+  padding: 16px 24px;
   background: linear-gradient(135deg, var(--primary) 0%, #059669 100%);
   border: none;
-  border-radius: 50%;
-  box-shadow: 0 4px 20px rgba(5, 150, 105, 0.4);
+  border-radius: 50px;
+  box-shadow: 0 6px 24px rgba(5, 150, 105, 0.4);
   cursor: pointer;
   z-index: 1001;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: auto;
+  color: white;
+  font-weight: 700;
+  font-size: 16px;
+  animation: fabPulse 3s ease-in-out infinite;
+}
+
+@keyframes fabPulse {
+  0%, 100% {
+    box-shadow: 0 6px 24px rgba(5, 150, 105, 0.4);
+  }
+  50% {
+    box-shadow: 0 8px 32px rgba(5, 150, 105, 0.6);
+  }
 }
 
 .create-post-fab:hover {
-  transform: scale(1.1) translateY(-2px);
-  box-shadow: 0 6px 28px rgba(5, 150, 105, 0.5);
+  transform: scale(1.05) translateY(-3px);
+  box-shadow: 0 10px 36px rgba(5, 150, 105, 0.6);
+  animation: none;
 }
 
 .create-post-fab:active {
-  transform: scale(0.95);
+  transform: scale(0.98);
 }
 
 .fab-icon {
-  font-size: 26px;
+  font-size: 24px;
+  font-weight: 700;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.fab-text {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 /* Mobile responsiveness for tabs */
@@ -277,15 +301,23 @@
     font-size: 14px;
   }
 
-  /* Show FAB on mobile */
+  /* Adjust FAB for tablet/mobile */
   .create-post-fab {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    bottom: 90px;
+    right: 20px;
+    padding: 14px 20px;
+  }
+
+  .fab-icon {
+    font-size: 22px;
+  }
+
+  .fab-text {
+    font-size: 14px;
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 768px) {
   .feed-tab {
     padding: 8px 12px;
     font-size: 13px;
@@ -296,12 +328,18 @@
     font-size: 13px;
   }
 
-  /* Adjust FAB for smaller screens */
+  /* On small mobile, show only icon */
   .create-post-fab {
-    width: 56px;
-    height: 56px;
     bottom: 85px;
     right: 16px;
+    padding: 16px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+  }
+
+  .fab-text {
+    display: none;
   }
 
   .fab-icon {

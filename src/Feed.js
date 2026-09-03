@@ -514,13 +514,15 @@ function Feed() {
           </div>
         </div>
 
-        {/* Floating Action Button for mobile */}
+        {/* Floating Action Button */}
         <button
           className="create-post-fab"
           onClick={() => navigate('/create-trip')}
-          aria-label="Create new trip"
+          aria-label="Create new post"
+          title="Create new post"
         >
           <span className="fab-icon">+</span>
+          <span className="fab-text">New Post</span>
         </button>
       </div>
     </>

@@ -14,43 +14,60 @@ function Sidebar({ posts, onFilterChange, isOpen, onClose, sortBy, onSortChange 
   };
 
   const getTrendingDestinations = () => {
-    const locations = posts
-      .filter(post => post.location && post.likes > 20)
-      .map(post => ({ location: post.location, likes: post.likes }))
-      .sort((a, b) => b.likes - a.likes)
-      .slice(0, 3);
+    // Count how many posts exist for each location
+    const locationCounts = {};
 
-    // Add filler data if not enough real destinations
-    const fillerDestinations = [
-      { location: 'Paris, France', likes: 234 },
-      { location: 'Tokyo, Japan', likes: 198 },
-      { location: 'Bali, Indonesia', likes: 187 }
-    ];
+    posts.forEach(post => {
+      if (post.location) {
+        const location = post.location.trim();
+        if (locationCounts[location]) {
+          locationCounts[location].count++;
+          locationCounts[location].totalLikes += post.likes || 0;
+        } else {
+          locationCounts[location] = {
+            location: location,
+            count: 1,
+            totalLikes: post.likes || 0
+          };
+        }
+      }
+    });
 
-    if (locations.length < 3) {
-      return [...locations, ...fillerDestinations.slice(0, 3 - locations.length)];
-    }
+    // Convert to array and sort by post count (most posted locations)
+    const sortedLocations = Object.values(locationCounts)
+      .sort((a, b) => {
+        // First sort by count (most posts)
+        if (b.count !== a.count) {
+          return b.count - a.count;
+        }
+        // If same count, sort by total likes
+        return b.totalLikes - a.totalLikes;
+      })
+      .slice(0, 5)
+      .map(loc => ({
+        location: loc.location,
+        postCount: loc.count,
+        likes: loc.totalLikes
+      }));
 
-    return locations;
+    return sortedLocations;
   };
 
-  const getHotTrips = () => {
-    const trips = posts
-      .filter(post => post.likes > 25 || (post.activities && post.activities.length > 3))
-      .sort((a, b) => b.likes - a.likes)
-      .slice(0, 2);
+  const getUpcomingEvents = () => {
+    const now = new Date();
+    const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
 
-    // Add filler data if not enough real trips
-    const fillerTrips = [
-      { id: 'filler-1', tripTitle: 'Weekend in Rome', location: 'Rome, Italy', likes: 156 },
-      { id: 'filler-2', tripTitle: 'Island Hopping Adventure', location: 'Greek Islands', likes: 143 }
-    ];
+    // Filter posts that have future start dates (upcoming trips/events)
+    const upcomingTrips = posts
+      .filter(post => {
+        if (!post.startDate) return false;
+        const startDate = new Date(post.startDate);
+        return startDate > now && startDate <= thirtyDaysFromNow;
+      })
+      .sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
+      .slice(0, 3);
 
-    if (trips.length < 2) {
-      return [...trips, ...fillerTrips.slice(0, 2 - trips.length)];
-    }
-
-    return trips;
+    return upcomingTrips;
   };
 
   const getTrendingHashtags = () => {
@@ -86,7 +103,7 @@ function Sidebar({ posts, onFilterChange, isOpen, onClose, sortBy, onSortChange 
   };
 
   const trendingDestinations = getTrendingDestinations();
-  const hotTrips = getHotTrips();
+  const upcomingEvents = getUpcomingEvents();
   const trendingHashtags = getTrendingHashtags();
 
   const popularCountries = [
@@ -250,7 +267,13 @@ function Sidebar({ posts, onFilterChange, isOpen, onClose, sortBy, onSortChange 
           className="create-trip-btn"
           onClick={() => navigate('/create-trip')}
         >
-          + New Trip
+          ✍️ Create New Post
+        </button>
+        <button
+          className="discover-events-btn"
+          onClick={() => navigate('/events')}
+        >
+          🎟️ Discover Events
         </button>
       </div>
 
@@ -285,31 +308,82 @@ function Sidebar({ posts, onFilterChange, isOpen, onClose, sortBy, onSortChange 
       </div>
 
       <div className="sidebar-section">
-        <h3 className="sidebar-title">🚀 Trending</h3>
-        <div className="trending-list">
-          {trendingDestinations.map((dest, index) => (
-            <div key={dest.location} className="trending-item">
-              <span className="trending-rank">#{index + 1}</span>
-              <span className="trending-name">{dest.location}</span>
-              <span className="trending-likes">❤️ {dest.likes}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {hotTrips.length > 0 && (
-        <div className="sidebar-section hot-section">
-          <h3 className="sidebar-title">🔥 Hot Right Now</h3>
-          <div className="hot-trips">
-            {hotTrips.map((trip) => (
-              <div key={trip.id} className="hot-trip-item">
-                <div className="hot-trip-title">{trip.tripTitle}</div>
-                <div className="hot-trip-meta">
-                  <span>📍 {trip.location}</span>
-                  <span>❤️ {trip.likes}</span>
+        <h3 className="sidebar-title">🚀 Trending Locations</h3>
+        {trendingDestinations.length > 0 ? (
+          <div className="trending-list">
+            {trendingDestinations.map((dest, index) => (
+              <div
+                key={dest.location}
+                className="trending-item"
+                onClick={() => {
+                  navigate(`/location/${encodeURIComponent(dest.location)}`);
+                }}
+                style={{ cursor: 'pointer' }}
+              >
+                <span className="trending-rank">#{index + 1}</span>
+                <div className="trending-info">
+                  <span className="trending-name">{dest.location}</span>
+                  <div className="trending-stats">
+                    <span className="trending-posts">📍 {dest.postCount} {dest.postCount === 1 ? 'post' : 'posts'}</span>
+                    {dest.likes > 0 && (
+                      <span className="trending-likes">❤️ {dest.likes}</span>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
+          </div>
+        ) : (
+          <div className="trending-empty">
+            <p>No locations yet. Be the first to post!</p>
+          </div>
+        )}
+      </div>
+
+      {upcomingEvents.length > 0 && (
+        <div className="sidebar-section events-section">
+          <h3 className="sidebar-title">📅 Upcoming Events</h3>
+          <div className="events-list">
+            {upcomingEvents.map((event) => {
+              const startDate = new Date(event.startDate);
+              const daysUntil = Math.ceil((startDate - new Date()) / (1000 * 60 * 60 * 24));
+
+              return (
+                <div
+                  key={event.id}
+                  className="event-item"
+                  onClick={() => navigate(`/post/${event.id}`)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <div className="event-date-badge">
+                    <div className="event-month">{startDate.toLocaleString('default', { month: 'short' })}</div>
+                    <div className="event-day">{startDate.getDate()}</div>
+                  </div>
+                  <div className="event-details">
+                    <div className="event-title">{event.tripTitle}</div>
+                    <div className="event-location">📍 {event.location}</div>
+                    <div className="event-time">
+                      {daysUntil === 0 ? 'Today' : daysUntil === 1 ? 'Tomorrow' : `In ${daysUntil} days`}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {upcomingEvents.length === 0 && (
+        <div className="sidebar-section">
+          <h3 className="sidebar-title">📅 Upcoming Events</h3>
+          <div className="events-empty">
+            <p>No upcoming events in the next 30 days.</p>
+            <button
+              className="create-event-btn"
+              onClick={() => navigate('/create-trip')}
+            >
+              Plan a Trip
+            </button>
           </div>
         </div>
       )}

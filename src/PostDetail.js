@@ -48,6 +48,9 @@ function PostDetail() {
             author_avatar: profileData?.avatar_url || payload.new.author_avatar,
             author_username: profileData?.username || payload.new.author_username,
             tripTitle: payload.new.trip_title,
+            is_event: payload.new.is_event,
+            event_name: payload.new.event_name,
+            event_type: payload.new.event_type,
             startDate: payload.new.start_date,
             endDate: payload.new.end_date,
             timestamp: payload.new.created_at,
@@ -123,6 +126,9 @@ function PostDetail() {
         author_avatar: profileData?.avatar_url || data.author_avatar,
         author_username: profileData?.username || data.author_username,
         tripTitle: data.trip_title,
+        is_event: data.is_event,
+        event_name: data.event_name,
+        event_type: data.event_type,
         startDate: data.start_date,
         endDate: data.end_date,
         timestamp: data.created_at,
@@ -253,9 +259,11 @@ function PostDetail() {
   const renderTextWithHashtags = (text) => {
     if (!text) return null;
 
-    // Regex to match hashtags (#word)
+    // Regex to match hashtags (#word) and mentions (@username)
     const hashtagRegex = /(#[\w]+)/g;
-    const parts = text.split(hashtagRegex);
+    const mentionRegex = /(@[\w]+)/g;
+    const combinedRegex = /(#[\w]+|@[\w]+)/g;
+    const parts = text.split(combinedRegex);
 
     return parts.map((part, index) => {
       if (part.match(hashtagRegex)) {
@@ -267,6 +275,37 @@ function PostDetail() {
             onClick={(e) => {
               e.stopPropagation();
               navigate(`/hashtag/${hashtag}`);
+            }}
+          >
+            {part}
+          </span>
+        );
+      } else if (part.match(mentionRegex)) {
+        const username = part.substring(1); // Remove the @ symbol
+        return (
+          <span
+            key={index}
+            className="mention-link"
+            onClick={async (e) => {
+              e.stopPropagation();
+              // Fetch user ID from username
+              try {
+                const { data: userData } = await supabase
+                  .from('profiles')
+                  .select('id')
+                  .eq('username', username)
+                  .single();
+
+                if (userData) {
+                  if (currentUserId === userData.id) {
+                    navigate('/profile');
+                  } else {
+                    navigate(`/profile/${userData.id}`);
+                  }
+                }
+              } catch (error) {
+                console.error('Error fetching user:', error);
+              }
             }}
           >
             {part}
@@ -414,6 +453,20 @@ function PostDetail() {
     return emojis[rating] || null;
   };
 
+  const getEventIcon = (eventType) => {
+    const eventIcons = {
+      concert: '🎵',
+      festival: '🎪',
+      sports: '⚽',
+      conference: '📊',
+      exhibition: '🎨',
+      theater: '🎭',
+      food: '🍽️',
+      other: '🎉'
+    };
+    return eventIcons[eventType] || '🎫';
+  };
+
   if (!post) {
     return (
       <div className="App">
@@ -433,7 +486,20 @@ function PostDetail() {
       <div className="detail-hero">
         <button className="back-btn" onClick={() => navigate(-1)}>←</button>
         <div className="hero-content">
-          {post.tripTitle ? (
+          {post.is_event ? (
+            <>
+              <h1 className="hero-title">{getEventIcon(post.event_type)} {post.tripTitle}</h1>
+              {post.event_name && (
+                <div className="hero-subtitle event-name-hero">🎫 {post.event_name}</div>
+              )}
+              <div className="hero-location">📍 {post.location}</div>
+              <div className="hero-dates">
+                {post.startDate && formatDate(post.startDate)}
+                {post.startDate && post.endDate && ' - '}
+                {post.endDate && formatDate(post.endDate)}
+              </div>
+            </>
+          ) : post.tripTitle ? (
             <>
               <h1 className="hero-title">🗺️ {post.tripTitle}</h1>
               <div className="hero-location">📍 {post.location}</div>
@@ -538,7 +604,7 @@ function PostDetail() {
             )}
 
             <div className="story">
-              <h3 className="section-title">📖 {post.tripTitle ? 'Trip Story' : 'Story'}</h3>
+              <h3 className="section-title">📖 {post.is_event ? 'Event Experience' : post.tripTitle ? 'Trip Story' : 'Story'}</h3>
               <p className="story-text">{renderTextWithHashtags(post.content)}</p>
             </div>
 
@@ -702,7 +768,7 @@ function PostDetail() {
                         <div className="comment-author">{comment.author}</div>
                         <div className="comment-time">{formatTime(comment.timestamp)}</div>
                       </div>
-                      <p className="comment-text">{comment.content}</p>
+                      <p className="comment-text">{renderTextWithHashtags(comment.content)}</p>
                     </div>
                     {currentUserId && comment.user_id === currentUserId && (
                       <div className="comment-menu-container">

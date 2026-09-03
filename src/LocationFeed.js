@@ -6,21 +6,22 @@ import Navbar from './Navbar';
 import Post from './Post';
 import './Feed.css';
 
-function HashtagFeed() {
-  const { hashtag } = useParams();
+function LocationFeed() {
+  const { location } = useParams();
   const navigate = useNavigate();
   const [posts, setPosts] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     getCurrentUser();
   }, []);
 
   useEffect(() => {
-    if (hashtag) {
+    if (location) {
       fetchPosts();
     }
-  }, [hashtag]);
+  }, [location]);
 
   const getCurrentUser = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -40,33 +41,33 @@ function HashtagFeed() {
   };
 
   const fetchPosts = async () => {
+    setIsLoading(true);
     try {
-      // Fetch all posts
+      // Decode the location from URL
+      const decodedLocation = decodeURIComponent(location);
+
+      // Fetch posts that match this location (case-insensitive)
       const { data: postsData, error } = await supabase
         .from('posts')
         .select('*')
+        .ilike('location', `%${decodedLocation}%`)
         .order('created_at', { ascending: false });
 
       if (error) {
         console.error('Error fetching posts:', error);
         setPosts([]);
+        setIsLoading(false);
         return;
       }
 
-      // Filter posts that contain the hashtag
-      const filteredPosts = (postsData || []).filter(post =>
-        post.hashtags &&
-        Array.isArray(post.hashtags) &&
-        post.hashtags.includes(hashtag)
-      );
-
-      if (filteredPosts.length === 0) {
+      if (!postsData || postsData.length === 0) {
         setPosts([]);
+        setIsLoading(false);
         return;
       }
 
-      // Get unique user IDs from filtered posts
-      const userIds = [...new Set(filteredPosts.map(post => post.user_id))];
+      // Get unique user IDs from posts
+      const userIds = [...new Set(postsData.map(post => post.user_id))];
 
       // Fetch profiles for these users
       const { data: profilesData } = await supabase
@@ -81,7 +82,7 @@ function HashtagFeed() {
       });
 
       // Map posts with profile data
-      const mappedPosts = filteredPosts.map(post => {
+      const mappedPosts = postsData.map(post => {
         const profile = profilesMap[post.user_id];
         return {
           ...post,
@@ -100,6 +101,8 @@ function HashtagFeed() {
     } catch (error) {
       console.error('Error in fetchPosts:', error);
       setPosts([]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -141,7 +144,6 @@ function HashtagFeed() {
             : p
         ));
       } else if (!isLiked && post.user_id !== currentUser.id) {
-        // Create like notification
         await createLikeNotification(
           post.user_id,
           currentUser.id,
@@ -194,7 +196,6 @@ function HashtagFeed() {
             : p
         ));
       } else if (post.user_id !== currentUser.id) {
-        // Create comment notification
         await createCommentNotification(
           post.user_id,
           currentUser.id,
@@ -246,12 +247,14 @@ function HashtagFeed() {
     }
   };
 
+  const decodedLocation = decodeURIComponent(location);
+
   return (
     <>
       <Navbar onSearchChange={() => {}} />
       <div className="feed-container">
         <div className="feed" style={{ maxWidth: '800px', margin: '0 auto' }}>
-          <div className="hashtag-header" style={{
+          <div className="location-header" style={{
             padding: '24px',
             borderBottom: '1px solid var(--border)',
             marginBottom: '20px'
@@ -272,21 +275,44 @@ function HashtagFeed() {
             >
               ← Back
             </button>
-            <h1 className="hashtag-title" style={{
+            <h1 className="location-title" style={{
               fontSize: '32px',
               fontWeight: '700',
-              color: 'var(--primary)',
-              marginBottom: '8px'
-            }}>#{hashtag}</h1>
-            <p className="hashtag-subtitle" style={{
+              color: 'var(--text)',
+              marginBottom: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px'
+            }}>
+              <span>📍</span>
+              {decodedLocation}
+            </h1>
+            <p className="location-subtitle" style={{
               fontSize: '14px',
               color: 'var(--text-muted)'
             }}>
-              {posts.length} {posts.length === 1 ? 'post' : 'posts'}
+              {isLoading ? 'Loading...' : `${posts.length} ${posts.length === 1 ? 'post' : 'posts'}`}
             </p>
           </div>
+
           <div className="posts-container">
-            {posts.length > 0 ? (
+            {isLoading ? (
+              <div className="loading-state" style={{
+                padding: '60px 20px',
+                textAlign: 'center'
+              }}>
+                <div className="loading-spinner" style={{
+                  width: '40px',
+                  height: '40px',
+                  border: '4px solid var(--border)',
+                  borderTopColor: 'var(--primary)',
+                  borderRadius: '50%',
+                  animation: 'spin 0.8s linear infinite',
+                  margin: '0 auto 16px'
+                }}></div>
+                <p style={{ color: 'var(--text-muted)' }}>Loading posts...</p>
+              </div>
+            ) : posts.length > 0 ? (
               posts.map(post => (
                 <Post
                   key={post.id}
@@ -305,7 +331,7 @@ function HashtagFeed() {
                 <div className="no-results-icon" style={{
                   fontSize: '64px',
                   marginBottom: '16px'
-                }}>🔍</div>
+                }}>📍</div>
                 <h3 style={{
                   fontSize: '20px',
                   fontWeight: '600',
@@ -315,7 +341,7 @@ function HashtagFeed() {
                 <p style={{
                   fontSize: '14px',
                   color: 'var(--text-muted)'
-                }}>There are no posts with the hashtag #{hashtag}.</p>
+                }}>There are no posts from {decodedLocation} yet.</p>
               </div>
             )}
           </div>
@@ -325,4 +351,4 @@ function HashtagFeed() {
   );
 }
 
-export default HashtagFeed;
+export default LocationFeed;
